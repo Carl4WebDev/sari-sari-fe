@@ -25,3 +25,18 @@ export const deleteProductApi = (productId) =>
   apiRequest(`/api/products/${productId}`, {
     method: "DELETE",
   });
+
+export const getArchivedProductsApi = () =>
+  apiRequest("/api/products/archived", {
+    method: "GET",
+  });
+
+export const archiveProductApi = (productId) =>
+  apiRequest(`/api/products/${productId}/archive`, {
+    method: "PATCH",
+  });
+
+export const reactivateProductApi = (productId) =>
+  apiRequest(`/api/products/${productId}/reactivate`, {
+    method: "PATCH",
+  });

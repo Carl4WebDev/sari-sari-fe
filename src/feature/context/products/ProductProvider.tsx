@@ -6,6 +6,9 @@ import {
   createProductApi,
   updateProductApi,
   deleteProductApi,
+    getArchivedProductsApi,
+  archiveProductApi,
+  reactivateProductApi,
 } from "./productApi";
 
 export const ProductProvider = ({ children }) => {
@@ -13,6 +16,63 @@ export const ProductProvider = ({ children }) => {
   const [loading, setLoading] = useState(false);
   const [actionLoading, setActionLoading] = useState(false);
   const [error, setError] = useState(null);
+
+  const [archivedProducts, setArchivedProducts] = useState([]);
+
+const fetchArchivedProducts = async () => {
+  setLoading(true);
+  setError(null);
+
+  const res = await getArchivedProductsApi();
+
+  if (!res?.ok) {
+    setError(res?.message || "Failed to fetch archived products");
+    setLoading(false);
+    return res;
+  }
+
+  setArchivedProducts(res.data);
+  setLoading(false);
+  return res;
+};
+
+const archiveProduct = async (productId) => {
+  setLoading(true);
+  setError(null);
+
+  const res = await archiveProductApi(productId);
+
+  if (!res?.ok) {
+    setError(res?.message || "Failed to archive product");
+    setLoading(false);
+    return res;
+  }
+
+  await fetchProducts();
+  await fetchArchivedProducts();
+
+  setLoading(false);
+  return res;
+};
+
+const reactivateProduct = async (productId) => {
+  setLoading(true);
+  setError(null);
+
+  const res = await reactivateProductApi(productId);
+
+  if (!res?.ok) {
+    setError(res?.message || "Failed to reactivate product");
+    setLoading(false);
+    return res;
+  }
+
+  await fetchProducts();
+  await fetchArchivedProducts();
+
+  setLoading(false);
+  return res;
+};
 
   const fetchProducts = async () => {
     setLoading(true);
@@ -89,11 +149,16 @@ export const ProductProvider = ({ children }) => {
         loading,
         actionLoading,
         error,
+            archivedProducts,
 
         fetchProducts,
         createProduct,
         updateProduct,
         deleteProduct,
+
+            fetchArchivedProducts,
+    archiveProduct,
+    reactivateProduct,
       }}
     >
       {children}

@@ -1,6 +1,7 @@
 import { useEffect, useMemo, useState } from "react";
 import { useProduct } from "../context/products/useProduct";
 import ProductModal from "./modals/ProductModal";
+import ArchivedProductsModal from "./modals/ArchivedProductsModal";
 
 interface Product {
   product_id: number;
@@ -10,19 +11,23 @@ interface Product {
 }
 
 export default function ManageProductsPage() {
-  const {
-    products,
-    loading,
-    actionLoading,
-    fetchProducts,
-    createProduct,
-    updateProduct,
-    deleteProduct,
-  } = useProduct();
+const {
+  products,
+  archivedProducts,
+  loading,
+  actionLoading,
+  fetchProducts,
+  createProduct,
+  updateProduct,
+  archiveProduct,
+  fetchArchivedProducts,
+  reactivateProduct,
+} = useProduct();
 
   const [search, setSearch] = useState("");
 
   const [isModalOpen, setIsModalOpen] = useState(false);
+  const [isArchivedOpen, setIsArchivedOpen] = useState(false);
   const [modalMode, setModalMode] = useState<"add" | "edit">("add");
   const [selectedProduct, setSelectedProduct] = useState<Product | null>(null);
 
@@ -48,13 +53,13 @@ export default function ManageProductsPage() {
     setIsModalOpen(true);
   };
 
-  const handleDelete = async (productId: number) => {
-    const confirmDelete = confirm("Delete this product?");
+const handleArchive = async (productId: number) => {
+  const confirmArchive = confirm("Archive this product?");
 
-    if (!confirmDelete) return;
+  if (!confirmArchive) return;
 
-    await deleteProduct(productId);
-  };
+  await archiveProduct(productId);
+};
 
   return (
     <div className="space-y-5 pb-24">
@@ -72,6 +77,15 @@ export default function ManageProductsPage() {
           return updateProduct(selectedProduct?.product_id, payload);
         }}
       />
+
+      <ArchivedProductsModal
+  isOpen={isArchivedOpen}
+  isClose={() => setIsArchivedOpen(false)}
+  archivedProducts={archivedProducts}
+  loading={loading}
+  onFetchArchived={fetchArchivedProducts}
+  onReactivate={reactivateProduct}
+/>
 
       {/* Header */}
       <div className="rounded-2xl bg-gradient-to-r from-[#1E3A8A] to-[#2563EB] p-5 text-white shadow-sm">
@@ -102,6 +116,13 @@ export default function ManageProductsPage() {
               className="w-full rounded-xl border border-gray-300 py-3 pl-10 pr-3 text-sm outline-none transition focus:border-[#1E3A8A] focus:ring-2 focus:ring-blue-100"
             />
           </div>
+
+          <button
+  onClick={() => setIsArchivedOpen(true)}
+  className="rounded-xl border border-[#1E3A8A] px-5 py-3 text-sm font-semibold text-[#1E3A8A] shadow-sm transition hover:bg-blue-50"
+>
+  Archived
+</button>
 
           <button
             onClick={handleOpenAdd}
@@ -150,8 +171,7 @@ export default function ManageProductsPage() {
                     </button>
 
                     <button
-                      onClick={() => handleDelete(product.product_id)}
-                      disabled={actionLoading}
+onClick={() => handleArchive(product.product_id)}                      disabled={actionLoading}
                       className="rounded-lg border border-red-600 px-4 py-2 text-sm font-medium text-red-600 disabled:opacity-50"
                     >
                       Delete
