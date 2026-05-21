@@ -61,6 +61,7 @@ export default function BorrowerDetailsPage() {
     uploadingProfileImage,
     loading,
     updatePublicLoanAccess ,
+    archiveBorrower,
   } = useBorrower();
 
   useEffect(() => {
@@ -134,6 +135,26 @@ export default function BorrowerDetailsPage() {
   );
 
   const profileImageUrl = borrower.profile_image_url || null;
+
+  const balance = Number(borrower.balance || 0);
+
+const paymentStatus =
+  balance <= 0 ? "Fully Paid" : "With Balance";
+
+const paymentStatusColor =
+  balance <= 0
+    ? "bg-green-100 text-green-700"
+    : "bg-red-100 text-red-700";
+
+const activityStatus =
+  borrower.is_active
+    ? "Active"
+    : "Archived";
+
+const activityStatusColor =
+  borrower.is_active
+    ? "bg-blue-100 text-blue-700"
+    : "bg-gray-200 text-gray-700";
 
   const isPublicEnabled = borrower.token_enabled;
 const publicToken = borrower.public_token;
@@ -272,21 +293,41 @@ const publicStatusLink = publicToken
   </button>
 </div>
           {/* Actions */}
-          <div className="flex gap-3">
+          <div className="flex gap-2 justify-center">
             <button
               onClick={() => setIsLoanModalOpen(true)}
-              className="w-1/2 rounded-xl border border-[#1E3A8A] py-3 text-[#1E3A8A] font-semibold"
+              className="w-1/3 rounded-xl border border-[#1E3A8A] py-3 text-[#1E3A8A] font-semibold"
             >
               + Add Loan
             </button>
 
             <button
               onClick={() => setIsPaymentModalOpen(true)}
-              className="w-1/2 rounded-xl bg-[#16A34A] py-3 text-white font-semibold"
+              className="w-1/3 rounded-xl bg-[#16A34A] py-3 text-white font-semibold"
             >
               + Add Payment
             </button>
+            <button
+  disabled={balance > 0 || !borrower.is_active}
+  onClick={async () => {
+    const confirmed = window.confirm(
+      "Archive this borrower?"
+    );
+
+    if (!confirmed) return;
+
+    await archiveBorrower(borrower.borrower_id);
+
+    await fetchBorrowers();
+
+    navigate("/borrowers");
+  }}
+  className="w-1/3 rounded-xl bg-gray-700 py-3 text-white font-semibold disabled:opacity-50"
+>
+  Archive Borrower
+</button>
           </div>
+
         </div>
 
         {/* Right Column */}
@@ -339,6 +380,20 @@ className="h-56 w-56 lg:h-64 lg:w-64 rounded-full border-4 border-[#1E3A8A] obje
           <p className="text-center text-sm text-gray-500">
             Age {calculateAge(borrower.dob)}
           </p>
+
+          <div className="mt-4 flex flex-wrap justify-center gap-2">
+  <span
+    className={`rounded-full px-3 py-1 text-xs font-medium ${paymentStatusColor}`}
+  >
+    {paymentStatus}
+  </span>
+
+  <span
+    className={`rounded-full px-3 py-1 text-xs font-medium ${activityStatusColor}`}
+  >
+    {activityStatus}
+  </span>
+</div>
         </div>
       </div>
 

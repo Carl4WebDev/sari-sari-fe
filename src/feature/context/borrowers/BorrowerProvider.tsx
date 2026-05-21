@@ -7,7 +7,10 @@ import {
   getBorrowerTransactionsApi,
   uploadBorrowerProfileImageApi,
   // updateBorrowerPublicAccessApi,
-  updatePublicLoanAccessApi
+  updatePublicLoanAccessApi,
+    archiveBorrowerApi,
+      getArchivedBorrowersApi,
+  reactivateBorrowerApi,
 } from "./borrowerApi";
 
 export const BorrowerProvider = ({ children }) => {
@@ -16,7 +19,65 @@ export const BorrowerProvider = ({ children }) => {
   const [uploadingProfileImage, setUploadingProfileImage] = useState(false);
   const [error, setError] = useState(null);
 
+  const [archivedBorrowers, setArchivedBorrowers] = useState([]);
+
   const [transactions, setTransactions] = useState([]);
+
+
+const fetchArchivedBorrowers = async () => {
+  setLoading(true);
+  setError(null);
+
+  const res = await getArchivedBorrowersApi();
+
+  if (!res?.ok) {
+    setError(res?.message || "Failed to fetch archived borrowers");
+    setLoading(false);
+    return res;
+  }
+
+  setArchivedBorrowers(res.data); // ✅ THIS IS THE IMPORTANT LINE
+
+  setLoading(false);
+  return res;
+};
+
+const reactivateBorrower = async (borrowerId) => {
+  setLoading(true);
+  setError(null);
+
+  const res = await reactivateBorrowerApi(borrowerId);
+
+  if (!res?.ok) {
+    setError(res?.message || "Failed to reactivate borrower");
+    setLoading(false);
+    return res;
+  }
+
+  await fetchBorrowers();
+  await fetchArchivedBorrowers();
+
+  setLoading(false);
+  return res;
+};
+
+  const archiveBorrower = async (borrowerId) => {
+  setLoading(true);
+  setError(null);
+
+  const res = await archiveBorrowerApi(borrowerId);
+
+  if (!res?.ok) {
+    setError(res?.message || "Failed to archive borrower");
+    setLoading(false);
+    return res;
+  }
+
+  await fetchBorrowers();
+
+  setLoading(false);
+  return res;
+};
 
   // -------------------------
   // FETCH BORROWERS
@@ -184,12 +245,16 @@ const updatePublicLoanAccess = async (
         loading,
         uploadingProfileImage,
         error,
+        archivedBorrowers,
 
         fetchBorrowers,
         createBorrower,
         fetchBorrowerTransactions,
         uploadBorrowerProfileImage,
-        updatePublicLoanAccess
+        updatePublicLoanAccess,
+        archiveBorrower,
+          fetchArchivedBorrowers,
+  reactivateBorrower,
       }}
     >
       {children}

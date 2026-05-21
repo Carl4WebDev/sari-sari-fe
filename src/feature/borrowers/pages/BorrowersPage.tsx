@@ -3,12 +3,23 @@ import { Link } from "react-router-dom";
 import { useBorrower } from "../../context/borrowers/useBorrower";
 import { calculateAge } from "../../components/utility/calculateAge";
 
+import ArchivedBorrowersModal from "../modals/ArchivedBorrowersModal";
+
 export default function BorrowersPage() {
   const [search, setSearch] = useState("");
 
-  const { borrowers, fetchBorrowers, loading } = useBorrower();
+const {
+  borrowers,
+  archivedBorrowers,
+  fetchBorrowers,
+  fetchArchivedBorrowers,
+  reactivateBorrower,
+  loading,
+} = useBorrower();
 
   const [currentPage, setCurrentPage] = useState(1);
+const [isArchivedOpen, setIsArchivedOpen] = useState(false);
+
   const itemsPerPage = 5;
 
   useEffect(() => {
@@ -35,7 +46,17 @@ export default function BorrowersPage() {
   };
 
   return (
+    
     <div className="min-h-screen space-y-5 pb-24">
+<ArchivedBorrowersModal
+  isOpen={isArchivedOpen}
+  isClose={() => setIsArchivedOpen(false)}
+  archivedBorrowers={archivedBorrowers}
+  loading={loading}
+  onFetchArchived={fetchArchivedBorrowers}
+  onReactivate={reactivateBorrower}
+/>
+      
       {/* Header */}
       <div className="rounded-2xl bg-gradient-to-r from-[#1E3A8A] to-[#2563EB] p-5 text-white shadow-sm">
         <h1 className="text-2xl font-bold">Borrowers</h1>
@@ -81,6 +102,13 @@ export default function BorrowersPage() {
           >
             Export
           </button>
+
+<button
+  onClick={() => setIsArchivedOpen(true)}
+  className="rounded-xl border border-[#1E3A8A] px-5 py-3 text-sm font-semibold text-[#1E3A8A] shadow-sm transition hover:bg-blue-50 sm:w-auto"
+>
+  Archived
+</button>
         </div>
       </div>
 
@@ -137,9 +165,23 @@ export default function BorrowersPage() {
                       Total Balance
                     </p>
 
-                    <p className="text-xl font-bold text-[#1E3A8A]">
-                      ₱{Number(b.total_loan || 0).toLocaleString()}
-                    </p>
+<p className="text-xl font-bold text-[#1E3A8A]">
+  ₱{Number(b.balance || 0).toLocaleString()}
+</p>
+
+<div className="mt-2 flex justify-end">
+  <span
+    className={`rounded-full px-3 py-1 text-xs font-semibold ${
+      Number(b.balance || 0) <= 0
+        ? "bg-green-100 text-green-700"
+        : "bg-red-100 text-red-700"
+    }`}
+  >
+    {Number(b.balance || 0) <= 0
+      ? "Fully Paid"
+      : "With Balance"}
+  </span>
+</div>
                   </div>
                 </div>
               </article>

@@ -37,3 +37,18 @@ export const updatePublicLoanAccessApi = (borrowerId, enabled) =>
     method: "PATCH",
     body: JSON.stringify({ enabled }),
   });
+
+export const archiveBorrowerApi = (borrowerId) =>
+  apiRequest(`/api/borrowers/${borrowerId}/archive`, {
+    method: "PATCH",
+  });
+
+export const getArchivedBorrowersApi = () =>
+  apiRequest("/api/borrowers/archived", {
+    method: "GET",
+  });
+
+export const reactivateBorrowerApi = (borrowerId) =>
+  apiRequest(`/api/borrowers/${borrowerId}/reactivate`, {
+    method: "PATCH",
+  });
