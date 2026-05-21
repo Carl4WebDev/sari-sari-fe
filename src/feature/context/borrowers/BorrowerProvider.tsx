@@ -6,7 +6,8 @@ import {
   createBorrowerApi,
   getBorrowerTransactionsApi,
   uploadBorrowerProfileImageApi,
-  updateBorrowerPublicAccessApi
+  // updateBorrowerPublicAccessApi,
+  updatePublicLoanAccessApi
 } from "./borrowerApi";
 
 export const BorrowerProvider = ({ children }) => {
@@ -126,17 +127,45 @@ const uploadBorrowerProfileImage = async (borrowerId, file) => {
 };
 
 
-const updatePublicAccess = async (borrowerId, enabled) => {
+// const updatePublicAccess = async (borrowerId, enabled) => {
+//   setLoading(true);
+//   setError(null);
+
+//   const res = await updateBorrowerPublicAccessApi(
+//     borrowerId,
+//     enabled
+//   );
+
+//   if (!res?.ok) {
+//     setError(res?.message || "Failed to update public access");
+//     setLoading(false);
+//     return res;
+//   }
+
+//   await fetchBorrowers();
+
+//   setLoading(false);
+//   return res;
+// };
+
+const updatePublicLoanAccess = async (
+  borrowerId,
+  enabled
+) => {
   setLoading(true);
   setError(null);
 
-  const res = await updateBorrowerPublicAccessApi(
+  const res = await updatePublicLoanAccessApi(
     borrowerId,
     enabled
   );
 
   if (!res?.ok) {
-    setError(res?.message || "Failed to update public access");
+    setError(
+      res?.message ||
+        "Failed to update public access"
+    );
+
     setLoading(false);
     return res;
   }
@@ -144,6 +173,7 @@ const updatePublicAccess = async (borrowerId, enabled) => {
   await fetchBorrowers();
 
   setLoading(false);
+
   return res;
 };
   return (
@@ -159,7 +189,7 @@ const updatePublicAccess = async (borrowerId, enabled) => {
         createBorrower,
         fetchBorrowerTransactions,
         uploadBorrowerProfileImage,
-        updatePublicAccess,
+        updatePublicLoanAccess
       }}
     >
       {children}

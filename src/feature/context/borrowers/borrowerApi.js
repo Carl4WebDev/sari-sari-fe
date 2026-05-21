@@ -26,7 +26,13 @@ export const uploadBorrowerProfileImageApi = (borrowerId, formData) =>
     body: formData,
   });
 
-export const updateBorrowerPublicAccessApi = (borrowerId, enabled) =>
+// export const updateBorrowerPublicAccessApi = (borrowerId, enabled) =>
+//   apiRequest(`/api/borrowers/${borrowerId}/public-access`, {
+//     method: "PATCH",
+//     body: JSON.stringify({ enabled }),
+//   });
+
+export const updatePublicLoanAccessApi = (borrowerId, enabled) =>
   apiRequest(`/api/borrowers/${borrowerId}/public-access`, {
     method: "PATCH",
     body: JSON.stringify({ enabled }),

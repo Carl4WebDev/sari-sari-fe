@@ -60,6 +60,7 @@ export default function BorrowerDetailsPage() {
     uploadBorrowerProfileImage,
     uploadingProfileImage,
     loading,
+    updatePublicLoanAccess ,
   } = useBorrower();
 
   useEffect(() => {
@@ -225,6 +226,23 @@ const publicStatusLink = publicToken
   <p className="text-sm font-semibold text-[#1E3A8A]">
     Public Loan Status Access
   </p>
+  <button
+  onClick={async () => {
+    await updatePublicLoanAccess(
+      borrower.borrower_id,
+      !borrower.token_enabled
+    );
+  }}
+  className={`w-full rounded-lg py-3 text-sm font-medium text-white ${
+    borrower.token_enabled
+      ? "bg-red-500"
+      : "bg-green-600"
+  }`}
+>
+  {borrower.token_enabled
+    ? "Disable Public Access"
+    : "Enable Public Access"}
+</button>
 
   <div className="flex justify-between items-center">
     <span className="text-sm text-gray-600">
