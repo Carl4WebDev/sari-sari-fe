@@ -5,15 +5,16 @@ import {
   getBorrowersApi,
   createBorrowerApi,
   getBorrowerTransactionsApi,
+  uploadBorrowerProfileImageApi,
 } from "./borrowerApi";
 
 export const BorrowerProvider = ({ children }) => {
   const [borrowers, setBorrowers] = useState([]);
   const [loading, setLoading] = useState(false);
+  const [uploadingProfileImage, setUploadingProfileImage] = useState(false);
   const [error, setError] = useState(null);
 
   const [transactions, setTransactions] = useState([]);
-
 
   // -------------------------
   // FETCH BORROWERS
@@ -30,7 +31,7 @@ export const BorrowerProvider = ({ children }) => {
       return res;
     }
 
-    setBorrowers(res.data);
+    setBorrowers(res.data || []);
     setLoading(false);
 
     return res;
@@ -72,7 +73,6 @@ export const BorrowerProvider = ({ children }) => {
       return res;
     }
 
-    // normalize backend response to FE structure
     const formatted = res.data.map((t) => ({
       id: t.transaction_id,
       type: t.type,
@@ -86,25 +86,56 @@ export const BorrowerProvider = ({ children }) => {
         })) || [],
     }));
 
-    console.log(formatted)
     setTransactions(formatted);
-
     setLoading(false);
 
     return formatted;
   };
 
+  // -------------------------
+  // UPLOAD BORROWER PROFILE IMAGE
+  // -------------------------
+const uploadBorrowerProfileImage = async (borrowerId, file) => {
+  setUploadingProfileImage(true);
+  setError(null);
+
+  const formData = new FormData();
+  formData.append("profile_image", file);
+
+  const res = await uploadBorrowerProfileImageApi(borrowerId, formData);
+
+  if (!res?.ok) {
+    setError(res?.message || "Failed to upload profile image");
+    setUploadingProfileImage(false);
+    return res;
+  }
+
+  const updatedBorrower = res.data.borrower || res.data;
+
+  setBorrowers((prev) =>
+    prev.map((borrower) =>
+      borrower.borrower_id === updatedBorrower.borrower_id
+        ? updatedBorrower
+        : borrower
+    )
+  );
+
+  setUploadingProfileImage(false);
+  return res;
+};
   return (
     <BorrowerContext.Provider
       value={{
         borrowers,
         transactions,
         loading,
+        uploadingProfileImage,
         error,
 
         fetchBorrowers,
         createBorrower,
         fetchBorrowerTransactions,
+        uploadBorrowerProfileImage,
       }}
     >
       {children}

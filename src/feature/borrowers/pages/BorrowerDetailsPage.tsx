@@ -1,5 +1,5 @@
 import { useParams, useNavigate, useLocation } from "react-router-dom";
-import { useMemo, useState, useEffect } from "react";
+import { useMemo, useState, useEffect, useRef } from "react";
 
 import { useBorrower } from "../../context/borrowers/useBorrower";
 import { calculateAge } from "../../components/utility/calculateAge";
@@ -34,6 +34,7 @@ export default function BorrowerDetailsPage() {
   const { id } = useParams();
   const navigate = useNavigate();
   const location = useLocation();
+  const fileInputRef = useRef<HTMLInputElement | null>(null);
 
   const [isPublicEnabled, setIsPublicEnabled] = useState(true);
 
@@ -54,14 +55,15 @@ export default function BorrowerDetailsPage() {
     items: any[];
   } | null>(null);
 
-
-const {
-  borrowers,
-  transactions,
-  fetchBorrowers,
-  fetchBorrowerTransactions,
-  loading,
-} = useBorrower();
+  const {
+    borrowers,
+    transactions,
+    fetchBorrowers,
+    fetchBorrowerTransactions,
+    uploadBorrowerProfileImage,
+    uploadingProfileImage,
+    loading,
+  } = useBorrower();
 
   useEffect(() => {
     if (location.state?.openPayment) {
@@ -75,9 +77,7 @@ const {
 
   const totalBalance = useMemo(() => {
     return transactions.reduce((acc, t) => {
-      return t.type === "LOAN"
-        ? acc + t.amount
-        : acc - t.amount;
+      return t.type === "LOAN" ? acc + t.amount : acc - t.amount;
     }, 0);
   }, [transactions]);
 
@@ -88,9 +88,7 @@ const {
       const matchProduct =
         t.type === "LOAN" && productFilter
           ? t.items?.some((i) =>
-              i.product
-                .toLowerCase()
-                .includes(productFilter.toLowerCase())
+              i.product.toLowerCase().includes(productFilter.toLowerCase())
             )
           : true;
 
@@ -98,12 +96,11 @@ const {
     });
   }, [transactions, dateFilter, productFilter]);
 
-
   useEffect(() => {
-  if (!id) return;
+    if (!id) return;
 
-  fetchBorrowerTransactions(id);
-}, []);
+    fetchBorrowerTransactions(id);
+  }, []);
 
   useEffect(() => {
     fetchBorrowers();
@@ -116,17 +113,11 @@ const {
       (a: any, b: any) => a.borrower_id - b.borrower_id
     );
 
-    return sorted.find(
-      (b: any) => String(b.borrower_id) === String(id)
-    );
+    return sorted.find((b: any) => String(b.borrower_id) === String(id));
   }, [borrowers, id]);
 
   if (loading || !borrower) {
-    return (
-      <div className="p-6 text-gray-500">
-        Loading borrower details...
-      </div>
-    );
+    return <div className="p-6 text-gray-500">Loading borrower details...</div>;
   }
 
   const borrowerAdapter = {
@@ -137,16 +128,26 @@ const {
     contact: borrower.contact_number,
   };
 
-
-
-  const totalPages = Math.ceil(
-    filteredTransactions.length / ITEMS_PER_PAGE
-  );
+  const totalPages = Math.ceil(filteredTransactions.length / ITEMS_PER_PAGE);
 
   const paginatedTransactions = filteredTransactions.slice(
     (currentPage - 1) * ITEMS_PER_PAGE,
     currentPage * ITEMS_PER_PAGE
   );
+
+  const profileImageUrl = borrower.profile_image_url || null;
+
+  const handleProfileImageChange = async (
+    e: React.ChangeEvent<HTMLInputElement>
+  ) => {
+    const file = e.target.files?.[0];
+
+    if (!file || !id) return;
+
+    await uploadBorrowerProfileImage(id, file);
+
+    e.target.value = "";
+  };
 
   const handleAddNote = () => {
     if (!noteInput.trim()) return;
@@ -167,12 +168,11 @@ const {
 
   return (
     <div className="space-y-6 pb-32">
-
-<AddLoanModalBorrowerDetails
-  isOpen={isLoanModalOpen}
-  isClose={() => setIsLoanModalOpen(false)}
-  borrowerId={borrower.borrower_id}
-/>
+      <AddLoanModalBorrowerDetails
+        isOpen={isLoanModalOpen}
+        isClose={() => setIsLoanModalOpen(false)}
+        borrowerId={borrower.borrower_id}
+      />
 
       <AddPaymentModal
         isOpen={isPaymentModalOpen}
@@ -200,75 +200,122 @@ const {
         </button>
       </div>
 
-      {/* Header */}
-      <div>
-        <h1 className="text-2xl font-semibold text-[#1E3A8A]">
-          {borrower.first_name} {borrower.middle_name ?? ""} {borrower.last_name}
-        </h1>
-        <p className="text-sm text-gray-500">
-          📞 {borrower.contact_number} • Age {calculateAge(borrower.dob)}
-        </p>
-      </div>
+      {/* Top Layout */}
+      <div className="grid grid-cols-1 gap-6 lg:grid-cols-[1.6fr_0.9fr]">
+        {/* Left Column */}
+        <div className="space-y-6">
+          {/* Balance */}
+          <div className="rounded-xl bg-[#1E3A8A] text-white p-5">
+            <p className="text-sm text-blue-100">Total Balance</p>
+            <p className="text-3xl font-bold mt-2">
+              ₱{totalBalance.toLocaleString()}
+            </p>
+          </div>
 
-      {/* Balance */}
-<div className="rounded-xl bg-[#1E3A8A] text-white p-5">
-  <p className="text-sm text-blue-100">Total Balance</p>
-  <p className="text-3xl font-bold mt-2">
-    ₱{totalBalance.toLocaleString()}
-  </p>
-</div>
+          {/* Public Link */}
+          <div className="border rounded-xl p-4 bg-gray-50 space-y-3">
+            <p className="text-sm font-semibold text-[#1E3A8A]">
+              Public Loan Status Access
+            </p>
 
+            <div className="flex justify-between items-center">
+              <span className="text-sm text-gray-600">
+                Status Page Enabled
+              </span>
 
-      {/* Public Link */}
-      <div className="border rounded-xl p-4 bg-gray-50 space-y-3">
-        <p className="text-sm font-semibold text-[#1E3A8A]">
-          Public Loan Status Access
-        </p>
+              <button
+                onClick={() => setIsPublicEnabled(!isPublicEnabled)}
+                className={`px-3 py-1 rounded-full text-xs font-medium ${
+                  isPublicEnabled
+                    ? "bg-green-100 text-green-700"
+                    : "bg-red-100 text-red-700"
+                }`}
+              >
+                {isPublicEnabled ? "ON" : "OFF"}
+              </button>
+            </div>
 
-        <div className="flex justify-between items-center">
-          <span className="text-sm text-gray-600">
-            Status Page Enabled
-          </span>
+            <button
+              onClick={() => {
+                const link = `${window.location.origin}/status/${publicToken}`;
+                navigator.clipboard.writeText(link);
+                alert("Loan status link copied");
+              }}
+              className="w-full rounded-lg bg-[#1E3A8A] py-3 text-white text-sm font-medium"
+            >
+              📩 Copy Loan Status Link
+            </button>
+          </div>
 
-          <button
-            onClick={() => setIsPublicEnabled(!isPublicEnabled)}
-            className={`px-3 py-1 rounded-full text-xs font-medium ${
-              isPublicEnabled
-                ? "bg-green-100 text-green-700"
-                : "bg-red-100 text-red-700"
-            }`}
-          >
-            {isPublicEnabled ? "ON" : "OFF"}
-          </button>
+          {/* Actions */}
+          <div className="flex gap-3">
+            <button
+              onClick={() => setIsLoanModalOpen(true)}
+              className="w-1/2 rounded-xl border border-[#1E3A8A] py-3 text-[#1E3A8A] font-semibold"
+            >
+              + Add Loan
+            </button>
+
+            <button
+              onClick={() => setIsPaymentModalOpen(true)}
+              className="w-1/2 rounded-xl bg-[#16A34A] py-3 text-white font-semibold"
+            >
+              + Add Payment
+            </button>
+          </div>
         </div>
 
-        <button
-          onClick={() => {
-            const link = `${window.location.origin}/status/${publicToken}`;
-            navigator.clipboard.writeText(link);
-            alert("Loan status link copied");
-          }}
-          className="w-full rounded-lg bg-[#1E3A8A] py-3 text-white text-sm font-medium"
-        >
-          📩 Copy Loan Status Link
-        </button>
-      </div>
+        {/* Right Column */}
+        <div className="flex flex-col items-center justify-center rounded-xl border bg-white p-6 shadow-sm">
+          <button
+            type="button"
+            onClick={() => fileInputRef.current?.click()}
+            disabled={uploadingProfileImage}
+className="relative h-56 w-56 lg:h-64 lg:w-64 rounded-full"          >
+            {profileImageUrl ? (
+              <img
+                src={profileImageUrl}
+                alt="Borrower profile"
+className="h-56 w-56 lg:h-64 lg:w-64 rounded-full border-4 border-[#1E3A8A] object-cover shadow-xl"              />
+            ) : (
+              <div className="flex h-56 w-56 lg:h-64 lg:w-64 items-center justify-center rounded-full border-4 border-red-600 bg-red-100 text-6xl font-bold text-red-700 shadow-xl">
+                {borrower.first_name?.[0]}
+                {borrower.last_name?.[0]}
+              </div>
+            )}
 
-      {/* Actions */}
-      <div className="flex gap-3">
-        <button
-          onClick={() => setIsLoanModalOpen(true)}
-          className="w-1/2 rounded-xl border border-[#1E3A8A] py-3 text-[#1E3A8A] font-semibold"
-        >
-          + Add Loan
-        </button>
+            <span className="absolute bottom-4 right-3 rounded-full bg-[#1E3A8A] px-4 py-3 text-sm font-semibold text-white shadow-lg">
+              {uploadingProfileImage ? "..." : "Edit"}
+            </span>
+          </button>
 
-        <button
-          onClick={() => setIsPaymentModalOpen(true)}
-          className="w-1/2 rounded-xl bg-[#16A34A] py-3 text-white font-semibold"
-        >
-          + Add Payment
-        </button>
+          <input
+            ref={fileInputRef}
+            type="file"
+            accept="image/png,image/jpeg,image/jpg,image/webp"
+            onChange={handleProfileImageChange}
+            className="hidden"
+          />
+
+          {!profileImageUrl && (
+            <p className="mt-2 text-xs font-medium text-red-600">
+              No profile image uploaded
+            </p>
+          )}
+
+          <h1 className="mt-4 text-center text-2xl font-semibold text-[#1E3A8A]">
+            {borrower.first_name} {borrower.middle_name ?? ""}{" "}
+            {borrower.last_name}
+          </h1>
+
+          <p className="mt-1 text-center text-sm text-gray-500">
+            📞 {borrower.contact_number}
+          </p>
+
+          <p className="text-center text-sm text-gray-500">
+            Age {calculateAge(borrower.dob)}
+          </p>
+        </div>
       </div>
 
       {/* Filters */}
@@ -305,9 +352,7 @@ const {
             <div className="flex justify-between items-center">
               <span
                 className={`text-sm font-semibold ${
-                  t.type === "LOAN"
-                    ? "text-[#1E3A8A]"
-                    : "text-[#16A34A]"
+                  t.type === "LOAN" ? "text-[#1E3A8A]" : "text-[#16A34A]"
                 }`}
               >
                 {t.type}
@@ -340,8 +385,7 @@ const {
                       {item.quantity} × {item.product}
                     </span>
                     <span>
-                      ₱
-                      {(item.quantity * item.price).toLocaleString()}
+                      ₱{(item.quantity * item.price).toLocaleString()}
                     </span>
                   </div>
                 ))}
@@ -351,13 +395,10 @@ const {
             <div className="flex justify-end">
               <span
                 className={`text-base font-bold ${
-                  t.type === "LOAN"
-                    ? "text-[#1E3A8A]"
-                    : "text-[#16A34A]"
+                  t.type === "LOAN" ? "text-[#1E3A8A]" : "text-[#16A34A]"
                 }`}
               >
-                {t.type === "LOAN" ? "+" : "-"}₱
-                {t.amount.toLocaleString()}
+                {t.type === "LOAN" ? "+" : "-"}₱{t.amount.toLocaleString()}
               </span>
             </div>
           </div>
@@ -385,19 +426,12 @@ const {
 
       {/* Notes */}
       <div className="border-t pt-6 space-y-4">
-        <h2 className="text-lg font-semibold text-[#1E3A8A]">
-          Notes
-        </h2>
+        <h2 className="text-lg font-semibold text-[#1E3A8A]">Notes</h2>
 
         <div className="space-y-2 max-h-40 overflow-y-auto">
           {notes.map((note) => (
-            <div
-              key={note.id}
-              className="bg-gray-100 rounded-lg p-3 text-sm"
-            >
-              <div className="text-xs text-gray-500 mb-1">
-                {note.date}
-              </div>
+            <div key={note.id} className="bg-gray-100 rounded-lg p-3 text-sm">
+              <div className="text-xs text-gray-500 mb-1">{note.date}</div>
               {note.message}
             </div>
           ))}
@@ -419,7 +453,6 @@ const {
           </button>
         </div>
       </div>
-
     </div>
   );
 }

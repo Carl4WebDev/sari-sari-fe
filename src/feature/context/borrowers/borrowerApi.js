@@ -18,3 +18,10 @@ export const getBorrowerTransactionsApi = (borrowerId) =>
   apiRequest(`/api/borrowers/${borrowerId}/transactions`, {
     method: "GET",
   });
+
+// UPLOAD borrower profile image
+export const uploadBorrowerProfileImageApi = (borrowerId, formData) =>
+  apiRequest(`/api/borrowers/${borrowerId}/profile-image`, {
+    method: "PATCH",
+    body: formData,
+  });
