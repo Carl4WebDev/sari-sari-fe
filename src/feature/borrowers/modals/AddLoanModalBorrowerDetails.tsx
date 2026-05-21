@@ -5,12 +5,13 @@ interface Props {
   isOpen: boolean;
   isClose: () => void;
   borrowerId: number;
+  onLoanCreated?: () => void;
 }
-
 export default function AddLoanModalBorrowerDetails({
   isOpen,
   isClose,
   borrowerId,
+  onLoanCreated,
 }: Props) {
   const { createLoan } = useLoan();
 
@@ -69,10 +70,11 @@ export default function AddLoanModalBorrowerDetails({
 
     const res = await createLoan(payload);
 
-    if (res?.ok) {
-      setItems([{ product: "", quantity: "", price: "" }]);
-      isClose();
-    }
+if (res?.ok) {
+  setItems([{ product: "", quantity: "", price: "" }]);
+  onLoanCreated?.();
+  isClose();
+}
   };
 
   return (

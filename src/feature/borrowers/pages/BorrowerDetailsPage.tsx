@@ -168,11 +168,15 @@ export default function BorrowerDetailsPage() {
 
   return (
     <div className="space-y-6 pb-32">
-      <AddLoanModalBorrowerDetails
-        isOpen={isLoanModalOpen}
-        isClose={() => setIsLoanModalOpen(false)}
-        borrowerId={borrower.borrower_id}
-      />
+<AddLoanModalBorrowerDetails
+  isOpen={isLoanModalOpen}
+  isClose={() => setIsLoanModalOpen(false)}
+  borrowerId={borrower.borrower_id}
+  onLoanCreated={() => {
+    fetchBorrowerTransactions(borrower.borrower_id);
+    fetchBorrowers();
+  }}
+/>
 
       <AddPaymentModal
         isOpen={isPaymentModalOpen}
@@ -381,10 +385,10 @@ className="h-56 w-56 lg:h-64 lg:w-64 rounded-full border-4 border-[#1E3A8A] obje
               <div className="text-sm text-gray-600 space-y-1">
                 {t.items.map((item, idx) => (
                   <div key={idx} className="flex justify-between">
-                    <span>
+                    <span className="text-blue-700 text-[20px]">
                       {item.quantity} × {item.product}
                     </span>
-                    <span>
+                    <span className="text-blue-500 text-[20px]">
                       ₱{(item.quantity * item.price).toLocaleString()}
                     </span>
                   </div>

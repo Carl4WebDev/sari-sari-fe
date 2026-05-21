@@ -6,9 +6,12 @@ import { UserProvider } from "../feature/context/users/UserProvider";
 import { BorrowerProvider } from "../feature/context/borrowers/BorrowerProvider";
 import { LoanProvider } from "../feature/context/loans/LoanProvider";
 import { PaymentProvider } from "../feature/context/payments/PaymentProvider";
+import { ProductProvider } from "../feature/context/products/ProductProvider";
 
 export default function AppRoutes() {
   return (
+    <ProductProvider>
+
     <PaymentProvider>
       <UserProvider>
         <BorrowerProvider>
@@ -21,5 +24,6 @@ export default function AppRoutes() {
         </BorrowerProvider>
       </UserProvider>
     </PaymentProvider>
+    </ProductProvider>
   );
 }

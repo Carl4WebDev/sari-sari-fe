@@ -102,11 +102,19 @@ export default function BorrowersPage() {
               <article className="rounded-2xl border bg-white p-4 shadow-sm transition hover:-translate-y-0.5 hover:border-[#1E3A8A] hover:shadow-md">
                 <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
                   <div className="min-w-0">
-                    <div className="flex items-start gap-3">
-                      <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-full bg-blue-100 text-sm font-bold text-[#1E3A8A]">
-                        {b.first_name?.[0]}
-                        {b.last_name?.[0]}
-                      </div>
+                    <div className="flex items-center gap-4">
+                      {b.profile_image_url ? (
+                        <img
+                          src={b.profile_image_url}
+                          alt={`${b.first_name} ${b.last_name}`}
+                          className="h-20 w-20 shrink-0 rounded-full border-4 border-[#1E3A8A] object-cover shadow-sm"
+                        />
+                      ) : (
+                        <div className="flex h-20 w-20 shrink-0 items-center justify-center rounded-full border-4 border-red-600 bg-red-100 text-xl font-bold text-red-700 shadow-sm">
+                          {b.first_name?.[0]}
+                          {b.last_name?.[0]}
+                        </div>
+                      )}
 
                       <div className="min-w-0">
                         <h2 className="truncate text-base font-semibold text-gray-900">
@@ -126,7 +134,7 @@ export default function BorrowersPage() {
 
                   <div className="rounded-xl bg-gray-50 p-3 text-left sm:min-w-[150px] sm:text-right">
                     <p className="text-xs font-medium text-gray-500">
-                      Total Loan
+                      Total Balance
                     </p>
 
                     <p className="text-xl font-bold text-[#1E3A8A]">

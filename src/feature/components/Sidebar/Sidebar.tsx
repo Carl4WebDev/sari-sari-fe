@@ -65,6 +65,9 @@ export default function Sidebar() {
           <Link to={"/borrowers"} onClick={handleClose}>
             <SidebarItem label="Borrowers" />
           </Link>
+          <Link to={"/products"} onClick={handleClose}>
+            <SidebarItem label="Manage Products" />
+          </Link>
         </nav>
 
         {/* Logout (bottom) */}
