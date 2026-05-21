@@ -7,23 +7,27 @@ import { BorrowerProvider } from "../feature/context/borrowers/BorrowerProvider"
 import { LoanProvider } from "../feature/context/loans/LoanProvider";
 import { PaymentProvider } from "../feature/context/payments/PaymentProvider";
 import { ProductProvider } from "../feature/context/products/ProductProvider";
+import { PublicStatusProvider } from "../feature/public/context/PublicStatusProvider";
 
 export default function AppRoutes() {
   return (
-    <ProductProvider>
+    <PublicStatusProvider>
 
-    <PaymentProvider>
-      <UserProvider>
-        <BorrowerProvider>
-          <LoanProvider>
-            <Routes>
-              {publicRoutes}
-              {featureRoutes}
-            </Routes>
-          </LoanProvider>
-        </BorrowerProvider>
-      </UserProvider>
-    </PaymentProvider>
-    </ProductProvider>
+      <ProductProvider>
+
+      <PaymentProvider>
+        <UserProvider>
+          <BorrowerProvider>
+            <LoanProvider>
+              <Routes>
+                {publicRoutes}
+                {featureRoutes}
+              </Routes>
+            </LoanProvider>
+          </BorrowerProvider>
+        </UserProvider>
+      </PaymentProvider>
+      </ProductProvider>
+    </PublicStatusProvider>
   );
 }

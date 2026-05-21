@@ -6,6 +6,7 @@ import {
   createBorrowerApi,
   getBorrowerTransactionsApi,
   uploadBorrowerProfileImageApi,
+  updateBorrowerPublicAccessApi
 } from "./borrowerApi";
 
 export const BorrowerProvider = ({ children }) => {
@@ -123,6 +124,28 @@ const uploadBorrowerProfileImage = async (borrowerId, file) => {
   setUploadingProfileImage(false);
   return res;
 };
+
+
+const updatePublicAccess = async (borrowerId, enabled) => {
+  setLoading(true);
+  setError(null);
+
+  const res = await updateBorrowerPublicAccessApi(
+    borrowerId,
+    enabled
+  );
+
+  if (!res?.ok) {
+    setError(res?.message || "Failed to update public access");
+    setLoading(false);
+    return res;
+  }
+
+  await fetchBorrowers();
+
+  setLoading(false);
+  return res;
+};
   return (
     <BorrowerContext.Provider
       value={{
@@ -136,6 +159,7 @@ const uploadBorrowerProfileImage = async (borrowerId, file) => {
         createBorrower,
         fetchBorrowerTransactions,
         uploadBorrowerProfileImage,
+        updatePublicAccess,
       }}
     >
       {children}

@@ -36,9 +36,6 @@ export default function BorrowerDetailsPage() {
   const location = useLocation();
   const fileInputRef = useRef<HTMLInputElement | null>(null);
 
-  const [isPublicEnabled, setIsPublicEnabled] = useState(true);
-
-  const publicToken = "aj29fj39fj2k39fEXAMPLE123456";
 
   const [dateFilter, setDateFilter] = useState("");
   const [productFilter, setProductFilter] = useState("");
@@ -137,6 +134,13 @@ export default function BorrowerDetailsPage() {
 
   const profileImageUrl = borrower.profile_image_url || null;
 
+  const isPublicEnabled = borrower.token_enabled;
+const publicToken = borrower.public_token;
+
+const publicStatusLink = publicToken
+  ? `${window.location.origin}/status/${publicToken}`
+  : "";
+
   const handleProfileImageChange = async (
     e: React.ChangeEvent<HTMLInputElement>
   ) => {
@@ -216,41 +220,39 @@ export default function BorrowerDetailsPage() {
             </p>
           </div>
 
-          {/* Public Link */}
-          <div className="border rounded-xl p-4 bg-gray-50 space-y-3">
-            <p className="text-sm font-semibold text-[#1E3A8A]">
-              Public Loan Status Access
-            </p>
+{/* Public Link */}
+<div className="border rounded-xl p-4 bg-gray-50 space-y-3">
+  <p className="text-sm font-semibold text-[#1E3A8A]">
+    Public Loan Status Access
+  </p>
 
-            <div className="flex justify-between items-center">
-              <span className="text-sm text-gray-600">
-                Status Page Enabled
-              </span>
+  <div className="flex justify-between items-center">
+    <span className="text-sm text-gray-600">
+      Status Page Enabled
+    </span>
 
-              <button
-                onClick={() => setIsPublicEnabled(!isPublicEnabled)}
-                className={`px-3 py-1 rounded-full text-xs font-medium ${
-                  isPublicEnabled
-                    ? "bg-green-100 text-green-700"
-                    : "bg-red-100 text-red-700"
-                }`}
-              >
-                {isPublicEnabled ? "ON" : "OFF"}
-              </button>
-            </div>
+    <span
+      className={`px-3 py-1 rounded-full text-xs font-medium ${
+        isPublicEnabled
+          ? "bg-green-100 text-green-700"
+          : "bg-red-100 text-red-700"
+      }`}
+    >
+      {isPublicEnabled ? "ON" : "OFF"}
+    </span>
+  </div>
 
-            <button
-              onClick={() => {
-                const link = `${window.location.origin}/status/${publicToken}`;
-                navigator.clipboard.writeText(link);
-                alert("Loan status link copied");
-              }}
-              className="w-full rounded-lg bg-[#1E3A8A] py-3 text-white text-sm font-medium"
-            >
-              📩 Copy Loan Status Link
-            </button>
-          </div>
-
+  <button
+    disabled={!publicToken || !isPublicEnabled}
+    onClick={() => {
+      navigator.clipboard.writeText(publicStatusLink);
+      alert("Loan status link copied");
+    }}
+    className="w-full rounded-lg bg-[#1E3A8A] py-3 text-white text-sm font-medium disabled:opacity-50 disabled:cursor-not-allowed"
+  >
+    📩 Copy Loan Status Link
+  </button>
+</div>
           {/* Actions */}
           <div className="flex gap-3">
             <button

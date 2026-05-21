@@ -1,5 +1,6 @@
 import { useParams } from "react-router-dom";
-import { useMemo } from "react";
+import { useEffect, useMemo } from "react";
+import { usePublicStatus } from "../../public/context/usePublicStatus";
 
 interface LoanItem {
   product: string;
@@ -18,43 +19,41 @@ interface Transaction {
 export default function PublicStatusPage() {
   const { token } = useParams();
 
-  // 🔥 HARDCODED FOR NOW
-  const storeName = "ABC Sari-Sari Store";
+  const {
+    statusData,
+    loading,
+    error,
+    getPublicStatus,
+    clearStatusData,
+  } = usePublicStatus();
 
-  const borrower = {
-    name: "Juan Dela Cruz",
+  useEffect(() => {
+    if (token) getPublicStatus(token);
+
+    return () => {
+      clearStatusData();
+    };
+  }, [token]);
+
+  const storeName = statusData?.store?.name || "";
+  const borrower = statusData?.borrower || null;
+  const transactions: Transaction[] = statusData?.transactions || [];
+
+  const normalizeDate = (date: string) => {
+    if (!date) return "N/A";
+
+    return new Date(date).toLocaleDateString("en-PH", {
+      year: "numeric",
+      month: "short",
+      day: "2-digit",
+    });
   };
 
-    const transactions: Transaction[] = [
-    {
-      id: 1,
-      type: "LOAN",
-      date: "2025-01-01",
-      items: [
-        { product: "Sardines", quantity: 3, price: 20 },
-        { product: "Rice", quantity: 1, price: 50 },
-      ],
-      amount: 110,
-    },
-    {
-      id: 2,
-      type: "PAYMENT",
-      date: "2025-01-02",
-      amount: 50,
-    },
-    {
-      id: 3,
-      type: "LOAN",
-      date: "2025-01-03",
-      items: [{ product: "Coffee", quantity: 2, price: 15 }],
-      amount: 30,
-    },
-  ];
   const totalBalance = useMemo(() => {
     return transactions.reduce((acc, t) => {
       return t.type === "LOAN"
-        ? acc + t.amount
-        : acc - t.amount;
+        ? acc + Number(t.amount)
+        : acc - Number(t.amount);
     }, 0);
   }, [transactions]);
 
@@ -62,56 +61,146 @@ export default function PublicStatusPage() {
     .filter((t) => t.type === "PAYMENT")
     .slice(-1)[0];
 
+  const exportToExcel = () => {
+    const rows = [
+      ["Store", storeName],
+      ["Borrower", borrower?.name || ""],
+      ["Current Balance", totalBalance],
+      [],
+      ["Type", "Date", "Product", "Quantity", "Price", "Amount"],
+    ];
+
+    transactions.forEach((t) => {
+      if (t.type === "LOAN" && t.items?.length) {
+        t.items.forEach((item) => {
+          rows.push([
+            t.type,
+            normalizeDate(t.date),
+            item.product,
+            item.quantity,
+            item.price,
+            Number(item.quantity) * Number(item.price),
+          ]);
+        });
+      } else {
+        rows.push([
+          t.type,
+          normalizeDate(t.date),
+          "",
+          "",
+          "",
+          t.amount,
+        ]);
+      }
+    });
+
+    const csvContent = rows
+      .map((row) =>
+        row
+          .map((cell) => `"${String(cell ?? "").replace(/"/g, '""')}"`)
+          .join(",")
+      )
+      .join("\n");
+
+    const blob = new Blob([csvContent], {
+      type: "text/csv;charset=utf-8;",
+    });
+
+    const url = URL.createObjectURL(blob);
+    const link = document.createElement("a");
+
+    link.href = url;
+    link.download = `${borrower?.name || "loan-status"}-transactions.csv`;
+    link.click();
+
+    URL.revokeObjectURL(url);
+  };
+
+  if (loading) {
+    return (
+      <div className="min-h-screen bg-gray-50 px-4 py-6">
+        Loading...
+      </div>
+    );
+  }
+
+  if (error || !borrower) {
+    return (
+      <div className="min-h-screen flex items-center justify-center bg-gray-50 px-4">
+        <div className="bg-white rounded-xl shadow-sm p-6 text-center">
+          <h1 className="font-semibold text-gray-800">Status not found</h1>
+          <p className="text-sm text-gray-500 mt-2">
+            This link may be invalid or disabled.
+          </p>
+        </div>
+      </div>
+    );
+  }
+
   return (
     <div className="min-h-screen bg-gray-50 px-4 py-6 space-y-6">
-
-      {/* Store Header */}
       <div className="text-center space-y-1">
         <h1 className="text-lg font-semibold text-[#1E3A8A]">
           {storeName}
         </h1>
-        <p className="text-xs text-gray-500">
-          Loan Status Page
-        </p>
+        <p className="text-xs text-gray-500">Loan Status Page</p>
       </div>
 
-      {/* Borrower Info */}
-      <div className="bg-white rounded-xl shadow-sm p-5 space-y-2">
-        <p className="text-sm text-gray-500">
-          Borrower
-        </p>
-        <p className="text-lg font-semibold text-gray-800">
-          {borrower.name}
-        </p>
+      <div className="bg-white rounded-xl shadow-sm p-5 space-y-3 text-center">
+        {borrower.profile_image_url ? (
+          <img
+            src={borrower.profile_image_url}
+            alt={borrower.name}
+            className="mx-auto h-20 w-20 rounded-full object-cover border"
+          />
+        ) : (
+          <div className="mx-auto h-20 w-20 rounded-full bg-[#1E3A8A] text-white flex items-center justify-center text-2xl font-bold">
+            {borrower.name?.charAt(0)}
+          </div>
+        )}
+
+        <div>
+          <p className="text-sm text-gray-500">Borrower</p>
+          <p className="text-lg font-semibold text-gray-800">
+            {borrower.name}
+          </p>
+        </div>
       </div>
 
-      {/* Total Balance */}
       <div className="bg-[#1E3A8A] text-white rounded-xl p-6 text-center">
-        <p className="text-sm text-blue-100">
-          Current Total Balance
-        </p>
+        <p className="text-sm text-blue-100">Current Total Balance</p>
         <p className="text-3xl font-bold mt-2">
           ₱{totalBalance.toLocaleString()}
         </p>
       </div>
 
-      {/* Last Payment */}
+      <button
+        onClick={exportToExcel}
+        className="w-full rounded-xl bg-[#16A34A] py-3 text-sm font-semibold text-white"
+      >
+        Export Transactions to Excel
+      </button>
+
       {lastPayment && (
         <div className="bg-white rounded-xl shadow-sm p-4">
-          <p className="text-xs text-gray-500">
-            Last Payment
-          </p>
+          <p className="text-xs text-gray-500">Last Payment</p>
           <p className="text-sm font-medium text-[#16A34A]">
-            ₱{lastPayment.amount.toLocaleString()} on {lastPayment.date}
+            ₱{Number(lastPayment.amount).toLocaleString()} on{" "}
+            {normalizeDate(lastPayment.date)}
           </p>
         </div>
       )}
 
-      {/* Transaction History */}
       <div className="space-y-3">
         <h2 className="text-sm font-semibold text-gray-700">
           Transaction History
         </h2>
+
+        {transactions.length === 0 && (
+          <div className="bg-white rounded-xl p-4 shadow-sm text-sm text-gray-500">
+            No transactions yet.
+          </div>
+        )}
 
         {transactions.map((t) => (
           <div
@@ -128,24 +217,24 @@ export default function PublicStatusPage() {
               >
                 {t.type}
               </span>
+
               <span className="text-xs text-gray-400">
-                {t.date}
+                {normalizeDate(t.date)}
               </span>
             </div>
 
             {t.type === "LOAN" && t.items && (
               <div className="text-sm text-gray-600 space-y-1">
                 {t.items.map((item, idx) => (
-                  <div
-                    key={idx}
-                    className="flex justify-between"
-                  >
+                  <div key={idx} className="flex justify-between">
                     <span>
                       {item.quantity} × {item.product}
                     </span>
                     <span>
                       ₱
-                      {(item.quantity * item.price).toLocaleString()}
+                      {(
+                        Number(item.quantity) * Number(item.price)
+                      ).toLocaleString()}
                     </span>
                   </div>
                 ))}
@@ -161,19 +250,17 @@ export default function PublicStatusPage() {
                 }`}
               >
                 {t.type === "LOAN" ? "+" : "-"}₱
-                {t.amount.toLocaleString()}
+                {Number(t.amount).toLocaleString()}
               </span>
             </div>
           </div>
         ))}
       </div>
 
-      {/* Footer Notice */}
       <div className="text-center text-xs text-gray-500 pt-6">
-        This page is read-only.  
-        For corrections or concerns, please contact the store directly.
+        This page is read-only. For corrections or concerns, please contact
+        the store directly.
       </div>
-
     </div>
   );
 }
