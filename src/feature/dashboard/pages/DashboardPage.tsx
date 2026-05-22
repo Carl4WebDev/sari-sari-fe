@@ -13,8 +13,11 @@ import {
 import AddBorrowerModal from "../modals/AddBorrowerModal";
 import AddLoanModal from "../modals/AddLoanModal";
 import QuickAddPaymentModal from "../modals/QuickAddPaymentModal";
+import ReminderNotificationModal from "../modals/ReminderNotificationModal";
 
 import { useDashboard } from "../../context/dashboard/useDashboard";
+import { useCollectionReminder } from "../../context/collection-reminders/useCollectionReminder";
+
 
 export default function DashboardPage() {
   const {
@@ -23,15 +26,24 @@ export default function DashboardPage() {
     fetchDashboard,
   } = useDashboard();
 
+const {
+  dashboardReminders,
+  fetchDashboardReminders,
+  updateReminderStatus,
+} = useCollectionReminder();
+
   const [isBorrowerOpen, setIsBorrowerOpen] = useState(false);
   const [isLoanOpen, setIsLoanOpen] = useState(false);
   const [recentBorrower, setRecentBorrower] = useState<any>(null);
   const [isQuickPaymentOpen, setIsQuickPaymentOpen] =
     useState(false);
 
-  useEffect(() => {
-    fetchDashboard();
-  }, []);
+    const [isReminderModalOpen, setIsReminderModalOpen] = useState(false);
+
+useEffect(() => {
+  fetchDashboard();
+  fetchDashboardReminders();
+}, []);
 
   const chartData = [
     {
@@ -71,16 +83,39 @@ export default function DashboardPage() {
         isClose={() => setIsQuickPaymentOpen(false)}
       />
 
-      {/* Header */}
-      <div>
-        <h1 className="text-2xl font-semibold text-[#1E3A8A]">
-          Dashboard
-        </h1>
+<ReminderNotificationModal
+  isOpen={isReminderModalOpen}
+  isClose={() => setIsReminderModalOpen(false)}
+  reminders={dashboardReminders}
+  onMarkDone={async (reminderId) => {
+    await updateReminderStatus(reminderId, "DONE");
+    await fetchDashboardReminders();
+  }}
+/>
 
-        <p className="text-sm text-gray-500">
-          Utang overview
-        </p>
-      </div>
+      {/* Header */}
+<div className="flex items-start justify-between gap-4">
+  <div>
+    <h1 className="text-2xl font-semibold text-[#1E3A8A]">
+      Dashboard
+    </h1>
+    <p className="text-sm text-gray-500">Utang overview</p>
+  </div>
+
+  <button
+    onClick={() => setIsReminderModalOpen(true)}
+    className="relative rounded-xl border border-[#1E3A8A] bg-white px-4 py-3 text-sm font-semibold text-[#1E3A8A] shadow-sm"
+  >
+    🔔
+    {((dashboardReminders?.todays_collections?.length || 0) +
+      (dashboardReminders?.overdue?.length || 0)) > 0 && (
+      <span className="absolute -right-2 -top-2 flex h-6 w-6 items-center justify-center rounded-full bg-red-500 text-xs text-white">
+        {(dashboardReminders?.todays_collections?.length || 0) +
+          (dashboardReminders?.overdue?.length || 0)}
+      </span>
+    )}
+  </button>
+</div>
 
       {/* Actions */}
       <div className="space-y-4">
@@ -105,6 +140,7 @@ export default function DashboardPage() {
           + Add Payment
         </button>
       </div>
+
 
       {/* Summary */}
       <div className="grid grid-cols-1 gap-4">
@@ -259,7 +295,7 @@ export default function DashboardPage() {
           </p>
         </div>
       ))
-    ) : (
+    ) : ( 
       <div className="rounded-xl bg-gray-50 p-4 text-center text-sm text-gray-500">
         No unpaid borrowers
       </div>
@@ -417,3 +453,4 @@ function SummaryCard({
     </div>
   );
 }
+

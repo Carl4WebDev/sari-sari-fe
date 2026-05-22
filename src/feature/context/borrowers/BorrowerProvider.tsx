@@ -11,6 +11,10 @@ import {
     archiveBorrowerApi,
       getArchivedBorrowersApi,
   reactivateBorrowerApi,
+    getBorrowerNotesApi,
+  createBorrowerNoteApi,
+  updateBorrowerNoteApi,
+deleteBorrowerNoteApi,
 } from "./borrowerApi";
 
 export const BorrowerProvider = ({ children }) => {
@@ -18,11 +22,99 @@ export const BorrowerProvider = ({ children }) => {
   const [loading, setLoading] = useState(false);
   const [uploadingProfileImage, setUploadingProfileImage] = useState(false);
   const [error, setError] = useState(null);
+  const [borrowerNotes, setBorrowerNotes] = useState([]);
 
   const [archivedBorrowers, setArchivedBorrowers] = useState([]);
 
   const [transactions, setTransactions] = useState([]);
 
+
+  const updateBorrowerNote = async (
+  borrowerId,
+  noteId,
+  noteText
+) => {
+  setLoading(true);
+  setError(null);
+
+  const res = await updateBorrowerNoteApi(
+    borrowerId,
+    noteId,
+    { note_text: noteText }
+  );
+
+  if (!res?.ok) {
+    setError(res?.message || "Failed to update note");
+    setLoading(false);
+    return res;
+  }
+
+  await fetchBorrowerNotes(borrowerId);
+
+  setLoading(false);
+  return res;
+};
+
+const deleteBorrowerNote = async (
+  borrowerId,
+  noteId
+) => {
+  setLoading(true);
+  setError(null);
+
+  const res = await deleteBorrowerNoteApi(
+    borrowerId,
+    noteId
+  );
+
+  if (!res?.ok) {
+    setError(res?.message || "Failed to delete note");
+    setLoading(false);
+    return res;
+  }
+
+  await fetchBorrowerNotes(borrowerId);
+
+  setLoading(false);
+  return res;
+};
+
+  const fetchBorrowerNotes = async (borrowerId) => {
+  setLoading(true);
+  setError(null);
+
+  const res = await getBorrowerNotesApi(borrowerId);
+
+  if (!res?.ok) {
+    setError(res?.message || "Failed to fetch notes");
+    setLoading(false);
+    return res;
+  }
+
+  setBorrowerNotes(res.data);
+  setLoading(false);
+  return res;
+};
+
+const createBorrowerNote = async (borrowerId, noteText) => {
+  setLoading(true);
+  setError(null);
+
+  const res = await createBorrowerNoteApi(borrowerId, {
+    note_text: noteText,
+  });
+
+  if (!res?.ok) {
+    setError(res?.message || "Failed to create note");
+    setLoading(false);
+    return res;
+  }
+
+  await fetchBorrowerNotes(borrowerId);
+
+  setLoading(false);
+  return res;
+};
 
 const fetchArchivedBorrowers = async () => {
   setLoading(true);
@@ -246,6 +338,7 @@ const updatePublicLoanAccess = async (
         uploadingProfileImage,
         error,
         archivedBorrowers,
+          borrowerNotes,
 
         fetchBorrowers,
         createBorrower,
@@ -255,6 +348,10 @@ const updatePublicLoanAccess = async (
         archiveBorrower,
           fetchArchivedBorrowers,
   reactivateBorrower,
+    fetchBorrowerNotes,
+  createBorrowerNote,
+  updateBorrowerNote,
+deleteBorrowerNote,
       }}
     >
       {children}

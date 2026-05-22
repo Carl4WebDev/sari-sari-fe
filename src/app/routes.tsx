@@ -10,10 +10,12 @@ import { ProductProvider } from "../feature/context/products/ProductProvider";
 import { PublicStatusProvider } from "../feature/public/context/PublicStatusProvider";
 
 import { DashboardProvider } from "../feature/context/dashboard/DashboardProvider";
+import { CollectionReminderProvider } from "../feature/context/collection-reminders/CollectionReminderProvider";
 
 export default function AppRoutes() {
   return (
-    <DashboardProvider>
+    <CollectionReminderProvider>
+          <DashboardProvider>
       <PublicStatusProvider>
 
         <ProductProvider>
@@ -33,5 +35,6 @@ export default function AppRoutes() {
         </ProductProvider>
       </PublicStatusProvider>
     </DashboardProvider>
+    </CollectionReminderProvider>
   );
 }

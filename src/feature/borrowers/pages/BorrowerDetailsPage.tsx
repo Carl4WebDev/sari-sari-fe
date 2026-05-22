@@ -7,6 +7,9 @@ import { calculateAge } from "../../components/utility/calculateAge";
 import AddPaymentModal from "../modals/AddPaymentModal";
 import AddLoanModalBorrowerDetails from "../modals/AddLoanModalBorrowerDetails";
 import EditLoanModal from "../modals/EditLoanModal";
+import AddReminderModal from "../modals/AddReminderModal";
+
+import { useCollectionReminder } from "../../context/collection-reminders/useCollectionReminder";
 
 interface LoanItem {
   product: string;
@@ -41,11 +44,14 @@ export default function BorrowerDetailsPage() {
   const [productFilter, setProductFilter] = useState("");
   const [currentPage, setCurrentPage] = useState(1);
   const [noteInput, setNoteInput] = useState("");
+  const [editingNoteId, setEditingNoteId] = useState<number | null>(null);
+const [editingNoteText, setEditingNoteText] = useState("");
 
   const [isLoanModalOpen, setIsLoanModalOpen] = useState(false);
   const [isPaymentModalOpen, setIsPaymentModalOpen] = useState(false);
 
   const [isEditLoanOpen, setIsEditLoanOpen] = useState(false);
+  const [isReminderModalOpen, setIsReminderModalOpen] = useState(false);
   const [selectedLoan, setSelectedLoan] = useState<{
     id: number;
     borrowerId: number;
@@ -62,18 +68,25 @@ export default function BorrowerDetailsPage() {
     loading,
     updatePublicLoanAccess ,
     archiveBorrower,
+borrowerNotes,
+fetchBorrowerNotes,
+createBorrowerNote,
+updateBorrowerNote,
+deleteBorrowerNote,
   } = useBorrower();
+
+  const {
+  borrowerReminders,
+  createReminder,
+  fetchBorrowerReminders,
+} = useCollectionReminder();
 
   useEffect(() => {
     if (location.state?.openPayment) {
       setIsPaymentModalOpen(true);
     }
   }, [location.state]);
-
-  const [notes, setNotes] = useState<Note[]>([
-    { id: 1, message: "Customer promised to pay Friday.", date: "2025-01-03" },
-  ]);
-
+  
   const totalBalance = useMemo(() => {
     return transactions.reduce((acc, t) => {
       return t.type === "LOAN" ? acc + t.amount : acc - t.amount;
@@ -115,11 +128,13 @@ export default function BorrowerDetailsPage() {
     .reverse();
 }, [filteredTransactions]);
 
-  useEffect(() => {
-    if (!id) return;
+useEffect(() => {
+  if (!id) return;
 
-    fetchBorrowerTransactions(id);
-  }, []);
+  fetchBorrowerTransactions(id);
+  fetchBorrowerNotes(id);
+  fetchBorrowerReminders(id);
+}, [id]);
 
   useEffect(() => {
     fetchBorrowers();
@@ -135,9 +150,9 @@ export default function BorrowerDetailsPage() {
     return sorted.find((b: any) => String(b.borrower_id) === String(id));
   }, [borrowers, id]);
 
-  if (loading || !borrower) {
-    return <div className="p-6 text-gray-500">Loading borrower details...</div>;
-  }
+if (!borrower) {
+  return <div className="p-6 text-gray-500">Loading borrower details...</div>;
+}
 
   const borrowerAdapter = {
     id: borrower.borrower_id,
@@ -194,18 +209,41 @@ const publicStatusLink = publicToken
     e.target.value = "";
   };
 
-  const handleAddNote = () => {
-    if (!noteInput.trim()) return;
+const handleAddNote = async () => {
+  if (!noteInput.trim() || !id) return;
 
-    const newNote: Note = {
-      id: Date.now(),
-      message: noteInput,
-      date: new Date().toISOString().split("T")[0],
-    };
+  const res = await createBorrowerNote(
+    id,
+    noteInput
+  );
 
-    setNotes([...notes, newNote]);
+  if (res?.ok) {
     setNoteInput("");
-  };
+  }
+};
+const handleUpdateNote = async () => {
+  if (!id || !editingNoteId || !editingNoteText.trim()) return;
+
+  const res = await updateBorrowerNote(
+    id,
+    editingNoteId,
+    editingNoteText
+  );
+
+  if (res?.ok) {
+    setEditingNoteId(null);
+    setEditingNoteText("");
+  }
+};
+
+const handleDeleteNote = async (noteId: number) => {
+  if (!id) return;
+
+  const confirmed = window.confirm("Delete this note?");
+  if (!confirmed) return;
+
+  await deleteBorrowerNote(id, noteId);
+};
 
   const handleExport = () => {
     console.log("Export to Excel");
@@ -238,6 +276,22 @@ const publicStatusLink = publicToken
         isClose={() => setIsEditLoanOpen(false)}
         loan={selectedLoan}
       />
+
+<AddReminderModal
+  isOpen={isReminderModalOpen}
+  isClose={() => setIsReminderModalOpen(false)}
+  borrowerId={borrower.borrower_id}
+  currentBalance={totalBalance}
+  onCreateReminder={async (payload) => {
+    const res = await createReminder(payload);
+
+    if (res?.ok) {
+      await fetchBorrowerReminders(borrower.borrower_id);
+    }
+
+    return res;
+  }}
+/>
 
       {/* Back Button */}
       <div>
@@ -326,6 +380,8 @@ const publicStatusLink = publicToken
             >
               + Add Payment
             </button>
+
+            
             <button
   disabled={balance > 0 || !borrower.is_active}
   onClick={async () => {
@@ -345,7 +401,16 @@ const publicStatusLink = publicToken
 >
   Archive Borrower
 </button>
+
+
           </div>
+
+          <button
+  onClick={() => setIsReminderModalOpen(true)}
+  className="w-full rounded-xl bg-orange-500 py-3 text-white font-semibold"
+>
+  + Add Reminder
+</button>
 
         </div>
 
@@ -529,35 +594,139 @@ className="h-56 w-56 lg:h-64 lg:w-64 rounded-full border-4 border-[#1E3A8A] obje
         </div>
       )}
 
-      {/* Notes */}
-      <div className="border-t pt-6 space-y-4">
-        <h2 className="text-lg font-semibold text-[#1E3A8A]">Notes</h2>
+      {/* Collection Reminders */}
+<div className="border-t pt-6 space-y-4">
+  <h2 className="text-lg font-semibold text-[#1E3A8A]">
+    Collection Reminders
+  </h2>
 
-        <div className="space-y-2 max-h-40 overflow-y-auto">
-          {notes.map((note) => (
-            <div key={note.id} className="bg-gray-100 rounded-lg p-3 text-sm">
-              <div className="text-xs text-gray-500 mb-1">{note.date}</div>
-              {note.message}
-            </div>
-          ))}
+  {(borrowerReminders || []).length === 0 && (
+    <div className="rounded-lg bg-gray-100 p-3 text-sm text-gray-500">
+      No reminders yet.
+    </div>
+  )}
+
+  <div className="space-y-3">
+    {(borrowerReminders || []).map((reminder: any) => (
+      <div
+        key={reminder.reminder_id}
+        className="rounded-xl border border-gray-200 bg-white p-4 shadow-sm"
+      >
+        <div className="flex justify-between">
+          <p className="font-semibold text-[#1E3A8A]">
+            ₱{Number(reminder.amount_expected || 0).toLocaleString()}
+          </p>
+
+          <span className="rounded-full bg-orange-100 px-3 py-1 text-xs font-medium text-orange-700">
+            {reminder.status}
+          </span>
         </div>
 
-        <div className="flex flex-wrap justify-center gap-2">
-          <input
-            value={noteInput}
-            onChange={(e) => setNoteInput(e.target.value)}
-            placeholder="Add a note..."
-            className="flex-1 rounded-lg border border-gray-300 px-5 py-5 text-sm"
-          />
+        <p className="mt-1 text-sm text-gray-500">
+          Due: {new Date(reminder.due_date).toLocaleDateString()}
+        </p>
 
-          <button
-            onClick={handleAddNote}
-            className="rounded-lg bg-[#1E3A8A] px-4 text-white p-4 text-sm w-full"
-          >
-            Send
-          </button>
+        {reminder.note && (
+          <p className="mt-2 text-sm text-gray-700">
+            {reminder.note}
+          </p>
+        )}
+      </div>
+    ))}
+  </div>
+</div>
+
+{/* Notes */}
+<div className="border-t pt-6 space-y-4">
+  <h2 className="text-lg font-semibold text-[#1E3A8A]">Notes</h2>
+
+  <div className="space-y-2 max-h-40 overflow-y-auto">
+    {(borrowerNotes || []).length === 0 && (
+      <div className="rounded-lg bg-gray-100 p-3 text-sm text-gray-500">
+        No notes yet.
+      </div>
+    )}
+
+    {(borrowerNotes || []).map((note: any) => (
+      <div
+        key={note.borrower_note_id}
+        className="bg-gray-100 rounded-lg p-3 text-sm space-y-2"
+      >
+        <div className="text-xs text-gray-500">
+          {new Date(note.created_at).toLocaleDateString()}
+        </div>
+
+        {editingNoteId === note.borrower_note_id ? (
+          <textarea
+            value={editingNoteText}
+            onChange={(e) => setEditingNoteText(e.target.value)}
+            className="w-full rounded-lg border border-gray-300 px-3 py-2 text-sm outline-none"
+          />
+        ) : (
+          <p>{note.note_text}</p>
+        )}
+
+        <div className="flex gap-2">
+          {editingNoteId === note.borrower_note_id ? (
+            <>
+              <button
+                onClick={handleUpdateNote}
+                className="rounded-lg bg-[#1E3A8A] px-3 py-2 text-xs text-white"
+              >
+                Save
+              </button>
+
+              <button
+                onClick={() => {
+                  setEditingNoteId(null);
+                  setEditingNoteText("");
+                }}
+                className="rounded-lg border border-gray-300 px-3 py-2 text-xs text-gray-700"
+              >
+                Cancel
+              </button>
+            </>
+          ) : (
+            <>
+              <button
+                onClick={() => {
+                  setEditingNoteId(note.borrower_note_id);
+                  setEditingNoteText(note.note_text);
+                }}
+                className="text-xs text-[#1E3A8A] underline"
+              >
+                Edit
+              </button>
+
+              <button
+                onClick={() => handleDeleteNote(note.borrower_note_id)}
+                className="text-xs text-red-500 underline"
+              >
+                Delete
+              </button>
+            </>
+          )}
         </div>
       </div>
+    ))}
+  </div>
+
+  <div className="flex flex-wrap justify-center gap-2">
+    <input
+      value={noteInput}
+      onChange={(e) => setNoteInput(e.target.value)}
+      placeholder="Add a note..."
+      className="flex-1 rounded-lg border border-gray-300 px-5 py-5 text-sm"
+    />
+
+    <button
+      onClick={handleAddNote}
+      className="rounded-lg bg-[#1E3A8A] px-4 text-white p-4 text-sm w-full"
+    >
+      Send
+    </button>
+  </div>
+</div>
     </div>
   );
 }

@@ -52,3 +52,25 @@ export const reactivateBorrowerApi = (borrowerId) =>
   apiRequest(`/api/borrowers/${borrowerId}/reactivate`, {
     method: "PATCH",
   });
+
+export const getBorrowerNotesApi = (borrowerId) =>
+  apiRequest(`/api/borrowers/${borrowerId}/notes`, {
+    method: "GET",
+  });
+
+export const createBorrowerNoteApi = (borrowerId, payload) =>
+  apiRequest(`/api/borrowers/${borrowerId}/notes`, {
+    method: "POST",
+    body: JSON.stringify(payload),
+  });
+
+export const updateBorrowerNoteApi = (borrowerId, noteId, payload) =>
+  apiRequest(`/api/borrowers/${borrowerId}/notes/${noteId}`, {
+    method: "PATCH",
+    body: JSON.stringify(payload),
+  });
+
+export const deleteBorrowerNoteApi = (borrowerId, noteId) =>
+  apiRequest(`/api/borrowers/${borrowerId}/notes/${noteId}`, {
+    method: "DELETE",
+  });

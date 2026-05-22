@@ -26,7 +26,11 @@ export default function AddPaymentModal({
   borrower,
 }: Props) {
   const { createPayment } = usePayment();
-  const { fetchBorrowerTransactions } = useBorrower();
+const {
+  fetchBorrowerTransactions,
+  createBorrowerNote,
+  fetchBorrowerNotes,
+} = useBorrower();
 
   const [animate, setAnimate] = useState(false);
 
@@ -67,17 +71,26 @@ export default function AddPaymentModal({
 
     const res = await createPayment(payload);
 
-    if (res?.ok) {
-      await fetchBorrowerTransactions(borrower.id);
+if (res?.ok) {
+  await fetchBorrowerTransactions(borrower.id);
 
-      setForm({
-        amount: "",
-        note: "",
-        paymentType: "",
-      });
+  if (form.note.trim()) {
+    await createBorrowerNote(
+      borrower.id,
+      form.note
+    );
 
-      isClose();
-    }
+    await fetchBorrowerNotes(borrower.id);
+  }
+
+  setForm({
+    amount: "",
+    note: "",
+    paymentType: "",
+  });
+
+  isClose();
+}
   };
 
   return (
