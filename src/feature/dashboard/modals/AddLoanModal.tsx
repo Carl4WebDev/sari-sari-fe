@@ -1,11 +1,18 @@
 import { useEffect, useState } from "react";
 import { useBorrower } from "../../context/borrowers/useBorrower";
 import { useLoan } from "../../context/loans/useLoan";
+import { useProduct } from "../../context/products/useProduct";
 
 interface Borrower {
   borrower_id: number;
   first_name: string;
   last_name: string;
+}
+
+interface Product {
+  product_id: number;
+  product_name: string;
+  product_price: number;
 }
 
 interface Props {
@@ -17,14 +24,15 @@ export default function AddLoanModal({ isOpen, isClose }: Props) {
 
   const { borrowers, fetchBorrowers } = useBorrower();
   const { createLoan } = useLoan();
+  const { products, fetchProducts } = useProduct();
 
   const [animate, setAnimate] = useState(false);
   const [search, setSearch] = useState("");
   const [selectedBorrower, setSelectedBorrower] = useState<Borrower | null>(null);
 
-  const [items, setItems] = useState([
-    { product: "", quantity: "", price: "" },
-  ]);
+const [items, setItems] = useState([
+  { product: "", quantity: "1", price: "" },
+]);
 
   // -----------------------------
   // Load borrowers
@@ -34,6 +42,7 @@ export default function AddLoanModal({ isOpen, isClose }: Props) {
     if (!isOpen) return;
 
     fetchBorrowers();
+    fetchProducts();
 
     const activeId = localStorage.getItem("active_borrower_id");
 
@@ -85,7 +94,10 @@ export default function AddLoanModal({ isOpen, isClose }: Props) {
   };
 
   const addNewItem = () => {
-    setItems([...items, { product: "", quantity: "", price: "" }]);
+   setItems([
+  ...items,
+  { product: "", quantity: "1", price: "" },
+]);
   };
 
   const removeItem = (index: number) => {
@@ -201,14 +213,35 @@ export default function AddLoanModal({ isOpen, isClose }: Props) {
                 className="space-y-2 border border-gray-200 rounded-xl p-3"
               >
                 <div className="flex items-center gap-2">
-                  <input
-                    placeholder="Product"
-                    value={item.product}
-                    onChange={(e) =>
-                      handleItemChange(index, "product", e.target.value)
-                    }
-                    className="flex-1 rounded-lg border border-gray-300 px-3 py-3 text-sm"
-                  />
+<select
+  value={item.product}
+  onChange={(e) => {
+    const selectedProduct = products.find(
+      (p: Product) => p.product_name === e.target.value
+    );
+
+    const updated = [...items];
+
+    updated[index] = {
+      ...updated[index],
+      product: selectedProduct?.product_name || "",
+      price: selectedProduct
+        ? String(selectedProduct.product_price)
+        : "",
+    };
+
+    setItems(updated);
+  }}
+  className="flex-1 rounded-lg border border-gray-300 px-3 py-3 text-sm"
+>
+  <option value="">Select product</option>
+
+  {products.map((product: Product) => (
+    <option key={product.product_id} value={product.product_name}>
+      {product.product_name}
+    </option>
+  ))}
+</select>
 
                   <button
                     type="button"
@@ -230,15 +263,14 @@ export default function AddLoanModal({ isOpen, isClose }: Props) {
                     className="w-1/2 rounded-lg border border-gray-300 px-3 py-3 text-sm"
                   />
 
-                  <input
-                    type="number"
-                    placeholder="Price"
-                    value={item.price}
-                    onChange={(e) =>
-                      handleItemChange(index, "price", e.target.value)
-                    }
-                    className="w-1/2 rounded-lg border border-gray-300 px-3 py-3 text-sm"
-                  />
+<input
+  type="number"
+  min="1"
+  placeholder="Price"
+  value={item.price}
+  readOnly
+  className="w-1/2 rounded-lg border border-gray-300 bg-gray-100 px-3 py-3 text-sm"
+/>
                 </div>
 
                 {items.length > 1 && (

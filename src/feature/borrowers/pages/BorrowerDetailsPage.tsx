@@ -95,6 +95,26 @@ export default function BorrowerDetailsPage() {
     });
   }, [transactions, dateFilter, productFilter]);
 
+  const ledgerTransactions = useMemo(() => {
+  let runningBalance = 0;
+
+  return filteredTransactions
+    .slice()
+    .reverse()
+    .map((t) => {
+      runningBalance =
+        t.type === "LOAN"
+          ? runningBalance + Number(t.amount)
+          : runningBalance - Number(t.amount);
+
+      return {
+        ...t,
+        runningBalance,
+      };
+    })
+    .reverse();
+}, [filteredTransactions]);
+
   useEffect(() => {
     if (!id) return;
 
@@ -127,9 +147,8 @@ export default function BorrowerDetailsPage() {
     contact: borrower.contact_number,
   };
 
-  const totalPages = Math.ceil(filteredTransactions.length / ITEMS_PER_PAGE);
-
-  const paginatedTransactions = filteredTransactions.slice(
+const totalPages = Math.ceil(ledgerTransactions.length / ITEMS_PER_PAGE);
+const paginatedTransactions = ledgerTransactions.slice(
     (currentPage - 1) * ITEMS_PER_PAGE,
     currentPage * ITEMS_PER_PAGE
   );
@@ -470,6 +489,13 @@ className="h-56 w-56 lg:h-64 lg:w-64 rounded-full border-4 border-[#1E3A8A] obje
                 ))}
               </div>
             )}
+
+            <div className="flex justify-between rounded-lg bg-gray-50 px-3 py-2 text-sm">
+  <span className="text-gray-500">Running Balance</span>
+  <span className="font-semibold text-[#1E3A8A]">
+    ₱{Number(t.runningBalance || 0).toLocaleString()}
+  </span>
+</div>
 
             <div className="flex justify-end">
               <span

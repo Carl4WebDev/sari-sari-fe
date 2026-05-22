@@ -7,6 +7,7 @@ import {useUser} from "../../context/users/useUser.js"
 export default function Sidebar() {
 
   const { clearUser } = useUser();
+  const user = JSON.parse(localStorage.getItem("user") || "{}");
 
   const isMobile = useMediaQuery("(max-width: 768px)");
   const [isOpen, setIsOpen] = useState(false);
@@ -50,12 +51,22 @@ export default function Sidebar() {
           ${isOpen ? "translate-x-0" : "-translate-x-full"}
         `}
       >
-        {/* Header */}
-        <div className="flex items-center justify-end px-5 py-5 border-b border-gray-200">
-          <span className="text-lg font-semibold text-[#1E3A8A] tracking-tight">
-            Utang App
-          </span>
-        </div>
+{/* Header */}
+<div className="border-b border-gray-200 px-5 py-6 text-center">
+  <p className="text-xs font-medium uppercase tracking-wide text-gray-400">
+    Store
+  </p>
+
+  <h2 className="mt-2 text-lg font-semibold leading-snug text-[#1E3A8A] break-words">
+    {user?.store_name || "Utang App"}
+  </h2>
+
+  {user?.email && (
+    <p className="mt-1 text-xs text-gray-500 break-words">
+      {user.email}
+    </p>
+  )}
+</div>
 
         {/* Navigation */}
         <nav className="flex-1 px-3 py-6 space-y-2">

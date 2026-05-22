@@ -116,6 +116,12 @@ const handleArchive = async (productId: number) => {
               className="w-full rounded-xl border border-gray-300 py-3 pl-10 pr-3 text-sm outline-none transition focus:border-[#1E3A8A] focus:ring-2 focus:ring-blue-100"
             />
           </div>
+                    <button
+            onClick={handleOpenAdd}
+            className="rounded-xl bg-[#1E3A8A] px-5 py-3 text-sm font-semibold text-white shadow-sm transition hover:bg-[#172f70]"
+          >
+            + Add Product
+          </button>
 
           <button
   onClick={() => setIsArchivedOpen(true)}
@@ -124,12 +130,6 @@ const handleArchive = async (productId: number) => {
   Archived
 </button>
 
-          <button
-            onClick={handleOpenAdd}
-            className="rounded-xl bg-[#1E3A8A] px-5 py-3 text-sm font-semibold text-white shadow-sm transition hover:bg-[#172f70]"
-          >
-            + Add Product
-          </button>
         </div>
       </div>
 

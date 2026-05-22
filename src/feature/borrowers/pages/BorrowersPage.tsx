@@ -41,9 +41,58 @@ const [isArchivedOpen, setIsArchivedOpen] = useState(false);
     return filteredBorrowers.slice(start, start + itemsPerPage);
   }, [filteredBorrowers, currentPage]);
 
-  const handleExport = () => {
-    console.log("Export borrowers later");
-  };
+const handleExport = () => {
+  if (!filteredBorrowers.length) {
+    alert("No borrowers to export.");
+    return;
+  }
+
+  const headers = [
+    "Borrower ID",
+    "First Name",
+    "Middle Name",
+    "Last Name",
+    "Contact Number",
+    "Date of Birth",
+    "Age",
+    "Balance",
+    "Status",
+  ];
+
+  const rows = filteredBorrowers.map((b: any) => [
+    b.borrower_id,
+    b.first_name ?? "",
+    b.middle_name ?? "",
+    b.last_name ?? "",
+    b.contact_number ?? "",
+    b.dob ?? "",
+    calculateAge(b.dob),
+    Number(b.balance || 0),
+    Number(b.balance || 0) <= 0 ? "Fully Paid" : "With Balance",
+  ]);
+
+  const csvContent = [
+    headers.join(","),
+    ...rows.map((row) =>
+      row
+        .map((value) => `"${String(value).replace(/"/g, '""')}"`)
+        .join(",")
+    ),
+  ].join("\n");
+
+  const blob = new Blob([csvContent], {
+    type: "text/csv;charset=utf-8;",
+  });
+
+  const url = URL.createObjectURL(blob);
+  const link = document.createElement("a");
+
+  link.href = url;
+  link.download = `borrowers-${new Date().toISOString().slice(0, 10)}.csv`;
+  link.click();
+
+  URL.revokeObjectURL(url);
+};
 
   return (
     

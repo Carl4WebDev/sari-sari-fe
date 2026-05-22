@@ -9,25 +9,29 @@ import { PaymentProvider } from "../feature/context/payments/PaymentProvider";
 import { ProductProvider } from "../feature/context/products/ProductProvider";
 import { PublicStatusProvider } from "../feature/public/context/PublicStatusProvider";
 
+import { DashboardProvider } from "../feature/context/dashboard/DashboardProvider";
+
 export default function AppRoutes() {
   return (
-    <PublicStatusProvider>
+    <DashboardProvider>
+      <PublicStatusProvider>
 
-      <ProductProvider>
+        <ProductProvider>
 
-      <PaymentProvider>
-        <UserProvider>
-          <BorrowerProvider>
-            <LoanProvider>
-              <Routes>
-                {publicRoutes}
-                {featureRoutes}
-              </Routes>
-            </LoanProvider>
-          </BorrowerProvider>
-        </UserProvider>
-      </PaymentProvider>
-      </ProductProvider>
-    </PublicStatusProvider>
+        <PaymentProvider>
+          <UserProvider>
+            <BorrowerProvider>
+              <LoanProvider>
+                <Routes>
+                  {publicRoutes}
+                  {featureRoutes}
+                </Routes>
+              </LoanProvider>
+            </BorrowerProvider>
+          </UserProvider>
+        </PaymentProvider>
+        </ProductProvider>
+      </PublicStatusProvider>
+    </DashboardProvider>
   );
 }
