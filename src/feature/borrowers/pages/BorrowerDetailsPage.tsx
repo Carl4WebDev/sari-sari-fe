@@ -521,7 +521,7 @@ className="h-56 w-56 lg:h-64 lg:w-64 rounded-full border-4 border-[#1E3A8A] obje
                 {t.type}
               </span>
 
-              {t.type === "LOAN" && (
+              {/* {t.type === "LOAN" && (
                 <button
                   onClick={() => {
                     setSelectedLoan({
@@ -535,7 +535,7 @@ className="h-56 w-56 lg:h-64 lg:w-64 rounded-full border-4 border-[#1E3A8A] obje
                 >
                   Edit
                 </button>
-              )}
+              )} */}
             </div>
 
             <span className="text-xs text-gray-400">{t.date}</span>
