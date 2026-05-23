@@ -1,5 +1,7 @@
 import { useEffect, useState } from "react";
 
+import GlobalModal from "../../../shared/components/GlobalModal";
+
 interface Props {
   isOpen: boolean;
   isClose: () => void;
@@ -17,6 +19,14 @@ export default function AddReminderModal({
 }: Props) {
   const [animate, setAnimate] = useState(false);
   const [loading, setLoading] = useState(false);
+
+
+  const [globalModal, setGlobalModal] = useState({
+  isOpen: false,
+  title: "",
+  message: "",
+  type: "info",
+});
 
   const [form, setForm] = useState({
     amount_expected: "",
@@ -40,7 +50,13 @@ export default function AddReminderModal({
     const amount = Number(form.amount_expected || 0);
 
 if (amount > currentBalance) {
-  alert("Expected amount cannot be higher than current balance.");
+
+  setGlobalModal({
+  isOpen: true,
+  title: "Copied",
+  message: "Expected amount cannot be higher than current balance.",
+  type: "success",
+});
   return;
 }
 
@@ -153,6 +169,19 @@ amount_expected: amount,
           </div>
         </div>
       </div>
+      <GlobalModal
+  isOpen={globalModal.isOpen}
+  title={globalModal.title}
+  message={globalModal.message}
+  type={globalModal.type as any}
+  onClose={() =>
+    setGlobalModal({
+      ...globalModal,
+      isOpen: false,
+    })
+  }
+/>
     </div>
+    
   );
 }

@@ -5,6 +5,8 @@ import { calculateAge } from "../../components/utility/calculateAge";
 
 import ArchivedBorrowersModal from "../modals/ArchivedBorrowersModal";
 
+import GlobalModal from "../../../shared/components/GlobalModal";
+
 export default function BorrowersPage() {
   const [search, setSearch] = useState("");
 
@@ -19,6 +21,13 @@ const {
 
   const [currentPage, setCurrentPage] = useState(1);
 const [isArchivedOpen, setIsArchivedOpen] = useState(false);
+
+const [globalModal, setGlobalModal] = useState({
+  isOpen: false,
+  title: "",
+  message: "",
+  type: "info",
+});
 
   const itemsPerPage = 5;
 
@@ -43,7 +52,13 @@ const [isArchivedOpen, setIsArchivedOpen] = useState(false);
 
 const handleExport = () => {
   if (!filteredBorrowers.length) {
-    alert("No borrowers to export.");
+
+    setGlobalModal({
+  isOpen: true,
+  title: "Copied",
+  message: "No borrowers to export.",
+  type: "success",
+});
     return;
   }
 
@@ -276,6 +291,18 @@ const handleExport = () => {
           </div>
         </div>
       )}
+      <GlobalModal
+  isOpen={globalModal.isOpen}
+  title={globalModal.title}
+  message={globalModal.message}
+  type={globalModal.type as any}
+  onClose={() =>
+    setGlobalModal({
+      ...globalModal,
+      isOpen: false,
+    })
+  }
+/>
     </div>
   );
 }

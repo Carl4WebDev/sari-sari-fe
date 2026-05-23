@@ -1,5 +1,7 @@
 import { useEffect, useState } from "react";
 
+import GlobalModal from "../../../shared/components/GlobalModal";
+
 interface Product {
   product_id: number;
   product_name: string;
@@ -34,6 +36,13 @@ export default function ProductModal({
     price: "",
   });
 
+  const [globalModal, setGlobalModal] = useState({
+  isOpen: false,
+  title: "",
+  message: "",
+  type: "info",
+});
+
   useEffect(() => {
     if (isOpen) {
       setTimeout(() => setAnimate(true), 10);
@@ -67,12 +76,22 @@ export default function ProductModal({
 
 const handleSubmit = async () => {
   if (!form.product_name.trim()) {
-    alert("Product name is required");
+    setGlobalModal({
+  isOpen: true,
+  title: "Copied",
+  message: "Product name is required",
+  type: "success",
+});
     return;
   }
 
   if (!form.price || Number(form.price) <= 0) {
-    alert("Valid price is required");
+    setGlobalModal({
+  isOpen: true,
+  title: "Copied",
+  message: "Valid price is required.",
+  type: "success",
+});
     return;
   }
 
@@ -153,6 +172,18 @@ const handleSubmit = async () => {
           </div>
         </div>
       </div>
+      <GlobalModal
+  isOpen={globalModal.isOpen}
+  title={globalModal.title}
+  message={globalModal.message}
+  type={globalModal.type as any}
+  onClose={() =>
+    setGlobalModal({
+      ...globalModal,
+      isOpen: false,
+    })
+  }
+/>
     </div>
   );
 }

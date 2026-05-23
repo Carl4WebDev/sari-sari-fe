@@ -10,6 +10,7 @@ import EditLoanModal from "../modals/EditLoanModal";
 import AddReminderModal from "../modals/AddReminderModal";
 
 import { useCollectionReminder } from "../../context/collection-reminders/useCollectionReminder";
+import GlobalModal from "../../../shared/components/GlobalModal";
 
 interface LoanItem {
   product: string;
@@ -38,6 +39,13 @@ export default function BorrowerDetailsPage() {
   const navigate = useNavigate();
   const location = useLocation();
   const fileInputRef = useRef<HTMLInputElement | null>(null);
+
+  const [globalModal, setGlobalModal] = useState({
+  isOpen: false,
+  title: "",
+  message: "",
+  type: "info",
+});
 
 
   const [dateFilter, setDateFilter] = useState("");
@@ -358,7 +366,12 @@ const handleDeleteNote = async (noteId: number) => {
     disabled={!publicToken || !isPublicEnabled}
     onClick={() => {
       navigator.clipboard.writeText(publicStatusLink);
-      alert("Loan status link copied");
+      setGlobalModal({
+  isOpen: true,
+  title: "Copied",
+  message: "Loan status link copied successfully.",
+  type: "success",
+});
     }}
     className="w-full rounded-lg bg-[#1E3A8A] py-3 text-white text-sm font-medium disabled:opacity-50 disabled:cursor-not-allowed"
   >
@@ -727,6 +740,20 @@ className="h-56 w-56 lg:h-64 lg:w-64 rounded-full border-4 border-[#1E3A8A] obje
     </button>
   </div>
 </div>
+<GlobalModal
+  isOpen={globalModal.isOpen}
+  title={globalModal.title}
+  message={globalModal.message}
+  type={globalModal.type as any}
+  onClose={() =>
+    setGlobalModal({
+      ...globalModal,
+      isOpen: false,
+    })
+  }
+/>
     </div>
   );
+
+  
 }

@@ -11,16 +11,22 @@ export default function RegisterPage() {
   const [storeName, setStoreName] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
   const [localError, setLocalError] = useState("");
+  const [acceptedTerms, setAcceptedTerms] = useState(false);
 
   const handleSubmit = async (e) => {
     e.preventDefault();
 
     setLocalError("");
 
-    if (password !== confirmPassword) {
-      setLocalError("Passwords do not match");
-      return;
-    }
+if (password !== confirmPassword) {
+  setLocalError("Passwords do not match");
+  return;
+}
+
+if (!acceptedTerms) {
+  setLocalError("You must accept the Terms and Privacy Agreement");
+  return;
+}
 
     const store_name = storeName
 
@@ -99,6 +105,27 @@ export default function RegisterPage() {
               placeholder="••••••••"
             />
           </div>
+
+          <div className="rounded-lg bg-blue-50 p-3 text-xs leading-5 text-gray-600">
+  <p>
+    By creating an account, you agree to use this system responsibly.
+    Your store and borrower information will be handled with care and used
+    only for managing your account, loans, payments, reminders, and records.
+  </p>
+
+  <label className="mt-3 flex items-start gap-2">
+    <input
+      type="checkbox"
+      checked={acceptedTerms}
+      onChange={(e) => setAcceptedTerms(e.target.checked)}
+      className="mt-1"
+    />
+
+    <span>
+      I agree to the Terms and Privacy Agreement.
+    </span>
+  </label>
+</div>
 
           {(localError || error) && (
             <p className="text-sm text-red-600 text-center">

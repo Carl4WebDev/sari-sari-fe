@@ -59,6 +59,9 @@ export default function LoginPage() {
             <p className="text-sm text-red-600 text-center">{error}</p>
           )}
 
+<p className="text-center text-xs leading-5 text-gray-500">
+  Your information is handled with care and used only for your store account.
+</p>
           <button
             type="submit"
             disabled={loading}
