@@ -24,6 +24,8 @@ interface Transaction {
   date: string;
   items?: LoanItem[];
   amount: number;
+  payment_method?: string;
+  payment_note?: string;
 }
 
 interface Note {
@@ -168,6 +170,7 @@ if (!borrower) {
     lName: borrower.last_name,
     age: calculateAge(borrower.dob),
     contact: borrower.contact_number,
+    profileImageUrl: borrower.profile_image_url
   };
 
 const totalPages = Math.ceil(ledgerTransactions.length / ITEMS_PER_PAGE);
@@ -271,10 +274,9 @@ const handleDeleteNote = async (noteId: number) => {
   isOpen={isLoanModalOpen}
   isClose={() => setIsLoanModalOpen(false)}
   borrowerId={borrower.borrower_id}
-  onLoanCreated={() => {
-    fetchBorrowerTransactions(borrower.borrower_id);
-    fetchBorrowers();
-  }}
+  borrowerName={`${borrower.first_name} ${borrower.last_name}`}
+  profileImageUrl={borrower.profile_image_url}
+  onLoanCreated={refreshBorrowerDetails}
 />
 
 <AddPaymentModal
@@ -561,6 +563,21 @@ className="h-56 w-56 lg:h-64 lg:w-64 rounded-full border-4 border-[#1E3A8A] obje
             </div>
 
             <span className="text-xs text-gray-400">{t.date}</span>
+            {t.type === "PAYMENT" && (
+  <div className="mt-2 rounded-lg border border-green-100 bg-green-50 px-3 py-2">
+    <p className="text-xs text-gray-500">Payment Method</p>
+
+    <p className="text-sm font-semibold text-[#16A34A]">
+      {t.payment_method || "N/A"}
+    </p>
+
+    {t.payment_note && (
+      <p className="mt-1 text-xs text-gray-600">
+        {t.payment_note}
+      </p>
+    )}
+  </div>
+)}
 
             {t.type === "LOAN" && t.items && (
               <div className="text-sm text-gray-600 space-y-1">

@@ -228,18 +228,22 @@ const reactivateBorrower = async (borrowerId) => {
       return res;
     }
 
-    const formatted = res.data.map((t) => ({
-      id: t.transaction_id,
-      type: t.type,
-      date: t.transaction_date?.split("T")[0],
-      amount: Number(t.total_amount),
-      items:
-        t.items?.map((i) => ({
-          product: i.product_name,
-          quantity: i.quantity,
-          price: Number(i.price),
-        })) || [],
-    }));
+   const formatted = res.data.map((t) => ({
+  id: t.transaction_id,
+  type: t.type,
+  date: t.transaction_date?.split("T")[0],
+  amount: Number(t.total_amount),
+
+  payment_method: t.payment_method,
+  payment_note: t.payment_note,
+
+  items:
+    t.items?.map((i) => ({
+      product: i.product_name,
+      quantity: Number(i.quantity),
+      price: Number(i.price),
+    })) || [],
+}));
 
     setTransactions(formatted);
     setLoading(false);

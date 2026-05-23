@@ -7,6 +7,7 @@ interface Borrower {
   fName: string;
   lName: string;
   totalLoan?: number;
+  profileImageUrl: string;
   pastPaymentNotes?: {
     date: string;
     amount: number;
@@ -111,53 +112,67 @@ if (res?.ok) {
             Add Payment
           </h2>
 
-          {/* Borrower Info */}
-          <div className="space-y-2">
-            <div className="text-sm text-gray-600">
-              {borrower?.fName} {borrower?.lName}
-            </div>
+{/* Borrower Info */}
+<div className="rounded-xl border border-gray-200 bg-gray-50 p-4">
+  <div className="flex items-center gap-4">
+    <img
+      src={
+        borrower?.profileImageUrl ||
+        "https://ui-avatars.com/api/?name=" +
+          encodeURIComponent(
+            `${borrower?.fName} ${borrower?.lName}`
+          )
+      }
+      alt={`${borrower?.fName} ${borrower?.lName}`}
+      className="h-16 w-16 rounded-full border border-gray-200 object-cover"
+    />
 
-            <div className="rounded-lg bg-gray-50 border border-gray-200 p-3">
-              <p className="text-xs text-gray-500">
-                Current Total Balance
+    <div className="min-w-0 flex-1">
+      <p className="truncate text-lg font-bold text-gray-800">
+        {borrower?.fName} {borrower?.lName}
+      </p>
+
+      <p className="text-xs text-gray-500">
+        Current Total Balance
+      </p>
+
+      <p className="mt-1 text-xl font-extrabold text-[#1E3A8A]">
+        ₱{borrower?.totalLoan?.toLocaleString() ?? 0}
+      </p>
+    </div>
+  </div>
+
+  {/* Previous Payment Notes */}
+  {borrower?.pastPaymentNotes &&
+    borrower.pastPaymentNotes.length > 0 && (
+      <div className="mt-4 space-y-2">
+        <p className="text-xs font-medium text-gray-500">
+          Previous Notes
+        </p>
+
+        <div className="max-h-40 space-y-2 overflow-y-auto">
+          {borrower.pastPaymentNotes.map((entry, index) => (
+            <div
+              key={index}
+              className="rounded-lg border border-gray-200 bg-white p-3"
+            >
+              <div className="flex justify-between text-xs text-gray-400">
+                <span>{entry.date}</span>
+
+                <span className="font-medium text-[#16A34A]">
+                  ₱{entry.amount.toLocaleString()}
+                </span>
+              </div>
+
+              <p className="mt-1 text-sm text-gray-700">
+                {entry.note}
               </p>
-
-              <p className="text-lg font-bold text-[#1E3A8A]">
-                ₱{borrower?.totalLoan?.toLocaleString() ?? 0}
-              </p>
             </div>
-
-            {/* Previous Payment Notes */}
-            {borrower?.pastPaymentNotes &&
-              borrower.pastPaymentNotes.length > 0 && (
-                <div className="space-y-2">
-                  <p className="text-xs text-gray-500">
-                    Previous Notes
-                  </p>
-
-                  <div className="max-h-40 overflow-y-auto space-y-2">
-                    {borrower.pastPaymentNotes.map((entry, index) => (
-                      <div
-                        key={index}
-                        className="border border-gray-200 rounded-lg p-3 bg-gray-50"
-                      >
-                        <div className="flex justify-between text-xs text-gray-400">
-                          <span>{entry.date}</span>
-
-                          <span className="text-[#16A34A] font-medium">
-                            ₱{entry.amount.toLocaleString()}
-                          </span>
-                        </div>
-
-                        <p className="text-sm text-gray-700 mt-1">
-                          {entry.note}
-                        </p>
-                      </div>
-                    ))}
-                  </div>
-                </div>
-              )}
-          </div>
+          ))}
+        </div>
+      </div>
+    )}
+</div>
 
           {/* Payment Amount */}
           <input

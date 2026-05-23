@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 
 interface Props {
   isOpen: boolean;
@@ -110,6 +110,8 @@ function ReminderSection({
   badgeClass: string;
   onMarkDone: (reminderId: number) => Promise<void>;
 }) {
+
+  const navigate = useNavigate();
   return (
     <div className="space-y-3">
       <div className="flex items-center justify-between">
@@ -132,18 +134,19 @@ function ReminderSection({
 
         
         <div className="space-y-2">
-          {items.map((item: any) => (
-            <Link   to={`/borrowers/${item.borrower_id}`}>
-              
-            <div
-              key={item.reminder_id}
-              className="rounded-xl border border-gray-200 bg-gray-50 p-4"
-            >
+{items.map((item: any) => (
+  <div
+    key={item.reminder_id}
+    className="rounded-xl border border-gray-200 bg-gray-50 p-4"
+  >
               <div className="flex justify-between gap-3">
                 <div>
-                  <p className="text-sm font-semibold text-gray-800">
-                    {item.first_name} {item.last_name}
-                  </p>
+<Link
+  to={`/borrowers/${item.borrower_id}`}
+  className="text-sm font-semibold text-gray-800 transition hover:text-[#1E3A8A] hover:underline"
+>
+  {item.first_name} {item.last_name}
+</Link>
 
                   <p className="mt-1 text-xs text-gray-500">
                     Due:{" "}
@@ -165,18 +168,21 @@ function ReminderSection({
                     ).toLocaleString()}
                   </p>
 
-                  <button
-                    onClick={() =>
-                      onMarkDone(item.reminder_id)
-                    }
-                    className="mt-3 rounded-lg bg-[#16A34A] px-3 py-2 text-xs font-semibold text-white"
-                  >
-                    Mark Done
-                  </button>
+<button
+  onClick={async () => {
+    await onMarkDone(item.reminder_id);
+
+    navigate(`/borrowers/${item.borrower_id}`, {
+      state: { openPayment: true },
+    });
+  }}
+  className="mt-3 rounded-lg bg-[#16A34A] px-3 py-2 text-xs font-semibold text-white"
+>
+  Mark Done
+</button>
                 </div>
               </div>
             </div>
-            </Link>
           ))}
         </div>
       )}

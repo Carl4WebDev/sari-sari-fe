@@ -6,8 +6,10 @@ import { useProduct } from "../../context/products/useProduct";
 interface Props {
   isOpen: boolean;
   isClose: () => void;
-  borrower: any;
-  onPaymentCreated?: () => Promise<void> | void;
+  borrowerId: number;
+  borrowerName: string;
+  profileImageUrl?: string;
+  onLoanCreated?: () => Promise<void> | void;
 }
 
 interface Product {
@@ -15,11 +17,13 @@ interface Product {
   product_name: string;
   product_price: number;
 }
-export default function AddPaymentModal({
+export default function AddLoanModalBorrowerDetails({
   isOpen,
   isClose,
-  borrower,
-  onPaymentCreated,
+  borrowerId,
+  borrowerName,
+  profileImageUrl,
+  onLoanCreated,
 }: Props) {
 const { createLoan } = useLoan();
 const { products, fetchProducts } = useProduct();
@@ -83,7 +87,7 @@ useEffect(() => {
     const res = await createLoan(payload);
 
 if (res?.ok) {
-  await onPaymentCreated?.();
+  await onLoanCreated?.();
   isClose();
 }
   };
@@ -103,6 +107,25 @@ if (res?.ok) {
           <h2 className="text-lg font-semibold text-[#1E3A8A]">
             Add Loan
           </h2>
+          <div className="rounded-xl bg-gray-50 p-4 text-center">
+  <div className="flex justify-center">
+    <img
+      src={
+        profileImageUrl ||
+        "https://ui-avatars.com/api/?name=" +
+          encodeURIComponent(borrowerName || "Borrower")
+      }
+      alt={borrowerName || "Borrower"}
+      className="h-16 w-16 rounded-full border border-gray-200 object-cover"
+    />
+  </div>
+
+  <p className="mt-3 text-sm font-semibold text-gray-800">
+    {borrowerName}
+  </p>
+
+  <p className="text-xs text-gray-500">Selected borrower</p>
+</div>
 
           {/* Loan Items */}
           <div className="space-y-4">
