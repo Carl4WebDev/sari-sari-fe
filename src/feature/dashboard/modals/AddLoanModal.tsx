@@ -176,12 +176,15 @@ if (res?.ok) {
       className="fixed inset-0 z-50 bg-black/40 transition-opacity duration-300"
       onClick={isClose}
     >
-      <div
-        className={`fixed top-0 left-0 w-full bg-white rounded-b-2xl shadow-xl transform transition-transform duration-300 ease-out ${
-          animate ? "translate-y-0" : "-translate-y-full"
-        }`}
-        onClick={(e) => e.stopPropagation()}
-      >
+<div
+  onClick={(e) => e.stopPropagation()}
+  className={`
+    fixed top-0 left-0 h-screen w-full overflow-auto bg-white
+    rounded-b-2xl shadow-xl
+    transform transition-transform duration-300 ease-out
+    ${animate ? "translate-y-0" : "-translate-y-full"}
+  `}
+>
         <div className="p-6 space-y-6">
           <h2 className="text-lg font-semibold text-[#1E3A8A]">
             Add Loan
