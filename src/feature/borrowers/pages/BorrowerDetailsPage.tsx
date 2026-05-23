@@ -178,7 +178,7 @@ const paginatedTransactions = ledgerTransactions.slice(
 
   const profileImageUrl = borrower.profile_image_url || null;
 
-  const balance = Number(borrower.balance || 0);
+const balance = Number(totalBalance || 0);
 
 const paymentStatus =
   balance <= 0 ? "Fully Paid" : "With Balance";
@@ -257,6 +257,14 @@ const handleDeleteNote = async (noteId: number) => {
     console.log("Export to Excel");
   };
 
+  const refreshBorrowerDetails = async () => {
+  if (!id) return;
+
+  await fetchBorrowerTransactions(id);
+  await fetchBorrowers();
+  await fetchBorrowerReminders(id);
+};
+
   return (
     <div className="space-y-6 pb-32">
 <AddLoanModalBorrowerDetails
@@ -269,15 +277,16 @@ const handleDeleteNote = async (noteId: number) => {
   }}
 />
 
-      <AddPaymentModal
-        isOpen={isPaymentModalOpen}
-        isClose={() => setIsPaymentModalOpen(false)}
-        borrower={{
-          ...borrowerAdapter,
-          totalLoan: totalBalance,
-          pastPaymentNotes: [],
-        }}
-      />
+<AddPaymentModal
+  isOpen={isPaymentModalOpen}
+  isClose={() => setIsPaymentModalOpen(false)}
+  borrower={{
+    ...borrowerAdapter,
+    totalLoan: totalBalance,
+    pastPaymentNotes: [],
+  }}
+  onPaymentCreated={refreshBorrowerDetails}
+/>
 
       <EditLoanModal
         isOpen={isEditLoanOpen}

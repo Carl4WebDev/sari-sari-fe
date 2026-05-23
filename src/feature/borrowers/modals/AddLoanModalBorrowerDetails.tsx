@@ -6,8 +6,8 @@ import { useProduct } from "../../context/products/useProduct";
 interface Props {
   isOpen: boolean;
   isClose: () => void;
-  borrowerId: number;
-  onLoanCreated?: () => void;
+  borrower: any;
+  onPaymentCreated?: () => Promise<void> | void;
 }
 
 interface Product {
@@ -15,11 +15,11 @@ interface Product {
   product_name: string;
   product_price: number;
 }
-export default function AddLoanModalBorrowerDetails({
+export default function AddPaymentModal({
   isOpen,
   isClose,
-  borrowerId,
-  onLoanCreated,
+  borrower,
+  onPaymentCreated,
 }: Props) {
 const { createLoan } = useLoan();
 const { products, fetchProducts } = useProduct();
@@ -83,8 +83,7 @@ useEffect(() => {
     const res = await createLoan(payload);
 
 if (res?.ok) {
-  setItems([{ product: "", quantity: "1", price: "" }]);
-  onLoanCreated?.();
+  await onPaymentCreated?.();
   isClose();
 }
   };
