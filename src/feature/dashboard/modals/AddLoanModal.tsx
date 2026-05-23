@@ -18,9 +18,14 @@ interface Product {
 interface Props {
   isOpen: boolean;
   isClose: () => void;
+  onLoanCreated?: () => Promise<void> | void;
 }
 
-export default function AddLoanModal({ isOpen, isClose }: Props) {
+export default function AddLoanModal({
+  isOpen,
+  isClose,
+  onLoanCreated,
+}: Props) {
 
   const { borrowers, fetchBorrowers } = useBorrower();
   const { createLoan } = useLoan();
@@ -33,6 +38,14 @@ export default function AddLoanModal({ isOpen, isClose }: Props) {
 const [items, setItems] = useState([
   { product: "", quantity: "1", price: "" },
 ]);
+
+const resetLoanForm = () => {
+  setSearch("");
+  setSelectedBorrower(null);
+  setItems([{ product: "", quantity: "1", price: "" }]);
+
+  localStorage.removeItem("active_borrower_id");
+};
 
   // -----------------------------
   // Load borrowers
@@ -149,11 +162,14 @@ const [items, setItems] = useState([
 
     const res = await createLoan(payload);
 
-    if (res?.ok) {
-      localStorage.removeItem("active_borrower_id");
-      isClose();
-    }
-  };
+if (res?.ok) {
+  await onLoanCreated?.();
+
+  resetLoanForm();
+  isClose();
+}
+  }
+  
 
   return (
     <div
@@ -287,8 +303,11 @@ const [items, setItems] = useState([
           </div>
 
           <div className="flex gap-3">
-            <button
-              onClick={isClose}
+<button
+  onClick={() => {
+    resetLoanForm();
+    isClose();
+  }}
               className="w-1/2 rounded-xl border border-gray-300 py-3 text-sm"
             >
               Cancel

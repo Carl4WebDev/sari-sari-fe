@@ -62,27 +62,35 @@ useEffect(() => {
 
   const topBorrowers = dashboard?.top_borrowers || [];
 
+  const refreshDashboard = async () => {
+  await fetchDashboard();
+  await fetchDashboardReminders();
+};
+
   return (
     <div className="space-y-6 pb-10">
-      <AddBorrowerModal
-        isOpen={isBorrowerOpen}
-        isClose={() => setIsBorrowerOpen(false)}
-        onBorrowerCreated={(borrower) => {
-          setRecentBorrower(borrower);
-          setIsLoanOpen(true);
-        }}
-      />
+<AddBorrowerModal
+  isOpen={isBorrowerOpen}
+  isClose={() => setIsBorrowerOpen(false)}
+  onBorrowerCreated={async (borrower) => {
+    setRecentBorrower(borrower);
+    await refreshDashboard();
+    setIsLoanOpen(true);
+  }}
+/>
 
-      <AddLoanModal
-        isOpen={isLoanOpen}
-        isClose={() => setIsLoanOpen(false)}
-        borrower={recentBorrower}
-      />
+<AddLoanModal
+  isOpen={isLoanOpen}
+  isClose={() => setIsLoanOpen(false)}
+  borrower={recentBorrower}
+  onLoanCreated={refreshDashboard}
+/>
 
-      <QuickAddPaymentModal
-        isOpen={isQuickPaymentOpen}
-        isClose={() => setIsQuickPaymentOpen(false)}
-      />
+<QuickAddPaymentModal
+  isOpen={isQuickPaymentOpen}
+  isClose={() => setIsQuickPaymentOpen(false)}
+  onPaymentCreated={refreshDashboard}
+/>
 
 <ReminderNotificationModal
   isOpen={isReminderModalOpen}
