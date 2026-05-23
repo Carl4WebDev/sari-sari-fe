@@ -10,6 +10,7 @@ import {
   YAxis,
 } from "recharts";
 
+import { Link } from "react-router-dom";
 import AddBorrowerModal from "../modals/AddBorrowerModal";
 import AddLoanModal from "../modals/AddLoanModal";
 import QuickAddPaymentModal from "../modals/QuickAddPaymentModal";
@@ -278,16 +279,20 @@ useEffect(() => {
             <div className="flex h-8 w-8 items-center justify-center rounded-full bg-[#1E3A8A] text-sm font-bold text-white">
               {index + 1}
             </div>
+<Link
+  to={`/borrowers/${borrower.borrower_id}`}
+  className="group block rounded-xl px-2 py-1 transition hover:bg-blue-50"
+>
+  <div>
+    <p className="text-sm font-semibold text-gray-800 transition group-hover:text-[#1E3A8A]">
+      {borrower.name}
+    </p>
 
-            <div>
-              <p className="text-sm font-semibold text-gray-800">
-                {borrower.name}
-              </p>
-
-              <p className="text-xs text-gray-500">
-                High balance borrower
-              </p>
-            </div>
+    <p className="text-xs text-gray-500">
+      High balance borrower
+    </p>
+  </div>
+</Link>
           </div>
 
           <p className="text-sm font-bold text-red-500">
@@ -372,17 +377,22 @@ useEffect(() => {
           key={activity.transaction_id}
           className="flex items-center justify-between rounded-xl border border-gray-100 bg-gray-50 px-4 py-3"
         >
-          <div>
-            <p className="text-sm font-semibold text-gray-800">
-              {activity.borrower_name}
-            </p>
+<Link
+  to={`/borrowers/${activity.borrower_id}`}
+  className="group block rounded-xl px-2 py-1 transition hover:bg-blue-50"
+>
+  <div>
+    <p className="text-sm font-semibold text-gray-800 transition group-hover:text-[#1E3A8A]">
+      {activity.borrower_name}
+    </p>
 
-            <p className="text-xs text-gray-500">
-              {activity.type === "LOAN"
-                ? "Borrowed"
-                : "Paid"}
-            </p>
-          </div>
+    <p className="text-xs text-gray-500">
+      {activity.type === "LOAN"
+        ? "Borrowed"
+        : "Paid"}
+    </p>
+  </div>
+</Link>
 
           <div className="text-right">
             <p

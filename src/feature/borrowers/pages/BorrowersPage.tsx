@@ -1,14 +1,17 @@
 import { useEffect, useMemo, useState } from "react";
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import { useBorrower } from "../../context/borrowers/useBorrower";
 import { calculateAge } from "../../components/utility/calculateAge";
 
 import ArchivedBorrowersModal from "../modals/ArchivedBorrowersModal";
 
 import GlobalModal from "../../../shared/components/GlobalModal";
+import AddBorrowerModal from "../../dashboard/modals/AddBorrowerModal";
 
 export default function BorrowersPage() {
   const [search, setSearch] = useState("");
+  const navigate = useNavigate();
+const [isAddBorrowerOpen, setIsAddBorrowerOpen] = useState(false);
 
 const {
   borrowers,
@@ -109,6 +112,17 @@ const handleExport = () => {
   URL.revokeObjectURL(url);
 };
 
+const handleBorrowerCreated = async (borrower: any) => {
+  await fetchBorrowers();
+
+  setSearch("");
+  setCurrentPage(1);
+
+  if (borrower?.borrower_id) {
+    navigate(`/borrowers/${borrower.borrower_id}`);
+  }
+};
+
   return (
     
     <div className="min-h-screen space-y-5 pb-24">
@@ -119,6 +133,12 @@ const handleExport = () => {
   loading={loading}
   onFetchArchived={fetchArchivedBorrowers}
   onReactivate={reactivateBorrower}
+/>
+
+<AddBorrowerModal
+  isOpen={isAddBorrowerOpen}
+  isClose={() => setIsAddBorrowerOpen(false)}
+  onBorrowerCreated={handleBorrowerCreated}
 />
       
       {/* Header */}
@@ -159,6 +179,13 @@ const handleExport = () => {
               className="w-full rounded-xl border border-gray-300 py-3 pl-10 pr-3 text-sm outline-none transition focus:border-[#1E3A8A] focus:ring-2 focus:ring-blue-100"
             />
           </div>
+
+          <button
+  onClick={() => setIsAddBorrowerOpen(true)}
+  className="rounded-xl bg-green-600 px-5 py-3 text-sm font-semibold text-white shadow-sm transition hover:bg-green-700 sm:w-auto"
+>
+  Add Borrower
+</button>
 
           <button
             onClick={handleExport}

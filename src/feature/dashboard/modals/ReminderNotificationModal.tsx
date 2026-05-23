@@ -1,4 +1,5 @@
 import { useEffect, useState } from "react";
+import { Link } from "react-router-dom";
 
 interface Props {
   isOpen: boolean;
@@ -128,8 +129,12 @@ function ReminderSection({
           {emptyText}
         </div>
       ) : (
+
+        
         <div className="space-y-2">
           {items.map((item: any) => (
+            <Link   to={`/borrowers/${item.borrower_id}`}>
+              
             <div
               key={item.reminder_id}
               className="rounded-xl border border-gray-200 bg-gray-50 p-4"
@@ -171,6 +176,7 @@ function ReminderSection({
                 </div>
               </div>
             </div>
+            </Link>
           ))}
         </div>
       )}
