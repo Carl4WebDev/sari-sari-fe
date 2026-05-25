@@ -70,7 +70,7 @@ className={`
 </div>
 
         {/* Navigation */}
-        <nav className="flex-1 px-3 py-6 space-y-2">
+<nav className="flex-1 overflow-y-auto px-3 py-6 space-y-2">
           <Link to={"/dashboard"} onClick={handleClose}>
             <SidebarItem label="Dashboard" />
           </Link>
