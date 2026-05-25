@@ -176,6 +176,7 @@ const handleBorrowerCreated = async (borrower: any) => {
       <span className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 text-sm">
         🔍
       </span>
+      
 
 <input
   placeholder="Search..."
@@ -238,64 +239,67 @@ const handleBorrowerCreated = async (borrower: any) => {
               to={`/borrowers/${b.borrower_id}`}
               className="block"
             >
-              <article className="rounded-2xl border bg-white p-4 shadow-sm transition hover:-translate-y-0.5 hover:border-[#1E3A8A] hover:shadow-md">
-                <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
-                  <div className="min-w-0">
-                    <div className="flex items-center gap-4">
-                      {b.profile_image_url ? (
-                        <img
-                          src={b.profile_image_url}
-                          alt={`${b.first_name} ${b.last_name}`}
-                          className="h-20 w-20 shrink-0 rounded-full border-4 border-[#1E3A8A] object-cover shadow-sm"
-                        />
-                      ) : (
-                        <div className="flex h-20 w-20 shrink-0 items-center justify-center rounded-full border-4 border-red-600 bg-red-100 text-xl font-bold text-red-700 shadow-sm">
-                          {b.first_name?.[0]}
-                          {b.last_name?.[0]}
-                        </div>
-                      )}
+<article className="rounded-2xl border border-gray-200 bg-white p-3 shadow-sm transition hover:border-[#1E3A8A] hover:shadow-md">
+  <div className="flex items-center gap-3">
+    
+    {/* Profile */}
+    {b.profile_image_url ? (
+      <img
+        src={b.profile_image_url}
+        alt={`${b.first_name} ${b.last_name}`}
+        className="h-14 w-14 shrink-0 rounded-full border-2 border-[#1E3A8A] object-cover"
+      />
+    ) : (
+      <div className="flex h-14 w-14 shrink-0 items-center justify-center rounded-full border-2 border-red-500 bg-red-100 text-sm font-bold text-red-700">
+        {b.first_name?.[0]}
+        {b.last_name?.[0]}
+      </div>
+    )}
 
-                      <div className="min-w-0">
-                        <h2 className="truncate text-base font-semibold text-gray-900">
-                          {b.first_name} {b.middle_name ?? ""} {b.last_name}
-                        </h2>
+    {/* Borrower Info */}
+    <div className="min-w-0 flex-1">
+      <div className="flex items-start justify-between gap-2">
+        
+        <div className="min-w-0">
+          <h2 className="truncate text-sm font-semibold text-gray-900">
+            {b.first_name} {b.middle_name ?? ""} {b.last_name}
+          </h2>
 
-                        <p className="mt-1 text-sm text-gray-500">
-                          📞 {b.contact_number || "No contact number"}
-                        </p>
+          <p className="mt-0.5 truncate text-xs text-gray-500">
+            📞 {b.contact_number || "No contact"}
+          </p>
 
-                        <p className="text-sm text-gray-500">
-                          Age: {calculateAge(b.dob)}
-                        </p>
-                      </div>
-                    </div>
-                  </div>
+          <p className="text-[11px] text-gray-400">
+            Age: {calculateAge(b.dob)}
+          </p>
+        </div>
 
-                  <div className="rounded-xl bg-gray-50 p-3 text-left sm:min-w-[150px] sm:text-right">
-                    <p className="text-xs font-medium text-gray-500">
-                      Total Balance
-                    </p>
+        {/* Balance */}
+        <div className="text-right">
+          <p className="text-[10px] uppercase tracking-wide text-gray-400">
+            Balance
+          </p>
 
-<p className="text-xl font-bold text-[#1E3A8A]">
-  ₱{Number(b.balance || 0).toLocaleString()}
-</p>
+          <p className="text-sm font-bold text-[#1E3A8A]">
+            ₱{Number(b.balance || 0).toLocaleString()}
+          </p>
 
-<div className="mt-2 flex justify-end">
-  <span
-    className={`rounded-full px-3 py-1 text-xs font-semibold ${
-      Number(b.balance || 0) <= 0
-        ? "bg-green-100 text-green-700"
-        : "bg-red-100 text-red-700"
-    }`}
-  >
-    {Number(b.balance || 0) <= 0
-      ? "Fully Paid"
-      : "With Balance"}
-  </span>
-</div>
-                  </div>
-                </div>
-              </article>
+          <span
+            className={`mt-1 inline-flex rounded-full px-2 py-0.5 text-[10px] font-semibold ${
+              Number(b.balance || 0) <= 0
+                ? "bg-green-100 text-green-700"
+                : "bg-red-100 text-red-700"
+            }`}
+          >
+            {Number(b.balance || 0) <= 0
+              ? "Paid"
+              : "Unpaid"}
+          </span>
+        </div>
+      </div>
+    </div>
+  </div>
+</article>
             </Link>
           ))}
 
