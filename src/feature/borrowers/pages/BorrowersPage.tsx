@@ -24,6 +24,7 @@ const {
 
   const [currentPage, setCurrentPage] = useState(1);
 const [isArchivedOpen, setIsArchivedOpen] = useState(false);
+const [isSearchFocused, setIsSearchFocused] = useState(false);
 
 const [globalModal, setGlobalModal] = useState({
   isOpen: false,
@@ -161,47 +162,66 @@ const handleBorrowerCreated = async (borrower: any) => {
         </div>
       </div>
 
-      {/* Search + Export */}
-      <div className="sticky top-0 z-10 rounded-2xl border bg-white p-3 shadow-sm">
-        <div className="flex flex-col gap-3 sm:flex-row">
-          <div className="relative flex-1">
-            <span className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400">
-              🔍
-            </span>
-
-            <input
-              placeholder="Search name or contact..."
-              value={search}
-              onChange={(e) => {
-                setSearch(e.target.value);
-                setCurrentPage(1);
-              }}
-              className="w-full rounded-xl border border-gray-300 py-3 pl-10 pr-3 text-sm outline-none transition focus:border-[#1E3A8A] focus:ring-2 focus:ring-blue-100"
-            />
-          </div>
-
-          <button
-  onClick={() => setIsAddBorrowerOpen(true)}
-  className="rounded-xl bg-green-600 px-5 py-3 text-sm font-semibold text-white shadow-sm transition hover:bg-green-700 sm:w-auto"
+{/* Floating Mobile Toolbar */}
+<div className="sticky top-0 z-20 px-1 py-2 backdrop-blur-sm">
+<div className="flex items-center gap-2 overflow-hidden rounded-2xl border border-gray-200 bg-white/95 p-2 shadow-lg">
+    
+    {/* Search */}
+<div
+  className={`
+    relative transition-all duration-300 ease-out
+    ${isSearchFocused ? "w-full" : "w-[45%]"}
+  `}
 >
-  Add Borrower
-</button>
+      <span className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 text-sm">
+        🔍
+      </span>
 
-          <button
-            onClick={handleExport}
-            className="rounded-xl bg-[#1E3A8A] px-5 py-3 text-sm font-semibold text-white shadow-sm transition hover:bg-[#172f70] sm:w-auto"
-          >
-            Export
-          </button>
+<input
+  placeholder="Search..."
+  value={search}
+  onFocus={() => setIsSearchFocused(true)}
+  onBlur={() => setIsSearchFocused(false)}
+  onChange={(e) => {
+    setSearch(e.target.value);
+    setCurrentPage(1);
+  }}
+  className="
+    w-full rounded-xl border border-gray-200
+    py-2.5 pl-9 pr-3 text-sm outline-none
+    transition-all duration-300
+    focus:border-[#1E3A8A]
+    focus:ring-2 focus:ring-blue-100
+    bg-white
+  "
+/>
+    </div>
 
-<button
-  onClick={() => setIsArchivedOpen(true)}
-  className="rounded-xl border border-[#1E3A8A] px-5 py-3 text-sm font-semibold text-[#1E3A8A] shadow-sm transition hover:bg-blue-50 sm:w-auto"
->
-  Archived
-</button>
-        </div>
-      </div>
+    {/* Add Borrower */}
+    <button
+      onClick={() => setIsAddBorrowerOpen(true)}
+      className="flex h-11 w-11 items-center justify-center rounded-xl bg-green-600 text-lg text-white shadow-sm transition hover:bg-green-700"
+    >
+      +
+    </button>
+
+    {/* Export */}
+    <button
+      onClick={handleExport}
+      className="flex h-11 w-11 items-center justify-center rounded-xl bg-[#1E3A8A] text-lg text-white shadow-sm transition hover:bg-[#172f70]"
+    >
+      🖨️
+    </button>
+
+    {/* Archived */}
+    <button
+      onClick={() => setIsArchivedOpen(true)}
+      className="flex h-11 w-11 items-center justify-center rounded-xl border border-[#1E3A8A] bg-white text-lg text-[#1E3A8A] shadow-sm transition hover:bg-blue-50"
+    >
+      📦
+    </button>
+  </div>
+</div>
 
       {/* Borrower List */}
       <div className="space-y-3">
