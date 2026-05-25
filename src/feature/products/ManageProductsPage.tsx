@@ -163,14 +163,19 @@ const handleArchive = async (productId: number) => {
 
       <div className="mt-2 flex justify-end gap-1">
         <button
-          onClick={() => handleOpenEdit(product)}
-          className="rounded-lg border border-[#1E3A8A] px-3 py-1.5 text-[11px] font-medium text-[#1E3A8A]"
+onClick={(e) => {
+  e.stopPropagation();
+  handleOpenEdit(product);
+}}          className="rounded-lg border border-[#1E3A8A] px-3 py-1.5 text-[11px] font-medium text-[#1E3A8A]"
         >
           Edit
         </button>
 
         <button
-          onClick={() => handleArchive(product.product_id)}
+          onClick={(e) => {
+  e.stopPropagation();
+  handleArchive(product.product_id);
+}}
           disabled={actionLoading}
           className="rounded-lg border border-red-600 px-3 py-1.5 text-[11px] font-medium text-red-600 disabled:opacity-50"
         >

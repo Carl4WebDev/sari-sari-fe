@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 
 import GlobalModal from "../../../shared/components/GlobalModal";
 
@@ -15,11 +15,171 @@ interface Props {
   mode: "add" | "edit";
   product?: Product | null;
   loading?: boolean;
-onSubmit: (payload: {
-  product_name: string;
-  product_price: number;
-}) => Promise<any>;
+  onSubmit: (payload: {
+    product_name: string;
+    product_price: number;
+  }) => Promise<any>;
 }
+
+const PRODUCT_SUGGESTIONS = [
+  "KOPIKO BROWN 3 IN 1",
+  "KOPIKO BLANCA",
+  "KOPIKO BLACK",
+  "NESCAFE ORIGINAL 3 IN 1",
+  "NESCAFE CREAMY WHITE",
+  "NESCAFE CLASSIC",
+  "GREAT TASTE WHITE",
+  "GREAT TASTE CHOCO",
+  "GREAT TASTE ORIGINAL",
+  "MILO SACHET",
+  "BEAR BRAND SACHET",
+  "ENERGEN CHOCOLATE",
+  "ENERGEN VANILLA",
+  "ENERGEN CHAMPION",
+  "COBRA ENERGY DRINK",
+  "STING ENERGY DRINK",
+  "RED BULL",
+  "EXTRA JOSS",
+  "C2 APPLE",
+  "C2 LEMON",
+  "C2 GREEN TEA",
+  "COCA-COLA MISMO",
+  "SPRITE MISMO",
+  "ROYAL MISMO",
+  "MOUNTAIN DEW",
+  "PEPSI",
+  "7 UP",
+  "MIRINDA",
+  "ZESTO ORANGE",
+  "ZESTO GRAPE",
+  "TANG ORANGE",
+  "TANG GRAPE",
+  "TANG MANGO",
+  "LUCKY ME BEEF",
+  "LUCKY ME CHICKEN",
+  "LUCKY ME BULALO",
+  "LUCKY ME LOMI",
+  "LUCKY ME PANCIT CANTON ORIGINAL",
+  "LUCKY ME PANCIT CANTON CHILIMANSI",
+  "LUCKY ME PANCIT CANTON KALAMANSI",
+  "LUCKY ME PANCIT CANTON SWEET AND SPICY",
+  "LUCKY ME PANCIT CANTON EXTRA HOT",
+  "PAYLESS XTRA BIG BEEF",
+  "PAYLESS XTRA BIG CHICKEN",
+  "NISSIN CUP NOODLES",
+  "555 SARDINES",
+  "MEGA SARDINES",
+  "LIGO SARDINES",
+  "YOUNGSTOWN SARDINES",
+  "ARGENTINA CORNED BEEF",
+  "PUREFOODS CORNED BEEF",
+  "CDO CORNED BEEF",
+  "CENTURY TUNA",
+  "555 TUNA",
+  "MEGA TUNA",
+  "SPAM",
+  "ARGENTINA MEATLOAF",
+  "RENO LIVER SPREAD",
+  "SKYFLAKES",
+  "FITA",
+  "HANSEL MOCHA",
+  "HANSEL MILK",
+  "CREAM-O CHOCOLATE",
+  "REBISCO CRACKERS",
+  "REBISCO SANDWICH",
+  "PIATTOS CHEESE",
+  "PIATTOS SOUR CREAM",
+  "NOVA COUNTRY CHEDDAR",
+  "CHEEZY RED",
+  "CHEEZY GREEN",
+  "BOY BAWANG GARLIC",
+  "BOY BAWANG CORNICK",
+  "OISHI PRAWN CRACKERS",
+  "CLOVER CHIPS",
+  "CHIPPY BBQ",
+  "VCUT",
+  "NAGARAYA CRACKER NUTS",
+  "MOBY CHOCOLATE",
+  "MOBY CARAMEL",
+  "MARLBORO RED",
+  "MARLBORO GOLD",
+  "MARLBORO CRAFTED",
+  "FORTUNE TRIBAL RED",
+  "FORTUNE TRIBAL BLUE",
+  "WINSTON RED",
+  "CAMEL YELLOW",
+  "HOPE MENTHOL",
+  "CHESTERFIELD",
+  "MIGHTY BLUE",
+  "MIGHTY RED",
+  "SAFEGUARD WHITE",
+  "SAFEGUARD BEIGE",
+  "PALMOLIVE GREEN",
+  "PALMOLIVE PINK",
+  "SURF POWDER",
+  "TIDE POWDER",
+  "ARIEL POWDER",
+  "DOWNY SUNRISE FRESH",
+  "CHAMPION DETERGENT",
+  "JOY DISHWASHING",
+  "ZONROX BLEACH",
+  "CALLA FABCON",
+  "COLGATE REGULAR",
+  "COLGATE COOL MINT",
+  "CLOSE UP RED",
+  "HEAD AND SHOULDERS",
+  "CREAM SILK PINK",
+  "PANTENE SHAMPOO",
+  "GARDENIA CLASSIC",
+  "MONAY",
+  "PANDESAL",
+  "EGG",
+  "RICE 1KG",
+  "RICE 5KG",
+  "SUGAR 1KG",
+  "BROWN SUGAR",
+  "SALT",
+  "SOY SAUCE",
+  "VINEGAR",
+  "COOKING OIL",
+  "DATU PUTI SOY SAUCE",
+  "DATU PUTI VINEGAR",
+  "SILVER SWAN SOY SAUCE",
+  "UFC BANANA KETCHUP",
+  "MANG TOMAS",
+  "ALASKA EVAPORADA",
+  "ALASKA CONDENSADA",
+  "ANGEL CONDENSED",
+  "NESTLE FRESH MILK",
+  "ALASKA FRESH MILK",
+  "YAKULT",
+  "HOTDOG",
+  "LONGGANISA",
+  "TOCINO",
+  "PUREFOODS HOTDOG",
+  "VIRGINIA HOTDOG",
+  "CHICKEN",
+  "PORK",
+  "BEEF",
+  "ICE CANDY",
+  "MINERAL WATER",
+  "WILKINS WATER",
+  "ABSOLUTE WATER",
+  "VITAMILK",
+  "OATIES",
+  "FRESCA TUNA",
+  "KERATIN PLUS",
+  "BIODERM SOAP",
+  "MASTER SARDINES",
+  "BINGO ORANGE",
+  "BINGO CHOCOLATE",
+  "PRESTO PEANUT BUTTER",
+  "PRESTO CHOCOLATE",
+  "HAPPY PEANUTS",
+  "MILO DRINK",
+  "RC COLA",
+  "LIPTON ICED TEA",
+];
 
 export default function ProductModal({
   isOpen,
@@ -36,12 +196,15 @@ export default function ProductModal({
     price: "",
   });
 
+  const [showSuggestions, setShowSuggestions] =
+    useState(false);
+
   const [globalModal, setGlobalModal] = useState({
-  isOpen: false,
-  title: "",
-  message: "",
-  type: "info",
-});
+    isOpen: false,
+    title: "",
+    message: "",
+    type: "info",
+  });
 
   useEffect(() => {
     if (isOpen) {
@@ -62,8 +225,21 @@ export default function ProductModal({
       }
     } else {
       setAnimate(false);
+      setShowSuggestions(false);
     }
   }, [isOpen, mode, product]);
+
+  const filteredSuggestions = useMemo(() => {
+    if (!form.product_name.trim()) {
+      return PRODUCT_SUGGESTIONS.slice(0, 15);
+    }
+
+    return PRODUCT_SUGGESTIONS.filter((item) =>
+      item
+        .toLowerCase()
+        .includes(form.product_name.toLowerCase())
+    ).slice(0, 15);
+  }, [form.product_name]);
 
   if (!isOpen) return null;
 
@@ -74,36 +250,39 @@ export default function ProductModal({
     }));
   };
 
-const handleSubmit = async () => {
-  if (!form.product_name.trim()) {
-    setGlobalModal({
-  isOpen: true,
-  title: "Copied",
-  message: "Product name is required",
-  type: "success",
-});
-    return;
-  }
+  const handleSubmit = async () => {
+    if (!form.product_name.trim()) {
+      setGlobalModal({
+        isOpen: true,
+        title: "Missing Product",
+        message: "Product name is required",
+        type: "error",
+      });
 
-  if (!form.price || Number(form.price) <= 0) {
-    setGlobalModal({
-  isOpen: true,
-  title: "Copied",
-  message: "Valid price is required.",
-  type: "success",
-});
-    return;
-  }
+      return;
+    }
 
-  const res = await onSubmit({
-    product_name: form.product_name.trim(),
-    product_price: Number(form.price),
-  });
+    if (!form.price || Number(form.price) <= 0) {
+      setGlobalModal({
+        isOpen: true,
+        title: "Invalid Price",
+        message: "Valid price is required.",
+        type: "error",
+      });
 
-  if (res?.ok) {
-    isClose();
-  }
-};
+      return;
+    }
+
+    const res = await onSubmit({
+      product_name: form.product_name.trim(),
+      product_price: Number(form.price),
+    });
+
+    if (res?.ok) {
+      isClose();
+    }
+  };
+
   return (
     <div
       className="fixed inset-0 z-50 bg-black/40 transition-opacity duration-300"
@@ -115,12 +294,15 @@ const handleSubmit = async () => {
         }`}
         onClick={(e) => e.stopPropagation()}
       >
-        <div className="p-6 space-y-6">
+        <div className="max-h-[90vh] overflow-y-auto p-6 space-y-6">
           <h2 className="text-lg font-semibold text-[#1E3A8A]">
-            {mode === "add" ? "Add Product" : "Edit Product"}
+            {mode === "add"
+              ? "Add Product"
+              : "Edit Product"}
           </h2>
 
           <div className="space-y-4">
+            {/* Product Name */}
             <div className="space-y-2">
               <label className="text-xs font-medium text-gray-500">
                 Product Name
@@ -128,12 +310,46 @@ const handleSubmit = async () => {
 
               <input
                 value={form.product_name}
-                onChange={(e) => handleChange("product_name", e.target.value)}
-                placeholder="Example: Sardines"
+                onFocus={() => setShowSuggestions(true)}
+                onChange={(e) =>
+                  handleChange(
+                    "product_name",
+                    e.target.value
+                  )
+                }
+                placeholder="Search or type product..."
                 className="w-full rounded-lg border border-gray-300 px-3 py-3 text-sm outline-none focus:border-[#1E3A8A] focus:ring-1 focus:ring-[#1E3A8A]"
               />
+
+              {/* Suggestions */}
+              {showSuggestions && (
+                <div className="max-h-64 overflow-y-auto rounded-xl border border-gray-200 bg-white shadow-sm">
+                  {filteredSuggestions.map((item) => (
+                    <button
+                      key={item}
+                      type="button"
+                      onClick={() => {
+                        setForm((prev) => ({
+                          ...prev,
+                          product_name: item,
+                        }));
+
+                        setShowSuggestions(false);
+                      }}
+                      className="flex w-full items-center justify-between border-b border-gray-100 px-3 py-3 text-left text-sm transition hover:bg-blue-50"
+                    >
+                      <span>{item}</span>
+
+                      <span className="text-xs text-gray-400">
+                        Suggested
+                      </span>
+                    </button>
+                  ))}
+                </div>
+              )}
             </div>
 
+            {/* Price */}
             <div className="space-y-2">
               <label className="text-xs font-medium text-gray-500">
                 Price
@@ -142,7 +358,9 @@ const handleSubmit = async () => {
               <input
                 type="number"
                 value={form.price}
-                onChange={(e) => handleChange("price", e.target.value)}
+                onChange={(e) =>
+                  handleChange("price", e.target.value)
+                }
                 placeholder="Example: 25"
                 className="w-full rounded-lg border border-gray-300 px-3 py-3 text-sm outline-none focus:border-[#1E3A8A] focus:ring-1 focus:ring-[#1E3A8A]"
               />
@@ -172,18 +390,19 @@ const handleSubmit = async () => {
           </div>
         </div>
       </div>
+
       <GlobalModal
-  isOpen={globalModal.isOpen}
-  title={globalModal.title}
-  message={globalModal.message}
-  type={globalModal.type as any}
-  onClose={() =>
-    setGlobalModal({
-      ...globalModal,
-      isOpen: false,
-    })
-  }
-/>
+        isOpen={globalModal.isOpen}
+        title={globalModal.title}
+        message={globalModal.message}
+        type={globalModal.type as any}
+        onClose={() =>
+          setGlobalModal({
+            ...globalModal,
+            isOpen: false,
+          })
+        }
+      />
     </div>
   );
 }
