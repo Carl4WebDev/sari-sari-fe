@@ -209,7 +209,7 @@ onClick={(e) => {
         )}
       </div>
       {/* Floating Product Footer Actions */}
-<div className="fixed bottom-0 left-0 z-40 w-full border-t border-gray-200 bg-white/95 backdrop-blur">
+<div className="fixed bottom-0 left-0 z-30 w-full border-t border-gray-200 bg-white/95 backdrop-blur">
   <div className="mx-auto grid max-w-2xl grid-cols-2 gap-2 p-3">
 
     {/* Add Product */}

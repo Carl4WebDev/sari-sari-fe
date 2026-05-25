@@ -126,7 +126,7 @@ const handleBorrowerCreated = async (borrower: any) => {
 
   return (
     
-    <div className="min-h-screen space-y-5 pb-24">
+    <div className="min-h-screen pb-24 space-y-5">
 <ArchivedBorrowersModal
   isOpen={isArchivedOpen}
   isClose={() => setIsArchivedOpen(false)}
@@ -162,68 +162,36 @@ const handleBorrowerCreated = async (borrower: any) => {
         </div>
       </div>
 
-{/* Floating Mobile Toolbar */}
-<div className="sticky top-0 z-20 px-1 py-2 backdrop-blur-sm">
-<div className="flex items-center gap-2 overflow-hidden rounded-2xl border border-gray-200 bg-white/95 p-2 shadow-lg">
+{/* Sticky Search */}
+<div className="sticky top-0 z-30 px-1 py-2 backdrop-blur-sm">
+  <div className="rounded-2xl border border-gray-200 bg-white/95 p-2 shadow-lg">
     
-    {/* Search */}
-<div
-  className={`
-    relative transition-all duration-300 ease-out
-    ${isSearchFocused ? "w-full" : "w-[45%]"}
-  `}
->
+    <div className="relative">
       <span className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 text-sm">
         🔍
       </span>
-      
 
-<input
-  placeholder="Search..."
-  value={search}
-  onFocus={() => setIsSearchFocused(true)}
-  onBlur={() => setIsSearchFocused(false)}
-  onChange={(e) => {
-    setSearch(e.target.value);
-    setCurrentPage(1);
-  }}
-  className="
-    w-full rounded-xl border border-gray-200
-    py-2.5 pl-9 pr-3 text-sm outline-none
-    transition-all duration-300
-    focus:border-[#1E3A8A]
-    focus:ring-2 focus:ring-blue-100
-    bg-white
-  "
-/>
+      <input
+        placeholder="Search..."
+        value={search}
+        onFocus={() => setIsSearchFocused(true)}
+        onBlur={() => setIsSearchFocused(false)}
+        onChange={(e) => {
+          setSearch(e.target.value);
+          setCurrentPage(1);
+        }}
+        className="
+          w-full rounded-xl border border-gray-200
+          py-2.5 pl-9 pr-3 text-sm outline-none
+          transition-all duration-300
+          focus:border-[#1E3A8A]
+          focus:ring-2 focus:ring-blue-100
+          bg-white
+        "
+      />
     </div>
-
-    {/* Add Borrower */}
-    <button
-      onClick={() => setIsAddBorrowerOpen(true)}
-      className="flex h-11 w-11 items-center justify-center rounded-xl bg-green-600 text-lg text-white shadow-sm transition hover:bg-green-700"
-    >
-      +
-    </button>
-
-    {/* Export */}
-    <button
-      onClick={handleExport}
-      className="flex h-11 w-11 items-center justify-center rounded-xl bg-[#1E3A8A] text-lg text-white shadow-sm transition hover:bg-[#172f70]"
-    >
-      🖨️
-    </button>
-
-    {/* Archived */}
-    <button
-      onClick={() => setIsArchivedOpen(true)}
-      className="flex h-11 w-11 items-center justify-center rounded-xl border border-[#1E3A8A] bg-white text-lg text-[#1E3A8A] shadow-sm transition hover:bg-blue-50"
-    >
-      📦
-    </button>
   </div>
 </div>
-
       {/* Borrower List */}
       <div className="space-y-3">
         {loading && (
@@ -340,6 +308,47 @@ const handleBorrowerCreated = async (borrower: any) => {
               Next
             </button>
           </div>
+          {/* Floating Footer Actions */}
+<div className="fixed bottom-0 left-0 z-40 w-full border-t border-gray-200 bg-white/95 backdrop-blur">
+  <div className="mx-auto grid max-w-2xl grid-cols-3 gap-2 p-3">
+
+    {/* Add Borrower */}
+    <button
+      onClick={() => setIsAddBorrowerOpen(true)}
+      className="flex flex-col items-center justify-center rounded-xl bg-green-600 py-2 text-white shadow-sm transition hover:bg-green-700"
+    >
+      <span className="text-lg">＋</span>
+
+      <span className="mt-1 text-[11px] font-medium">
+        Borrower
+      </span>
+    </button>
+
+    {/* Export */}
+    <button
+      onClick={handleExport}
+      className="flex flex-col items-center justify-center rounded-xl bg-[#1E3A8A] py-2 text-white shadow-sm transition hover:bg-[#172f70]"
+    >
+      <span className="text-lg">🖨️</span>
+
+      <span className="mt-1 text-[11px] font-medium">
+        Export
+      </span>
+    </button>
+
+    {/* Archived */}
+    <button
+      onClick={() => setIsArchivedOpen(true)}
+      className="flex flex-col items-center justify-center rounded-xl border border-[#1E3A8A] py-2 text-[#1E3A8A] shadow-sm transition hover:bg-blue-50"
+    >
+      <span className="text-lg">📦</span>
+
+      <span className="mt-1 text-[11px] font-medium">
+        Archive
+      </span>
+    </button>
+  </div>
+</div>
         </div>
       )}
       <GlobalModal

@@ -765,7 +765,7 @@ className="h-56 w-56 lg:h-64 lg:w-64 rounded-full border-4 border-[#1E3A8A] obje
 
 {/* Mobile Bottom Footer Actions */}
 <div className="
-  fixed bottom-0 left-0 z-40 w-full
+  fixed bottom-0 left-0 z-30 w-full
   border-t border-gray-200 bg-white/95 backdrop-blur
 ">
   <div className="mx-auto grid max-w-2xl grid-cols-3 gap-2 p-3">
