@@ -389,45 +389,6 @@ const handleDeleteNote = async (noteId: number) => {
     📩 Copy Loan Status Link
   </button>
 </div>
-          {/* Actions */}
-          <div className="flex gap-2 justify-center">
-            <button
-              onClick={() => setIsLoanModalOpen(true)}
-              className="w-1/3 rounded-xl border border-[#1E3A8A] py-3 text-[#1E3A8A] font-semibold"
-            >
-              + Add Loan
-            </button>
-
-            <button
-              onClick={() => setIsPaymentModalOpen(true)}
-              className="w-1/3 rounded-xl bg-[#16A34A] py-3 text-white font-semibold"
-            >
-              + Add Payment
-            </button>
-
-            
-            <button
-  disabled={balance > 0 || !borrower.is_active}
-  onClick={async () => {
-    const confirmed = window.confirm(
-      "Archive this borrower?"
-    );
-
-    if (!confirmed) return;
-
-    await archiveBorrower(borrower.borrower_id);
-
-    await fetchBorrowers();
-
-    navigate("/borrowers");
-  }}
-  className="w-1/3 rounded-xl bg-gray-700 py-3 text-white font-semibold disabled:opacity-50"
->
-  Archive Borrower
-</button>
-
-
-          </div>
 
           <button
   onClick={() => setIsReminderModalOpen(true)}
@@ -530,7 +491,7 @@ className="h-56 w-56 lg:h-64 lg:w-64 rounded-full border-4 border-[#1E3A8A] obje
       </div>
 
       {/* Transactions */}
-      <div className="space-y-4">
+<div className="space-y-4 pb-24">
         {paginatedTransactions.map((t) => (
           <div
             key={t.id}
@@ -765,6 +726,101 @@ className="h-56 w-56 lg:h-64 lg:w-64 rounded-full border-4 border-[#1E3A8A] obje
       Send
     </button>
   </div>
+  {/* Desktop Actions */}
+<div className="hidden lg:flex gap-2 justify-center">
+  <button
+    onClick={() => setIsLoanModalOpen(true)}
+    className="w-1/3 rounded-xl border border-[#1E3A8A] py-3 font-semibold text-[#1E3A8A]"
+  >
+    + Add Loan
+  </button>
+
+  <button
+    onClick={() => setIsPaymentModalOpen(true)}
+    className="w-1/3 rounded-xl bg-[#16A34A] py-3 font-semibold text-white"
+  >
+    + Add Payment
+  </button>
+
+  <button
+    disabled={balance > 0 || !borrower.is_active}
+    onClick={async () => {
+      const confirmed = window.confirm(
+        "Archive this borrower?"
+      );
+
+      if (!confirmed) return;
+
+      await archiveBorrower(borrower.borrower_id);
+
+      await fetchBorrowers();
+
+      navigate("/borrowers");
+    }}
+    className="w-1/3 rounded-xl bg-gray-700 py-3 font-semibold text-white disabled:opacity-50"
+  >
+    Archive Borrower
+  </button>
+</div>
+
+{/* Mobile Bottom Footer Actions */}
+<div className="
+  fixed bottom-0 left-0 z-40 w-full
+  border-t border-gray-200 bg-white/95 backdrop-blur
+">
+  <div className="mx-auto grid max-w-2xl grid-cols-3 gap-2 p-3">
+
+    {/* Loan */}
+    <button
+      onClick={() => setIsLoanModalOpen(true)}
+      className="flex flex-col items-center justify-center rounded-xl border border-[#1E3A8A] py-2 text-[#1E3A8A]"
+    >
+      <span className="text-lg">🧾</span>
+
+      <span className="mt-1 text-[11px] font-medium">
+        Add Loan
+      </span>
+    </button>
+
+    {/* Payment */}
+    <button
+      onClick={() => setIsPaymentModalOpen(true)}
+      className="flex flex-col items-center justify-center rounded-xl bg-[#16A34A] py-2 text-white"
+    >
+      <span className="text-lg">₱</span>
+
+      <span className="mt-1 text-[11px] font-medium">
+        Add Payment
+      </span>
+    </button>
+
+    {/* Archive */}
+    <button
+      disabled={balance > 0 || !borrower.is_active}
+      onClick={async () => {
+        const confirmed = window.confirm(
+          "Archive this borrower?"
+        );
+
+        if (!confirmed) return;
+
+        await archiveBorrower(borrower.borrower_id);
+
+        await fetchBorrowers();
+
+        navigate("/borrowers");
+      }}
+      className="flex flex-col items-center justify-center rounded-xl bg-gray-700 py-2 text-white disabled:opacity-50"
+    >
+      <span className="text-lg">📦</span>
+
+      <span className="mt-1 text-[11px] font-medium">
+        Add Archive
+      </span>
+    </button>
+  </div>
+
+</div>
 </div>
 <GlobalModal
   isOpen={globalModal.isOpen}

@@ -101,12 +101,10 @@ const handleArchive = async (productId: number) => {
         </div>
       </div>
 
-{/* Compact Floating Toolbar */}
+{/* Sticky Search */}
 <div className="sticky top-0 z-20 px-1 py-2 backdrop-blur-sm">
-  <div className="flex items-center gap-2 overflow-hidden rounded-2xl border border-gray-200 bg-white/95 p-2 shadow-lg">
-
-    {/* Search */}
-    <div className="relative flex-1">
+  <div className="rounded-2xl border border-gray-200 bg-white/95 p-2 shadow-lg">
+    <div className="relative">
       <span className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 text-sm">
         🔍
       </span>
@@ -118,22 +116,6 @@ const handleArchive = async (productId: number) => {
         className="w-full rounded-xl border border-gray-200 py-2.5 pl-9 pr-3 text-sm outline-none transition focus:border-[#1E3A8A] focus:ring-2 focus:ring-blue-100"
       />
     </div>
-
-    {/* Add */}
-    <button
-      onClick={handleOpenAdd}
-      className="flex h-11 w-11 items-center justify-center rounded-xl bg-green-600 text-lg text-white shadow-sm transition hover:bg-green-700"
-    >
-      +
-    </button>
-
-    {/* Archived */}
-    <button
-      onClick={() => setIsArchivedOpen(true)}
-      className="flex h-11 w-11 items-center justify-center rounded-xl border border-[#1E3A8A] bg-white text-lg text-[#1E3A8A] shadow-sm transition hover:bg-blue-50"
-    >
-      📦
-    </button>
   </div>
 </div>
 
@@ -192,7 +174,7 @@ const handleArchive = async (productId: number) => {
           disabled={actionLoading}
           className="rounded-lg border border-red-600 px-3 py-1.5 text-[11px] font-medium text-red-600 disabled:opacity-50"
         >
-          Delete
+          archive
         </button>
       </div>
     </div>
@@ -221,6 +203,35 @@ const handleArchive = async (productId: number) => {
           </div>
         )}
       </div>
+      {/* Floating Product Footer Actions */}
+<div className="fixed bottom-0 left-0 z-40 w-full border-t border-gray-200 bg-white/95 backdrop-blur">
+  <div className="mx-auto grid max-w-2xl grid-cols-2 gap-2 p-3">
+
+    {/* Add Product */}
+    <button
+      onClick={handleOpenAdd}
+      className="flex flex-col items-center justify-center rounded-xl bg-green-600 py-2 text-white shadow-sm transition hover:bg-green-700"
+    >
+      <span className="text-lg">＋</span>
+
+      <span className="mt-1 text-[11px] font-medium">
+        Add Product
+      </span>
+    </button>
+
+    {/* Archived */}
+    <button
+      onClick={() => setIsArchivedOpen(true)}
+      className="flex flex-col items-center justify-center rounded-xl border border-[#1E3A8A] py-2 text-[#1E3A8A] shadow-sm transition hover:bg-blue-50"
+    >
+      <span className="text-lg">📦</span>
+
+      <span className="mt-1 text-[11px] font-medium">
+        Archived
+      </span>
+    </button>
+  </div>
+</div>
     </div>
   );
 }
