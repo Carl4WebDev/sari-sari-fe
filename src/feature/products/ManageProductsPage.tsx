@@ -101,37 +101,41 @@ const handleArchive = async (productId: number) => {
         </div>
       </div>
 
-      {/* Search + Add */}
-      <div className="sticky top-0 z-10 rounded-2xl border bg-white p-3 shadow-sm">
-        <div className="flex flex-col gap-3 sm:flex-row">
-          <div className="relative flex-1">
-            <span className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400">
-              🔍
-            </span>
+{/* Compact Floating Toolbar */}
+<div className="sticky top-0 z-20 px-1 py-2 backdrop-blur-sm">
+  <div className="flex items-center gap-2 overflow-hidden rounded-2xl border border-gray-200 bg-white/95 p-2 shadow-lg">
 
-            <input
-              value={search}
-              onChange={(e) => setSearch(e.target.value)}
-              placeholder="Search product..."
-              className="w-full rounded-xl border border-gray-300 py-3 pl-10 pr-3 text-sm outline-none transition focus:border-[#1E3A8A] focus:ring-2 focus:ring-blue-100"
-            />
-          </div>
-                    <button
-            onClick={handleOpenAdd}
-            className="rounded-xl bg-[#1E3A8A] px-5 py-3 text-sm font-semibold text-white shadow-sm transition hover:bg-[#172f70]"
-          >
-            + Add Product
-          </button>
+    {/* Search */}
+    <div className="relative flex-1">
+      <span className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 text-sm">
+        🔍
+      </span>
 
-          <button
-  onClick={() => setIsArchivedOpen(true)}
-  className="rounded-xl border border-[#1E3A8A] px-5 py-3 text-sm font-semibold text-[#1E3A8A] shadow-sm transition hover:bg-blue-50"
->
-  Archived
-</button>
+      <input
+        value={search}
+        onChange={(e) => setSearch(e.target.value)}
+        placeholder="Search product..."
+        className="w-full rounded-xl border border-gray-200 py-2.5 pl-9 pr-3 text-sm outline-none transition focus:border-[#1E3A8A] focus:ring-2 focus:ring-blue-100"
+      />
+    </div>
 
-        </div>
-      </div>
+    {/* Add */}
+    <button
+      onClick={handleOpenAdd}
+      className="flex h-11 w-11 items-center justify-center rounded-xl bg-green-600 text-lg text-white shadow-sm transition hover:bg-green-700"
+    >
+      +
+    </button>
+
+    {/* Archived */}
+    <button
+      onClick={() => setIsArchivedOpen(true)}
+      className="flex h-11 w-11 items-center justify-center rounded-xl border border-[#1E3A8A] bg-white text-lg text-[#1E3A8A] shadow-sm transition hover:bg-blue-50"
+    >
+      📦
+    </button>
+  </div>
+</div>
 
       {/* Product List */}
       <div className="space-y-3">
@@ -143,43 +147,57 @@ const handleArchive = async (productId: number) => {
 
         {!loading &&
           filteredProducts.map((product: Product) => (
-            <article
-              key={product.product_id}
-              className="rounded-2xl border bg-white p-4 shadow-sm"
-            >
-              <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
-                <div>
-                  <p className="text-base font-semibold text-gray-900">
-                    {product.product_name}
-                  </p>
+<article
+  key={product.product_id}
+  className="rounded-2xl border border-gray-200 bg-white p-3 shadow-sm transition hover:border-[#1E3A8A] hover:shadow-md"
+>
+  <div className="flex items-center justify-between gap-3">
 
-                  <p className="mt-1 text-sm text-gray-500">
-                    Product ID: {product.product_id}
-                  </p>
-                </div>
+    {/* Product Info */}
+    <div className="min-w-0 flex-1">
+      <div className="flex items-center gap-2">
 
-                <div className="flex flex-col gap-3 sm:items-end">
-                  <p className="text-xl font-bold text-[#1E3A8A]">
-₱{Number(product.product_price || 0).toLocaleString()}                  </p>
+        <div className="min-w-0">
+          <h2 className=" text-[15px] font-semibold text-gray-900">
+            {product.product_name}
+          </h2>
 
-                  <div className="grid grid-cols-2 gap-2 sm:flex">
-                    <button
-                      onClick={() => handleOpenEdit(product)}
-                      className="rounded-lg border border-[#1E3A8A] px-4 py-2 text-sm font-medium text-[#1E3A8A]"
-                    >
-                      Edit
-                    </button>
+          <p className="mt-0.5 text-[11px] text-gray-400">
+            Product ID: {product.product_id}
+          </p>
+        </div>
+      </div>
+    </div>
 
-                    <button
-onClick={() => handleArchive(product.product_id)}                      disabled={actionLoading}
-                      className="rounded-lg border border-red-600 px-4 py-2 text-sm font-medium text-red-600 disabled:opacity-50"
-                    >
-                      Delete
-                    </button>
-                  </div>
-                </div>
-              </div>
-            </article>
+    {/* Right Side */}
+    <div className="text-right">
+      <p className="text-[10px] uppercase tracking-wide text-gray-400">
+        Price
+      </p>
+
+      <p className="text-sm font-bold text-[#1E3A8A]">
+        ₱{Number(product.product_price || 0).toLocaleString()}
+      </p>
+
+      <div className="mt-2 flex justify-end gap-1">
+        <button
+          onClick={() => handleOpenEdit(product)}
+          className="rounded-lg border border-[#1E3A8A] px-3 py-1.5 text-[11px] font-medium text-[#1E3A8A]"
+        >
+          Edit
+        </button>
+
+        <button
+          onClick={() => handleArchive(product.product_id)}
+          disabled={actionLoading}
+          className="rounded-lg border border-red-600 px-3 py-1.5 text-[11px] font-medium text-red-600 disabled:opacity-50"
+        >
+          Delete
+        </button>
+      </div>
+    </div>
+  </div>
+</article>
           ))}
 
         {!loading && filteredProducts.length === 0 && (
