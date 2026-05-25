@@ -41,16 +41,16 @@ export default function Sidebar() {
       />
 
       {/* Sidebar */}
-      <aside
-        className={`
-          fixed top-0 left-0 z-40
-          h-screen flex flex-col bg-white
-          border-r border-gray-200
-          ${isMobile ? "w-full" : "w-56"}
-          transform transition-transform duration-300 ease-in-out
-          ${isOpen ? "translate-x-0" : "-translate-x-full"}
-        `}
-      >
+<aside
+  className={`
+    fixed top-0 left-0 z-40
+    h-screen overflow-y-auto flex flex-col bg-white
+    border-r border-gray-200
+    ${isMobile ? "w-full" : "w-56"}
+    transform transition-transform duration-300 ease-in-out
+    ${isOpen ? "translate-x-0" : "-translate-x-full"}
+  `}
+>
 {/* Header */}
 <div className="border-b border-gray-200 px-5 py-6 text-center">
   <p className="text-xs font-medium uppercase tracking-wide text-gray-400">
