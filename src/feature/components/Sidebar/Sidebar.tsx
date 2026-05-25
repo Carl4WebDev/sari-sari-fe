@@ -42,9 +42,10 @@ export default function Sidebar() {
 
       {/* Sidebar */}
 <aside
-  className={`
-    fixed top-0 left-0 z-40
-    h-screen overflow-y-auto flex flex-col bg-white
+className={`
+  fixed inset-y-0 left-0 z-40
+  flex flex-col bg-white
+  overflow-hidden
     border-r border-gray-200
     ${isMobile ? "w-full" : "w-56"}
     transform transition-transform duration-300 ease-in-out
