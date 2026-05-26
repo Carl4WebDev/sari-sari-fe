@@ -3,6 +3,7 @@ import { useBorrower } from "../../context/borrowers/useBorrower";
 import { useLoan } from "../../context/loans/useLoan";
 import { useProduct } from "../../context/products/useProduct";
 import ProductModal from "../../products/modals/ProductModal";
+import GlobalModal from "../../../shared/components/GlobalModal";
 
 interface Borrower {
   borrower_id: number;
@@ -29,8 +30,8 @@ export default function AddLoanModal({
 }: Props) {
 
   const { borrowers, fetchBorrowers } = useBorrower();
-  const { createLoan } = useLoan();
-  const { products, fetchProducts, createProduct } = useProduct();
+  const { createLoan, error: loanError, clearError: clearLoanError } = useLoan();
+  const { products, fetchProducts, createProduct, error: productError, clearError: clearProductError } = useProduct();
 
   const [animate, setAnimate] = useState(false);
   const [search, setSearch] = useState("");
@@ -45,6 +46,25 @@ const [isProductModalOpen, setIsProductModalOpen] =
 
 const [newProductName, setNewProductName] =
   useState("");
+
+const [globalModal, setGlobalModal] = useState({
+  isOpen: false,
+  title: "",
+  message: "",
+  type: "info",
+});
+
+useEffect(() => {
+  if (loanError) {
+    setGlobalModal({ isOpen: true, title: "Error", message: loanError, type: "error" });
+  }
+}, [loanError]);
+
+useEffect(() => {
+  if (productError) {
+    setGlobalModal({ isOpen: true, title: "Error", message: productError, type: "error" });
+  }
+}, [productError]);
 
 const resetLoanForm = () => {
   setSearch("");
@@ -61,6 +81,8 @@ const resetLoanForm = () => {
   useEffect(() => {
     if (!isOpen) return;
 
+    clearLoanError();
+    clearProductError();
     fetchBorrowers();
     fetchProducts();
 
@@ -156,7 +178,15 @@ const resetLoanForm = () => {
 
   const handleSubmit = async () => {
 
-    if (!selectedBorrower) return;
+    if (!selectedBorrower) {
+      setGlobalModal({
+        isOpen: true,
+        title: "Required",
+        message: "Please select a borrower.",
+        type: "warning",
+      });
+      return;
+    }
 
     const payload = {
       borrower_id: selectedBorrower.borrower_id,
@@ -169,12 +199,20 @@ const resetLoanForm = () => {
 
     const res = await createLoan(payload);
 
-if (res?.ok) {
+if (!res?.ok) {
+  setGlobalModal({
+    isOpen: true,
+    title: "Error",
+    message: res?.message || "Failed to create loan",
+    type: "error",
+  });
+  return;
+}
+
   await onLoanCreated?.();
 
   resetLoanForm();
   isClose();
-}
   }
   
 
@@ -186,20 +224,20 @@ if (res?.ok) {
 <div
   onClick={(e) => e.stopPropagation()}
   className={`
-    fixed top-0 left-0 h-screen w-full overflow-auto bg-white
+    fixed top-0 left-0 flex h-screen w-full flex-col bg-white
     rounded-b-2xl shadow-xl
     transform transition-transform duration-300 ease-out
     ${animate ? "translate-y-0" : "-translate-y-full"}
   `}
 >
-        <div className="p-6 space-y-6">
+        {/* Sticky Header */}
+        <div className="shrink-0 p-6 pb-4">
           <h2 className="text-lg font-semibold text-[#1E3A8A]">
             Add Loan
           </h2>
-          
 
           {/* Borrower Search */}
-          <div className="space-y-2">
+          <div className="mt-4 space-y-2">
             <div className="flex gap-2">
               <input
                 placeholder="Search borrower..."
@@ -215,25 +253,44 @@ if (res?.ok) {
               </button>
             </div>
 
-            <div className="max-h-32 overflow-y-auto space-y-1">
-              {filteredBorrowers.map((b) => (
-                <div
-                  key={b.borrower_id}
-                  onClick={() => setSelectedBorrower(b)}
-                  className={`px-3 py-2 rounded-lg text-sm cursor-pointer ${
-                    selectedBorrower?.borrower_id === b.borrower_id
-                      ? "bg-[#1E3A8A] text-white"
-                      : "hover:bg-gray-100"
-                  }`}
-                >
-                  {b.first_name} {b.last_name}
-                </div>
-              ))}
-            </div>
-          </div>
+            {search && !selectedBorrower && (
+              <div className="max-h-32 overflow-y-auto space-y-1">
+                {filteredBorrowers.map((b) => (
+                  <div
+                    key={b.borrower_id}
+                    onClick={() => {
+                      setSelectedBorrower(b);
+                      setSearch(`${b.first_name} ${b.last_name}`);
+                    }}
+                    className="px-3 py-2 rounded-lg text-sm cursor-pointer hover:bg-gray-100"
+                  >
+                    {b.first_name} {b.last_name}
+                  </div>
+                ))}
+              </div>
+            )}
 
-          {/* Loan Items */}
-          <div className="space-y-4">
+            {selectedBorrower && (
+              <div className="flex items-center justify-between rounded-lg bg-blue-50 px-3 py-2">
+                <span className="text-sm font-medium text-[#1E3A8A]">
+                  {selectedBorrower.first_name} {selectedBorrower.last_name}
+                </span>
+                <button
+                  onClick={() => {
+                    setSelectedBorrower(null);
+                    setSearch("");
+                  }}
+                  className="text-xs text-red-500"
+                >
+                  Change
+                </button>
+              </div>
+            )}
+          </div>
+        </div>
+
+        {/* Scrollable Items Area */}
+        <div className="flex-1 overflow-y-auto px-6 pb-4 space-y-4">
             {items.map((item, index) => (
               <div
                 key={index}
@@ -269,8 +326,6 @@ if (res?.ok) {
     </option>
   ))}
 </select>
-
-
 
 {item.product.trim() &&
   !products.some(
@@ -331,8 +386,18 @@ if (res?.ok) {
                 )}
               </div>
             ))}
-          </div>
 
+            <button
+              type="button"
+              onClick={() => setIsProductModalOpen(true)}
+              className="w-full rounded-xl border border-dashed border-[#1E3A8A] bg-blue-50 py-3 text-sm font-medium text-[#1E3A8A] transition hover:bg-blue-100"
+            >
+              + Add New Product
+            </button>
+        </div>
+
+        {/* Sticky Footer */}
+        <div className="shrink-0 border-t border-gray-100 p-6 pt-4">
           <div className="flex gap-3">
 <button
   onClick={() => {
@@ -351,20 +416,29 @@ if (res?.ok) {
               Save Loan
             </button>
           </div>
-          <button
-  type="button"
-  onClick={() => setIsProductModalOpen(true)}
-  className="w-full rounded-xl border border-dashed border-[#1E3A8A] bg-blue-50 py-3 text-sm font-medium text-[#1E3A8A] transition hover:bg-blue-100"
->
-  + Add New Product
-</button>
         </div>
       </div>
 <ProductModal
   isOpen={isProductModalOpen}
   isClose={() => setIsProductModalOpen(false)}
   mode="add"
+  initialProductName={newProductName}
   onSubmit={createProduct}
+/>
+
+<GlobalModal
+  isOpen={globalModal.isOpen}
+  title={globalModal.title}
+  message={globalModal.message}
+  type={globalModal.type as any}
+  onClose={() => {
+    setGlobalModal({
+      ...globalModal,
+      isOpen: false,
+    });
+    clearLoanError();
+    clearProductError();
+  }}
 />
 
     </div>

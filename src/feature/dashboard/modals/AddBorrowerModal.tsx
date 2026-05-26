@@ -1,5 +1,6 @@
 import { useEffect, useState } from "react";
 import { useBorrower } from "../../context/borrowers/useBorrower";
+import GlobalModal from "../../../shared/components/GlobalModal";
 
 interface Props {
   isOpen: boolean;
@@ -13,7 +14,7 @@ export default function AddBorrowerModal({
   onBorrowerCreated,
 }: Props) {
 
-  const { createBorrower } = useBorrower();
+  const { createBorrower, clearError: clearBorrowerError } = useBorrower();
 
   const [form, setForm] = useState({
     fName: "",
@@ -27,8 +28,16 @@ export default function AddBorrowerModal({
 
   const [animate, setAnimate] = useState(false);
 
+  const [globalModal, setGlobalModal] = useState({
+    isOpen: false,
+    title: "",
+    message: "",
+    type: "info",
+  });
+
   useEffect(() => {
     if (isOpen) {
+      clearBorrowerError();
       setTimeout(() => setAnimate(true), 10);
     } else {
       setAnimate(false);
@@ -45,7 +54,15 @@ export default function AddBorrowerModal({
   };
 
 const handleSubmit = async () => {
-  if (!form.fName || !form.lName) return;
+  if (!form.fName || !form.lName) {
+    setGlobalModal({
+      isOpen: true,
+      title: "Required Fields",
+      message: "First Name and Last Name are required.",
+      type: "warning",
+    });
+    return;
+  }
 
   setLoading(true);
 
@@ -59,29 +76,37 @@ const handleSubmit = async () => {
 
   const res = await createBorrower(payload);
 
-  if (res?.ok) {
-    const borrower = res.data;
-
-    // store borrower id for loan flow
-    localStorage.setItem(
-      "active_borrower_id",
-      borrower.borrower_id
-    );
-
-    onBorrowerCreated(borrower);
-
-    setForm({
-      fName: "",
-      mName: "",
-      lName: "",
-      date: "",
-      contact: "",
+  if (!res?.ok) {
+    setGlobalModal({
+      isOpen: true,
+      title: "Error",
+      message: res?.message || "Something went wrong",
+      type: "error",
     });
-
-    isClose();
+    setLoading(false);
+    return;
   }
 
+  const borrower = res.data;
+
+  // store borrower id for loan flow
+  localStorage.setItem(
+    "active_borrower_id",
+    borrower.borrower_id
+  );
+
+  onBorrowerCreated(borrower);
+
+  setForm({
+    fName: "",
+    mName: "",
+    lName: "",
+    date: "",
+    contact: "",
+  });
+
   setLoading(false);
+  isClose();
 };
 
   return (
@@ -111,7 +136,8 @@ const handleSubmit = async () => {
 
             <input
               name="fName"
-              placeholder="First Name"
+              placeholder="First Name *"
+              required
               value={form.fName}
               onChange={handleChange}
               className="w-full rounded-lg border border-gray-300 px-3 py-3 text-sm focus:border-[#1E3A8A] focus:ring-1 focus:ring-[#1E3A8A] outline-none"
@@ -120,7 +146,8 @@ const handleSubmit = async () => {
 
             <input
               name="lName"
-              placeholder="Last Name"
+              placeholder="Last Name *"
+              required
               value={form.lName}
               onChange={handleChange}
               className="w-full rounded-lg border border-gray-300 px-3 py-3 text-sm focus:border-[#1E3A8A] focus:ring-1 focus:ring-[#1E3A8A] outline-none"
@@ -192,6 +219,19 @@ const handleSubmit = async () => {
 
         </div>
       </div>
+      <GlobalModal
+        isOpen={globalModal.isOpen}
+        title={globalModal.title}
+        message={globalModal.message}
+        type={globalModal.type as any}
+        onClose={() => {
+          setGlobalModal({
+            ...globalModal,
+            isOpen: false,
+          });
+          clearBorrowerError();
+        }}
+      />
     </div>
   );
 }

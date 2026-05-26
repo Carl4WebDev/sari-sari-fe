@@ -6,6 +6,8 @@ export const PaymentProvider = ({ children }) => {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
 
+  const clearError = () => setError(null);
+
   // -------------------------
   // CREATE PAYMENT
   // -------------------------
@@ -31,6 +33,7 @@ export const PaymentProvider = ({ children }) => {
       value={{
         loading,
         error,
+        clearError,
         createPayment,
       }}
     >

@@ -45,7 +45,15 @@ export default function AddReminderModal({
   if (!isOpen) return null;
 
   const handleSubmit = async () => {
-    if (!form.due_date) return;
+    if (!form.due_date) {
+      setGlobalModal({
+        isOpen: true,
+        title: "Required Fields",
+        message: "Due date is required.",
+        type: "warning",
+      });
+      return;
+    }
 
     const amount = Number(form.amount_expected || 0);
 
@@ -53,9 +61,9 @@ if (amount > currentBalance) {
 
   setGlobalModal({
   isOpen: true,
-  title: "Copied",
+  title: "Warning",
   message: "Expected amount cannot be higher than current balance.",
-  type: "success",
+  type: "warning",
 });
   return;
 }
@@ -68,6 +76,17 @@ amount_expected: amount,
       due_date: form.due_date,
       note: form.note,
     });
+
+    if (!res?.ok) {
+      setGlobalModal({
+        isOpen: true,
+        title: "Error",
+        message: res?.message || "Failed to create reminder",
+        type: "error",
+      });
+      setLoading(false);
+      return;
+    }
 
     if (res?.ok) {
       setForm({

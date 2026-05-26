@@ -20,6 +20,8 @@ const {
   fetchArchivedBorrowers,
   reactivateBorrower,
   loading,
+  error: borrowerError,
+  clearError: clearBorrowerError,
 } = useBorrower();
 
   const [currentPage, setCurrentPage] = useState(1);
@@ -36,8 +38,15 @@ const [globalModal, setGlobalModal] = useState({
   const itemsPerPage = 5;
 
   useEffect(() => {
+    clearBorrowerError();
     fetchBorrowers();
   }, []);
+
+  useEffect(() => {
+    if (borrowerError) {
+      setGlobalModal({ isOpen: true, title: "Error", message: borrowerError, type: "error" });
+    }
+  }, [borrowerError]);
 
   const filteredBorrowers = useMemo(() => {
     return borrowers.filter((b: any) =>
@@ -309,7 +318,7 @@ const handleBorrowerCreated = async (borrower: any) => {
             </button>
           </div>
           {/* Floating Footer Actions */}
-<div className="fixed bottom-0 left-0 z-40 w-full border-t border-gray-200 bg-white/95 backdrop-blur">
+<div className="fixed bottom-0 left-0 z-30 w-full border-t border-gray-200 bg-white/95 backdrop-blur">
   <div className="mx-auto grid max-w-2xl grid-cols-3 gap-2 p-3">
 
     {/* Add Borrower */}
@@ -356,12 +365,13 @@ const handleBorrowerCreated = async (borrower: any) => {
   title={globalModal.title}
   message={globalModal.message}
   type={globalModal.type as any}
-  onClose={() =>
+  onClose={() => {
     setGlobalModal({
       ...globalModal,
       isOpen: false,
-    })
-  }
+    });
+    clearBorrowerError();
+  }}
 />
     </div>
   );

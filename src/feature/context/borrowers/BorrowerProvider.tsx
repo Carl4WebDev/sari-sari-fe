@@ -22,6 +22,8 @@ export const BorrowerProvider = ({ children }) => {
   const [loading, setLoading] = useState(false);
   const [uploadingProfileImage, setUploadingProfileImage] = useState(false);
   const [error, setError] = useState(null);
+
+  const clearError = () => setError(null);
   const [borrowerNotes, setBorrowerNotes] = useState([]);
 
   const [archivedBorrowers, setArchivedBorrowers] = useState([]);
@@ -341,6 +343,7 @@ const updatePublicLoanAccess = async (
         loading,
         uploadingProfileImage,
         error,
+        clearError,
         archivedBorrowers,
           borrowerNotes,
 

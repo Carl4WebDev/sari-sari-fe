@@ -18,6 +18,7 @@ import ReminderNotificationModal from "../modals/ReminderNotificationModal";
 
 import { useDashboard } from "../../context/dashboard/useDashboard";
 import { useCollectionReminder } from "../../context/collection-reminders/useCollectionReminder";
+import GlobalModal from "../../../shared/components/GlobalModal";
 
 
 export default function DashboardPage() {
@@ -25,12 +26,16 @@ export default function DashboardPage() {
     dashboard,
     loading,
     fetchDashboard,
+    error: dashboardError,
+    clearError: clearDashboardError,
   } = useDashboard();
 
 const {
   dashboardReminders,
   fetchDashboardReminders,
   updateReminderStatus,
+  error: reminderError,
+  clearError: clearReminderError,
 } = useCollectionReminder();
 
   const [isBorrowerOpen, setIsBorrowerOpen] = useState(false);
@@ -41,10 +46,26 @@ const {
 
     const [isReminderModalOpen, setIsReminderModalOpen] = useState(false);
 
+const [globalModal, setGlobalModal] = useState({ isOpen: false, title: "", message: "", type: "info" });
+
 useEffect(() => {
+  clearDashboardError();
+  clearReminderError();
   fetchDashboard();
   fetchDashboardReminders();
 }, []);
+
+useEffect(() => {
+  if (dashboardError) {
+    setGlobalModal({ isOpen: true, title: "Error", message: dashboardError, type: "error" });
+  }
+}, [dashboardError]);
+
+useEffect(() => {
+  if (reminderError) {
+    setGlobalModal({ isOpen: true, title: "Error", message: reminderError, type: "error" });
+  }
+}, [reminderError]);
 
   const chartData = [
     {
@@ -436,6 +457,21 @@ useEffect(() => {
           Loading dashboard...
         </div>
       )}
+
+      <GlobalModal
+        isOpen={globalModal.isOpen}
+        title={globalModal.title}
+        message={globalModal.message}
+        type={globalModal.type as any}
+        onClose={() => {
+          setGlobalModal({
+            ...globalModal,
+            isOpen: false,
+          });
+          clearDashboardError();
+          clearReminderError();
+        }}
+      />
     </div>
   );
 }

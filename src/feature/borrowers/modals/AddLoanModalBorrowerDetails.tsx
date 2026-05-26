@@ -1,7 +1,8 @@
 import { useEffect, useState } from "react";
 import { useLoan } from "../../context/loans/useLoan";
-
 import { useProduct } from "../../context/products/useProduct";
+import ProductModal from "../../products/modals/ProductModal";
+import GlobalModal from "../../../shared/components/GlobalModal";
 
 interface Props {
   isOpen: boolean;
@@ -25,8 +26,8 @@ export default function AddLoanModalBorrowerDetails({
   profileImageUrl,
   onLoanCreated,
 }: Props) {
-const { createLoan } = useLoan();
-const { products, fetchProducts } = useProduct();
+const { createLoan, error: loanError, clearError: clearLoanError } = useLoan();
+const { products, fetchProducts, createProduct, error: productError, clearError: clearProductError } = useProduct();
 
   const [animate, setAnimate] = useState(false);
 
@@ -34,12 +35,36 @@ const [items, setItems] = useState([
   { product: "", quantity: "1", price: "" },
 ]);
 
+const [isProductModalOpen, setIsProductModalOpen] = useState(false);
+const [newProductName, setNewProductName] = useState("");
+
+const [globalModal, setGlobalModal] = useState({
+  isOpen: false,
+  title: "",
+  message: "",
+  type: "info",
+});
+
+useEffect(() => {
+  if (loanError) {
+    setGlobalModal({ isOpen: true, title: "Error", message: loanError, type: "error" });
+  }
+}, [loanError]);
+
+useEffect(() => {
+  if (productError) {
+    setGlobalModal({ isOpen: true, title: "Error", message: productError, type: "error" });
+  }
+}, [productError]);
+
   // -----------------------------
   // Modal animation
   // -----------------------------
 
 useEffect(() => {
   if (isOpen) {
+    clearLoanError();
+    clearProductError();
     fetchProducts();
     setTimeout(() => setAnimate(true), 10);
   } else {
@@ -75,6 +100,17 @@ useEffect(() => {
   // -----------------------------
 
   const handleSubmit = async () => {
+    const hasEmpty = items.some((i) => !i.product || !i.price);
+    if (hasEmpty) {
+      setGlobalModal({
+        isOpen: true,
+        title: "Required Fields",
+        message: "Please fill in all product names and prices.",
+        type: "warning",
+      });
+      return;
+    }
+
     const payload = {
       borrower_id: borrowerId,
       items: items.map((i) => ({
@@ -86,10 +122,18 @@ useEffect(() => {
 
     const res = await createLoan(payload);
 
-if (res?.ok) {
-  await onLoanCreated?.();
-  isClose();
+if (!res?.ok) {
+  setGlobalModal({
+    isOpen: true,
+    title: "Error",
+    message: res?.message || "Failed to create loan",
+    type: "error",
+  });
+  return;
 }
+
+    await onLoanCreated?.();
+    isClose();
   };
 
   return (
@@ -98,37 +142,37 @@ if (res?.ok) {
       onClick={isClose}
     >
       <div
-        className={`fixed top-0 left-0 w-full bg-white rounded-b-2xl shadow-xl transform transition-transform duration-300 ease-out ${
+        className={`fixed top-0 left-0 flex h-screen w-full flex-col bg-white rounded-b-2xl shadow-xl transform transition-transform duration-300 ease-out ${
           animate ? "translate-y-0" : "-translate-y-full"
         }`}
         onClick={(e) => e.stopPropagation()}
       >
-        <div className="p-6 space-y-6">
+        {/* Sticky Header */}
+        <div className="shrink-0 p-6 pb-4">
           <h2 className="text-lg font-semibold text-[#1E3A8A]">
             Add Loan
           </h2>
-          <div className="rounded-xl bg-gray-50 p-4 text-center">
-  <div className="flex justify-center">
-    <img
-      src={
-        profileImageUrl ||
-        "https://ui-avatars.com/api/?name=" +
-          encodeURIComponent(borrowerName || "Borrower")
-      }
-      alt={borrowerName || "Borrower"}
-      className="h-16 w-16 rounded-full border border-gray-200 object-cover"
-    />
-  </div>
+          <div className="mt-4 rounded-xl bg-gray-50 p-4 text-center">
+            <div className="flex justify-center">
+              <img
+                src={
+                  profileImageUrl ||
+                  "https://ui-avatars.com/api/?name=" +
+                    encodeURIComponent(borrowerName || "Borrower")
+                }
+                alt={borrowerName || "Borrower"}
+                className="h-16 w-16 rounded-full border border-gray-200 object-cover"
+              />
+            </div>
+            <p className="mt-3 text-sm font-semibold text-gray-800">
+              {borrowerName}
+            </p>
+            <p className="text-xs text-gray-500">Selected borrower</p>
+          </div>
+        </div>
 
-  <p className="mt-3 text-sm font-semibold text-gray-800">
-    {borrowerName}
-  </p>
-
-  <p className="text-xs text-gray-500">Selected borrower</p>
-</div>
-
-          {/* Loan Items */}
-          <div className="space-y-4">
+        {/* Scrollable Items Area */}
+        <div className="flex-1 overflow-y-auto px-6 pb-4 space-y-4">
             {items.map((item, index) => (
               <div
                 key={index}
@@ -177,6 +221,24 @@ if (res?.ok) {
                   </button>
                 </div>
 
+{item.product.trim() &&
+  !products.some(
+    (p: any) =>
+      p.product_name.toLowerCase() ===
+      item.product.toLowerCase()
+  ) && (
+    <button
+      type="button"
+      onClick={() => {
+        setNewProductName(item.product);
+        setIsProductModalOpen(true);
+      }}
+      className="w-full rounded-lg border border-dashed border-[#1E3A8A] bg-blue-50 px-3 py-3 text-left text-sm font-medium text-[#1E3A8A] transition hover:bg-blue-100"
+    >
+      + Add "{item.product}" as new product
+    </button>
+  )}
+
                 <div className="flex gap-2">
                   <input
                     type="number"
@@ -209,8 +271,18 @@ if (res?.ok) {
                 )}
               </div>
             ))}
-          </div>
 
+            <button
+              type="button"
+              onClick={() => setIsProductModalOpen(true)}
+              className="w-full rounded-xl border border-dashed border-[#1E3A8A] bg-blue-50 py-3 text-sm font-medium text-[#1E3A8A] transition hover:bg-blue-100"
+            >
+              + Add New Product
+            </button>
+        </div>
+
+        {/* Sticky Footer */}
+        <div className="shrink-0 border-t border-gray-100 p-6 pt-4">
           <div className="flex gap-3">
             <button
               onClick={isClose}
@@ -228,6 +300,27 @@ if (res?.ok) {
           </div>
         </div>
       </div>
+      <ProductModal
+        isOpen={isProductModalOpen}
+        isClose={() => setIsProductModalOpen(false)}
+        mode="add"
+        onSubmit={createProduct}
+        initialProductName={newProductName}
+      />
+      <GlobalModal
+        isOpen={globalModal.isOpen}
+        title={globalModal.title}
+        message={globalModal.message}
+        type={globalModal.type as any}
+        onClose={() => {
+          setGlobalModal({
+            ...globalModal,
+            isOpen: false,
+          });
+          clearLoanError();
+          clearProductError();
+        }}
+      />
     </div>
   );
 }

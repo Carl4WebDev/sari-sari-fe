@@ -20,6 +20,8 @@ export const CollectionReminderProvider = ({ children }) => {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
 
+  const clearError = () => setError(null);
+
   const createReminder = async (payload) => {
     setLoading(true);
     setError(null);
@@ -116,6 +118,7 @@ export const CollectionReminderProvider = ({ children }) => {
         borrowerReminders,
         loading,
         error,
+        clearError,
 
         createReminder,
         fetchDashboardReminders,

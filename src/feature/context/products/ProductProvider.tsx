@@ -17,6 +17,8 @@ export const ProductProvider = ({ children }) => {
   const [actionLoading, setActionLoading] = useState(false);
   const [error, setError] = useState(null);
 
+  const clearError = () => setError(null);
+
   const [archivedProducts, setArchivedProducts] = useState([]);
 
 const fetchArchivedProducts = async () => {
@@ -149,6 +151,7 @@ const reactivateProduct = async (productId) => {
         loading,
         actionLoading,
         error,
+        clearError,
             archivedProducts,
 
         fetchProducts,

@@ -83,12 +83,16 @@ fetchBorrowerNotes,
 createBorrowerNote,
 updateBorrowerNote,
 deleteBorrowerNote,
+error: borrowerError,
+clearError: clearBorrowerError,
   } = useBorrower();
 
   const {
   borrowerReminders,
   createReminder,
   fetchBorrowerReminders,
+  error: reminderError,
+  clearError: clearReminderError,
 } = useCollectionReminder();
 
   useEffect(() => {
@@ -96,6 +100,18 @@ deleteBorrowerNote,
       setIsPaymentModalOpen(true);
     }
   }, [location.state]);
+
+  useEffect(() => {
+    const err = borrowerError || reminderError;
+    if (err) {
+      setGlobalModal({
+        isOpen: true,
+        title: "Error",
+        message: err,
+        type: "error",
+      });
+    }
+  }, [borrowerError, reminderError]);
   
   const totalBalance = useMemo(() => {
     return transactions.reduce((acc, t) => {
@@ -141,6 +157,8 @@ deleteBorrowerNote,
 useEffect(() => {
   if (!id) return;
 
+  clearBorrowerError();
+  clearReminderError();
   fetchBorrowerTransactions(id);
   fetchBorrowerNotes(id);
   fetchBorrowerReminders(id);
@@ -827,12 +845,11 @@ className="h-56 w-56 lg:h-64 lg:w-64 rounded-full border-4 border-[#1E3A8A] obje
   title={globalModal.title}
   message={globalModal.message}
   type={globalModal.type as any}
-  onClose={() =>
-    setGlobalModal({
-      ...globalModal,
-      isOpen: false,
-    })
-  }
+  onClose={() => {
+    setGlobalModal({ ...globalModal, isOpen: false });
+    clearBorrowerError();
+    clearReminderError();
+  }}
 />
     </div>
   );

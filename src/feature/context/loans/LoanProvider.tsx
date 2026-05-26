@@ -6,6 +6,8 @@ export const LoanProvider = ({ children }) => {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
 
+  const clearError = () => setError(null);
+
   // -------------------------
   // CREATE LOAN
   // -------------------------
@@ -30,6 +32,7 @@ export const LoanProvider = ({ children }) => {
       value={{
         loading,
         error,
+        clearError,
         createLoan,
       }}
     >

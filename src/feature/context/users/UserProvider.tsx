@@ -9,6 +9,8 @@ export const UserProvider = ({ children }) => {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
 
+  const clearError = () => setError(null);
+
   // -------------------------
   // LOGIN
   // -------------------------
@@ -65,6 +67,7 @@ export const UserProvider = ({ children }) => {
       value={{
         loading,
         error,
+        clearError,
 
         // auth
         login,

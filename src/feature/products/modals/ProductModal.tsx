@@ -15,6 +15,7 @@ interface Props {
   mode: "add" | "edit";
   product?: Product | null;
   loading?: boolean;
+  initialProductName?: string;
   onSubmit: (payload: {
     product_name: string;
     product_price: number;
@@ -187,6 +188,7 @@ export default function ProductModal({
   mode,
   product,
   loading,
+  initialProductName,
   onSubmit,
 }: Props) {
   const [animate, setAnimate] = useState(false);
@@ -219,7 +221,7 @@ export default function ProductModal({
 
       if (mode === "add") {
         setForm({
-          product_name: "",
+          product_name: initialProductName || "",
           price: "",
         });
       }
@@ -277,6 +279,16 @@ export default function ProductModal({
       product_name: form.product_name.trim(),
       product_price: Number(form.price),
     });
+
+    if (!res?.ok) {
+      setGlobalModal({
+        isOpen: true,
+        title: "Error",
+        message: res?.message || "Something went wrong",
+        type: "error",
+      });
+      return;
+    }
 
     if (res?.ok) {
       isClose();

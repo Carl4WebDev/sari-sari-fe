@@ -1,6 +1,7 @@
 import { useEffect, useState } from "react";
 import { usePayment } from "../../context/payments/usePayment";
 import { useBorrower } from "../../context/borrowers/useBorrower";
+import GlobalModal from "../../../shared/components/GlobalModal";
 
 interface Borrower {
   id: number;
@@ -26,7 +27,7 @@ export default function AddPaymentModal({
   isClose,
   borrower,
 }: Props) {
-  const { createPayment } = usePayment();
+  const { createPayment, error: paymentError, clearError: clearPaymentError } = usePayment();
 const {
   fetchBorrowerTransactions,
   createBorrowerNote,
@@ -34,6 +35,19 @@ const {
 } = useBorrower();
 
   const [animate, setAnimate] = useState(false);
+
+  const [globalModal, setGlobalModal] = useState({
+    isOpen: false,
+    title: "",
+    message: "",
+    type: "info",
+  });
+
+  useEffect(() => {
+    if (paymentError) {
+      setGlobalModal({ isOpen: true, title: "Error", message: paymentError, type: "error" });
+    }
+  }, [paymentError]);
 
   const [form, setForm] = useState({
     amount: "",
@@ -43,6 +57,7 @@ const {
 
   useEffect(() => {
     if (isOpen) {
+      clearPaymentError();
       setTimeout(() => setAnimate(true), 10);
     } else {
       setAnimate(false);
@@ -61,7 +76,15 @@ const {
 
   const handleSubmit = async () => {
     if (!borrower) return;
-    if (!form.amount || !form.paymentType) return;
+    if (!form.amount || !form.paymentType) {
+      setGlobalModal({
+        isOpen: true,
+        title: "Required Fields",
+        message: "Amount and Payment Type are required.",
+        type: "warning",
+      });
+      return;
+    }
 
     const payload = {
       borrower_id: borrower.id,
@@ -72,7 +95,17 @@ const {
 
     const res = await createPayment(payload);
 
-if (res?.ok) {
+if (!res?.ok) {
+  setGlobalModal({
+    isOpen: true,
+    title: "Error",
+    message: res?.message || "Failed to create payment",
+    type: "error",
+  });
+  setLoading(false);
+  return;
+}
+
   await fetchBorrowerTransactions(borrower.id);
 
   if (form.note.trim()) {
@@ -90,8 +123,8 @@ if (res?.ok) {
     paymentType: "",
   });
 
+  setLoading(false);
   isClose();
-}
   };
 
   return (
@@ -229,6 +262,19 @@ if (res?.ok) {
 
         </div>
       </div>
+      <GlobalModal
+        isOpen={globalModal.isOpen}
+        title={globalModal.title}
+        message={globalModal.message}
+        type={globalModal.type as any}
+        onClose={() => {
+          setGlobalModal({
+            ...globalModal,
+            isOpen: false,
+          });
+          clearPaymentError();
+        }}
+      />
     </div>
   );
 }

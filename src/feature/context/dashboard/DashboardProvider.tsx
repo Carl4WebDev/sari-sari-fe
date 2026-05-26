@@ -7,6 +7,8 @@ export const DashboardProvider = ({ children }) => {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
 
+  const clearError = () => setError(null);
+
   const fetchDashboard = async () => {
     setLoading(true);
     setError(null);
@@ -30,6 +32,7 @@ export const DashboardProvider = ({ children }) => {
         dashboard,
         loading,
         error,
+        clearError,
         fetchDashboard,
       }}
     >
