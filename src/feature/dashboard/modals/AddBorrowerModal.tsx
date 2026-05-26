@@ -117,13 +117,6 @@ const handleSubmit = async () => {
               className="w-full rounded-lg border border-gray-300 px-3 py-3 text-sm focus:border-[#1E3A8A] focus:ring-1 focus:ring-[#1E3A8A] outline-none"
             />
 
-            <input
-              name="mName"
-              placeholder="Middle Name"
-              value={form.mName}
-              onChange={handleChange}
-              className="w-full rounded-lg border border-gray-300 px-3 py-3 text-sm focus:border-[#1E3A8A] focus:ring-1 focus:ring-[#1E3A8A] outline-none"
-            />
 
             <input
               name="lName"
@@ -133,23 +126,50 @@ const handleSubmit = async () => {
               className="w-full rounded-lg border border-gray-300 px-3 py-3 text-sm focus:border-[#1E3A8A] focus:ring-1 focus:ring-[#1E3A8A] outline-none"
             />
 
-            <input
-              name="date"
-              type="date"
-              value={form.date}
-              onChange={handleChange}
-              className="w-full rounded-lg border border-gray-300 px-3 py-3 text-sm focus:border-[#1E3A8A] focus:ring-1 focus:ring-[#1E3A8A] outline-none"
-            />
+            {/* Optional Fields */}
+<div className="rounded-2xl border border-dashed border-gray-300 bg-gray-50 p-3 space-y-3">
+  
+  <div className="flex items-center justify-between">
+    <div>
+      <p className="text-sm font-semibold text-gray-700">
+        Optional Details
+      </p>
 
-            <input
-              name="contact"
-              placeholder="Contact Number"
-              value={form.contact}
-              onChange={handleChange}
-              className="w-full rounded-lg border border-gray-300 px-3 py-3 text-sm focus:border-[#1E3A8A] focus:ring-1 focus:ring-[#1E3A8A] outline-none"
-            />
+      <p className="text-[11px] text-gray-500">
+        You can skip these for faster borrower entry
+      </p>
+    </div>
 
-          </div>
+    <span className="rounded-full bg-blue-100 px-2 py-1 text-[10px] font-semibold text-[#1E3A8A]">
+      OPTIONAL
+    </span>
+  </div>
+
+  <input
+    name="mName"
+    placeholder="Middle Name"
+    value={form.mName}
+    onChange={handleChange}
+    className="w-full rounded-lg border border-gray-300 bg-white px-3 py-3 text-sm outline-none focus:border-[#1E3A8A] focus:ring-1 focus:ring-[#1E3A8A]"
+  />
+
+  <input
+    name="date"
+    type="date"
+    value={form.date}
+    onChange={handleChange}
+    className="w-full rounded-lg border border-gray-300 bg-white px-3 py-3 text-sm outline-none focus:border-[#1E3A8A] focus:ring-1 focus:ring-[#1E3A8A]"
+  />
+
+  <input
+    name="contact"
+    placeholder="Contact Number"
+    value={form.contact}
+    onChange={handleChange}
+    className="w-full rounded-lg border border-gray-300 bg-white px-3 py-3 text-sm outline-none focus:border-[#1E3A8A] focus:ring-1 focus:ring-[#1E3A8A]"
+  />
+  </div>
+</div>
 
           <div className="flex gap-3 pt-2">
 

@@ -2,6 +2,7 @@ import { useEffect, useState } from "react";
 import { useBorrower } from "../../context/borrowers/useBorrower";
 import { useLoan } from "../../context/loans/useLoan";
 import { useProduct } from "../../context/products/useProduct";
+import ProductModal from "../../products/modals/ProductModal";
 
 interface Borrower {
   borrower_id: number;
@@ -29,7 +30,7 @@ export default function AddLoanModal({
 
   const { borrowers, fetchBorrowers } = useBorrower();
   const { createLoan } = useLoan();
-  const { products, fetchProducts } = useProduct();
+  const { products, fetchProducts, createProduct } = useProduct();
 
   const [animate, setAnimate] = useState(false);
   const [search, setSearch] = useState("");
@@ -38,6 +39,12 @@ export default function AddLoanModal({
 const [items, setItems] = useState([
   { product: "", quantity: "1", price: "" },
 ]);
+
+const [isProductModalOpen, setIsProductModalOpen] =
+  useState(false);
+
+const [newProductName, setNewProductName] =
+  useState("");
 
 const resetLoanForm = () => {
   setSearch("");
@@ -189,6 +196,7 @@ if (res?.ok) {
           <h2 className="text-lg font-semibold text-[#1E3A8A]">
             Add Loan
           </h2>
+          
 
           {/* Borrower Search */}
           <div className="space-y-2">
@@ -262,6 +270,26 @@ if (res?.ok) {
   ))}
 </select>
 
+
+
+{item.product.trim() &&
+  !products.some(
+    (p: any) =>
+      p.product_name.toLowerCase() ===
+      item.product.toLowerCase()
+  ) && (
+    <button
+      type="button"
+      onClick={() => {
+        setNewProductName(item.product);
+        setIsProductModalOpen(true);
+      }}
+      className="w-full rounded-lg border border-dashed border-[#1E3A8A] bg-blue-50 px-3 py-3 text-left text-sm font-medium text-[#1E3A8A] transition hover:bg-blue-100"
+    >
+      + Add "{item.product}" as new product
+    </button>
+  )}
+
                   <button
                     type="button"
                     onClick={addNewItem}
@@ -323,8 +351,22 @@ if (res?.ok) {
               Save Loan
             </button>
           </div>
+          <button
+  type="button"
+  onClick={() => setIsProductModalOpen(true)}
+  className="w-full rounded-xl border border-dashed border-[#1E3A8A] bg-blue-50 py-3 text-sm font-medium text-[#1E3A8A] transition hover:bg-blue-100"
+>
+  + Add New Product
+</button>
         </div>
       </div>
+<ProductModal
+  isOpen={isProductModalOpen}
+  isClose={() => setIsProductModalOpen(false)}
+  mode="add"
+  onSubmit={createProduct}
+/>
+
     </div>
   );
 }

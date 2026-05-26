@@ -19,6 +19,8 @@ export default function ArchivedProductsModal({
 }: Props) {
   const [animate, setAnimate] = useState(false);
 
+  const [search, setSearch] = useState("");
+
   useEffect(() => {
     if (isOpen) {
       onFetchArchived();
@@ -29,6 +31,11 @@ export default function ArchivedProductsModal({
   }, [isOpen]);
 
   if (!isOpen) return null;
+  const filteredProducts = archivedProducts.filter((p: any) =>
+  p.product_name
+    ?.toLowerCase()
+    .includes(search.toLowerCase())
+);
 
   return (
     <div
@@ -60,13 +67,27 @@ export default function ArchivedProductsModal({
             </button>
           </div>
 
+          {/* Search */}
+<div className="relative">
+  <span className="absolute left-3 top-1/2 -translate-y-1/2 text-sm text-gray-400">
+    🔍
+  </span>
+
+  <input
+    value={search}
+    onChange={(e) => setSearch(e.target.value)}
+    placeholder="Search archived products..."
+    className="w-full rounded-xl border border-gray-300 py-3 pl-10 pr-3 text-sm outline-none transition focus:border-[#1E3A8A] focus:ring-2 focus:ring-blue-100"
+  />
+</div>
+
           {loading && (
             <div className="rounded-xl border bg-white p-4 text-sm text-gray-500">
               Loading archived products...
             </div>
           )}
 
-          {!loading && archivedProducts.length === 0 && (
+          {!loading && filteredProducts.length === 0 && (
             <div className="rounded-xl border bg-gray-50 p-6 text-center">
               <p className="text-3xl">📦</p>
               <p className="mt-2 text-sm font-semibold text-gray-700">
@@ -79,7 +100,7 @@ export default function ArchivedProductsModal({
           )}
 
           {!loading &&
-            archivedProducts.map((p: any) => (
+            filteredProducts.map((p: any) => (
               <div
                 key={p.product_id}
                 className="rounded-xl border bg-white p-4 shadow-sm space-y-3"
