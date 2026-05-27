@@ -10,7 +10,9 @@ import EditLoanModal from "../modals/EditLoanModal";
 import AddReminderModal from "../modals/AddReminderModal";
 
 import { useCollectionReminder } from "../../context/collection-reminders/useCollectionReminder";
+import { usePayment } from "../../context/payments/usePayment";
 import GlobalModal from "../../../shared/components/GlobalModal";
+import SuccessToast from "../../../shared/components/SuccessToast";
 import { useTranslation } from "../../../shared/i18n/useTranslation";
 
 interface LoanItem {
@@ -103,6 +105,53 @@ clearError: clearBorrowerError,
   error: reminderError,
   clearError: clearReminderError,
 } = useCollectionReminder();
+
+const { createPayment } = usePayment();
+
+const [successToast, setSuccessToast] = useState<{
+  isOpen: boolean;
+  amount: number;
+  borrowerName: string;
+  newBalance: number;
+}>({ isOpen: false, amount: 0, borrowerName: "", newBalance: 0 });
+
+const [quickPayLoading, setQuickPayLoading] = useState<number | null>(null);
+
+const handleQuickPay = (amount: number) => {
+  if (!id) return;
+
+  const borrowerName = `${borrower.first_name} ${borrower.last_name}`;
+  const newBalance = totalBalance - amount;
+
+  setConfirmModal({
+    isOpen: true,
+    title: "Confirm Payment",
+    message: `Record ₱${amount.toLocaleString()} cash payment from ${borrowerName}?\n\nCurrent Balance: ₱${totalBalance.toLocaleString()}\nNew Balance: ₱${Math.max(0, newBalance).toLocaleString()}`,
+    onConfirm: async () => {
+      setConfirmModal(prev => ({ ...prev, isOpen: false }));
+      setQuickPayLoading(amount);
+
+      const res = await createPayment({
+        borrower_id: Number(id),
+        amount,
+        payment_type: "CASH",
+        note: "",
+      });
+
+      if (res?.ok) {
+        await refreshBorrowerDetails();
+        setSuccessToast({
+          isOpen: true,
+          amount,
+          borrowerName,
+          newBalance,
+        });
+      }
+
+      setQuickPayLoading(null);
+    },
+  });
+};
 
   useEffect(() => {
     if (location.state?.openPayment) {
@@ -300,7 +349,15 @@ const handleDeleteNote = (noteId: number) => {
   borrowerId={borrower.borrower_id}
   borrowerName={`${borrower.first_name} ${borrower.last_name}`}
   profileImageUrl={borrower.profile_image_url}
-  onLoanCreated={refreshBorrowerDetails}
+  onLoanCreated={async (totalAmount) => {
+    await refreshBorrowerDetails();
+    setSuccessToast({
+      isOpen: true,
+      amount: totalAmount,
+      borrowerName: `${borrower.first_name} ${borrower.last_name}`,
+      newBalance: totalBalance + totalAmount,
+    });
+  }}
 />
 
 <AddPaymentModal
@@ -311,7 +368,15 @@ const handleDeleteNote = (noteId: number) => {
     totalLoan: totalBalance,
     pastPaymentNotes: [],
   }}
-  onPaymentCreated={refreshBorrowerDetails}
+  onPaymentCreated={async (amount) => {
+    await refreshBorrowerDetails();
+    setSuccessToast({
+      isOpen: true,
+      amount,
+      borrowerName: `${borrower.first_name} ${borrower.last_name}`,
+      newBalance: totalBalance - amount,
+    });
+  }}
 />
 
       <EditLoanModal
@@ -352,11 +417,42 @@ const handleDeleteNote = (noteId: number) => {
         <div className="space-y-6">
           {/* Balance */}
           <div className="rounded-xl bg-[#1E3A8A] text-white p-5">
-            <p className="text-sm text-blue-100">Total Balance</p>
+            <p className="text-sm text-blue-100">{t("details.total_balance")}</p>
             <p className="text-3xl font-bold mt-2">
               ₱{totalBalance.toLocaleString()}
             </p>
           </div>
+
+          {/* Quick Payment Buttons */}
+          {totalBalance > 0 && (
+            <div className="rounded-xl border border-gray-200 bg-white p-4 shadow-sm">
+              <p className="text-sm font-semibold text-[#1E3A8A] mb-3">
+                {t("payment.title")}
+              </p>
+              <div className="grid grid-cols-4 gap-2">
+                {[20, 50, 100, 200].map((amount) => (
+                  <button
+                    key={amount}
+                    onClick={() => handleQuickPay(amount)}
+                    disabled={quickPayLoading !== null || amount > totalBalance}
+                    className="rounded-xl bg-[#16A34A] py-3 text-sm font-semibold text-white transition hover:bg-green-700 disabled:opacity-40 disabled:cursor-not-allowed"
+                  >
+                    {quickPayLoading === amount ? (
+                      <span className="inline-block h-4 w-4 animate-spin rounded-full border-2 border-white border-t-transparent" />
+                    ) : (
+                      `₱${amount}`
+                    )}
+                  </button>
+                ))}
+              </div>
+              <button
+                onClick={() => setIsPaymentModalOpen(true)}
+                className="mt-3 w-full rounded-xl border border-[#1E3A8A] py-2.5 text-sm font-medium text-[#1E3A8A] transition hover:bg-blue-50"
+              >
+                {t("common.save")} — Custom Amount
+              </button>
+            </div>
+          )}
 
 {/* Public Link */}
 <div className="border rounded-xl p-4 bg-gray-50 space-y-3">
@@ -820,25 +916,24 @@ className="h-24 w-24 sm:h-32 sm:w-32 lg:h-40 lg:w-40 rounded-full border-4 borde
     {/* Archive */}
     <button
       disabled={balance > 0 || !borrower.is_active}
-      onClick={async () => {
-        const confirmed = window.confirm(
-          "Archive this borrower?"
-        );
-
-        if (!confirmed) return;
-
-        await archiveBorrower(borrower.borrower_id);
-
-        await fetchBorrowers();
-
-        navigate("/borrowers");
+      onClick={() => {
+        setConfirmModal({
+          isOpen: true,
+          title: "Archive Borrower",
+          message: "Are you sure you want to archive this borrower?",
+          onConfirm: async () => {
+            await archiveBorrower(borrower.borrower_id);
+            await fetchBorrowers();
+            navigate("/borrowers");
+          },
+        });
       }}
       className="flex flex-col items-center justify-center rounded-xl bg-gray-700 py-2 text-white disabled:opacity-50"
     >
       <span className="text-lg">📦</span>
 
       <span className="mt-1 text-[11px] font-medium">
-        Add Archive
+        Archive
       </span>
     </button>
   </div>
@@ -855,6 +950,14 @@ className="h-24 w-24 sm:h-32 sm:w-32 lg:h-40 lg:w-40 rounded-full border-4 borde
     clearBorrowerError();
     clearReminderError();
   }}
+/>
+
+<SuccessToast
+  isOpen={successToast.isOpen}
+  amount={successToast.amount}
+  borrowerName={successToast.borrowerName}
+  newBalance={successToast.newBalance}
+  onClose={() => setSuccessToast(prev => ({ ...prev, isOpen: false }))}
 />
 
 {confirmModal.isOpen && (

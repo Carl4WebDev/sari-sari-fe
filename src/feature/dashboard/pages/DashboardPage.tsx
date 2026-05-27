@@ -20,6 +20,7 @@ import { useDashboard } from "../../context/dashboard/useDashboard";
 import { useCollectionReminder } from "../../context/collection-reminders/useCollectionReminder";
 import GlobalModal from "../../../shared/components/GlobalModal";
 import { useTranslation } from "../../../shared/i18n/useTranslation";
+import OnboardingWizard from "../../../shared/components/OnboardingWizard";
 
 
 export default function DashboardPage() {
@@ -127,6 +128,15 @@ useEffect(() => {
     await fetchDashboardReminders();
   }}
 />
+
+      {/* Onboarding Wizard — show when no borrowers */}
+      {!loading && dashboard && (dashboard.total_borrowers || 0) === 0 && (
+        <OnboardingWizard
+          borrowerCount={0}
+          onAddBorrower={() => setIsBorrowerOpen(true)}
+          onAddLoan={() => setIsLoanOpen(true)}
+        />
+      )}
 
       {/* Header */}
 <div className="flex items-start justify-between gap-4">

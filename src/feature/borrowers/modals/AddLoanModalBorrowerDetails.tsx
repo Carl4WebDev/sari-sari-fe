@@ -10,7 +10,7 @@ interface Props {
   borrowerId: number;
   borrowerName: string;
   profileImageUrl?: string;
-  onLoanCreated?: () => Promise<void> | void;
+  onLoanCreated?: (totalAmount: number) => Promise<void> | void;
 }
 
 interface Product {
@@ -132,7 +132,11 @@ if (!res?.ok) {
   return;
 }
 
-    await onLoanCreated?.();
+    const totalAmount = items.reduce(
+      (sum, i) => sum + Number(i.quantity) * Number(i.price),
+      0
+    );
+    await onLoanCreated?.(totalAmount);
     isClose();
   };
 

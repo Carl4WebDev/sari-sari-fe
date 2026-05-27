@@ -21,12 +21,14 @@ interface Props {
   isOpen: boolean;
   isClose: () => void;
   borrower: Borrower | null;
+  onPaymentCreated?: (amount: number) => void;
 }
 
 export default function AddPaymentModal({
   isOpen,
   isClose,
   borrower,
+  onPaymentCreated,
 }: Props) {
   const { t } = useTranslation();
   const { createPayment, error: paymentError, clearError: clearPaymentError } = usePayment();
@@ -120,6 +122,8 @@ if (!res?.ok) {
     await fetchBorrowerNotes(borrower.id);
   }
 
+  const paidAmount = Number(form.amount);
+
   setForm({
     amount: "",
     note: "",
@@ -127,6 +131,7 @@ if (!res?.ok) {
   });
 
   setLoading(false);
+  onPaymentCreated?.(paidAmount);
   isClose();
   };
 
