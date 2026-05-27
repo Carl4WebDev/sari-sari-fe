@@ -1,10 +1,12 @@
 import { useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { useUser } from "../../context/users/useUser";
+import { useTranslation } from "../../../shared/i18n/useTranslation";
 
 export default function RegisterPage() {
   const { register, loading, error } = useUser();
   const navigate = useNavigate();
+  const { t } = useTranslation();
 
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
@@ -44,15 +46,15 @@ if (!acceptedTerms) {
 
   return (
     <div className="flex min-h-screen items-center justify-center bg-[#F3F4F6] px-4">
-      <div className="w-full max-w-md rounded-xl border border-gray-200 bg-white p-8 shadow-md">
+      <div className="w-full max-w-sm rounded-xl bg-white p-8 shadow-md">
         <h1 className="mb-8 text-center text-2xl font-semibold text-[#1E3A8A]">
-          Register
+          {t("register.title")}
         </h1>
 
         <form className="space-y-5" onSubmit={handleSubmit}>
           <div>
             <label className="block text-sm font-medium text-gray-700">
-              Email
+              {t("register.email")}
             </label>
             <input
               type="email"
@@ -66,10 +68,10 @@ if (!acceptedTerms) {
 
           <div>
             <label className="block text-sm font-medium text-gray-700">
-              Store name
+              {t("register.store_name")}
             </label>
             <input
-              type="store_name"
+              type="text"
               required
               value={storeName}
               onChange={(e) => setStoreName(e.target.value)}
@@ -80,7 +82,7 @@ if (!acceptedTerms) {
 
           <div>
             <label className="block text-sm font-medium text-gray-700">
-              Password
+              {t("register.password")}
             </label>
             <input
               type="password"
@@ -94,7 +96,7 @@ if (!acceptedTerms) {
 
           <div>
             <label className="block text-sm font-medium text-gray-700">
-              Confirm Password
+              {t("register.confirm_password")}
             </label>
             <input
               type="password"
@@ -108,9 +110,7 @@ if (!acceptedTerms) {
 
           <div className="rounded-lg bg-blue-50 p-3 text-xs leading-5 text-gray-600">
   <p>
-    By creating an account, you agree to use this system responsibly.
-    Your store and borrower information will be handled with care and used
-    only for managing your account, loans, payments, reminders, and records.
+    {t("register.terms_notice")}
   </p>
 
   <label className="mt-3 flex items-start gap-2">
@@ -122,7 +122,7 @@ if (!acceptedTerms) {
     />
 
     <span>
-      I agree to the Terms and Privacy Agreement.
+      {t("register.terms_checkbox")}
     </span>
   </label>
 </div>
@@ -138,12 +138,12 @@ if (!acceptedTerms) {
             disabled={loading}
             className="w-full rounded-lg bg-[#1E3A8A] py-2 text-sm font-medium text-white transition hover:bg-[#172E6B] disabled:opacity-60"
           >
-            {loading ? "Creating..." : "Create Account"}
+            {loading ? t("register.creating") : t("register.create_account")}
           </button>
 
           <Link to="/login">
             <div className="text-center text-sm text-[#1E3A8A] hover:underline">
-              Back to login
+              {t("register.back_to_login")}
             </div>
           </Link>
         </form>

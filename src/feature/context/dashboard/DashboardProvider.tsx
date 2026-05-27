@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useCallback, useMemo } from "react";
 import { DashboardContext } from "./DashboardContext";
 import { getDashboardApi } from "./dashboardApi";
 
@@ -7,9 +7,9 @@ export const DashboardProvider = ({ children }) => {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
 
-  const clearError = () => setError(null);
+  const clearError = useCallback(() => setError(null), []);
 
-  const fetchDashboard = async () => {
+  const fetchDashboard = useCallback(async () => {
     setLoading(true);
     setError(null);
 
@@ -24,18 +24,18 @@ export const DashboardProvider = ({ children }) => {
     setDashboard(res.data);
     setLoading(false);
     return res;
-  };
+  }, []);
+
+  const value = useMemo(() => ({
+    dashboard,
+    loading,
+    error,
+    clearError,
+    fetchDashboard,
+  }), [dashboard, loading, error, clearError, fetchDashboard]);
 
   return (
-    <DashboardContext.Provider
-      value={{
-        dashboard,
-        loading,
-        error,
-        clearError,
-        fetchDashboard,
-      }}
-    >
+    <DashboardContext.Provider value={value}>
       {children}
     </DashboardContext.Provider>
   );

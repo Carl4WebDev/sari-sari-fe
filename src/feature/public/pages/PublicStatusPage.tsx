@@ -1,6 +1,7 @@
 import { useParams } from "react-router-dom";
 import { useEffect, useMemo } from "react";
 import { usePublicStatus } from "../../public/context/usePublicStatus";
+import { useTranslation } from "../../../shared/i18n/useTranslation";
 
 interface LoanItem {
   product: string;
@@ -17,6 +18,7 @@ interface Transaction {
 }
 
 export default function PublicStatusPage() {
+  const { t } = useTranslation();
   const { token } = useParams();
 
   const {
@@ -119,7 +121,7 @@ export default function PublicStatusPage() {
   if (loading) {
     return (
       <div className="min-h-screen bg-gray-50 px-4 py-6">
-        Loading...
+        {t("public.loading")}
       </div>
     );
   }
@@ -128,9 +130,9 @@ export default function PublicStatusPage() {
     return (
       <div className="min-h-screen flex items-center justify-center bg-gray-50 px-4">
         <div className="bg-white rounded-xl shadow-sm p-6 text-center">
-          <h1 className="font-semibold text-gray-800">Status not found</h1>
+          <h1 className="font-semibold text-gray-800">{t("public.not_found")}</h1>
           <p className="text-sm text-gray-500 mt-2">
-            This link may be invalid or disabled.
+            {t("public.invalid_link")}
           </p>
         </div>
       </div>
@@ -143,7 +145,7 @@ export default function PublicStatusPage() {
         <h1 className="text-lg font-semibold text-[#1E3A8A]">
           {storeName}
         </h1>
-        <p className="text-xs text-gray-500">Loan Status Page</p>
+        <p className="text-xs text-gray-500">{t("public.loan_status")}</p>
       </div>
 
       <div className="bg-white rounded-xl shadow-sm p-5 space-y-3 text-center">
@@ -160,7 +162,7 @@ export default function PublicStatusPage() {
         )}
 
         <div>
-          <p className="text-sm text-gray-500">Borrower</p>
+          <p className="text-sm text-gray-500">{t("public.borrower")}</p>
           <p className="text-lg font-semibold text-gray-800">
             {borrower.name}
           </p>
@@ -168,7 +170,7 @@ export default function PublicStatusPage() {
       </div>
 
       <div className="bg-[#1E3A8A] text-white rounded-xl p-6 text-center">
-        <p className="text-sm text-blue-100">Current Total Balance</p>
+        <p className="text-sm text-blue-100">{t("public.total_balance")}</p>
         <p className="text-3xl font-bold mt-2">
           ₱{totalBalance.toLocaleString()}
         </p>
@@ -178,12 +180,12 @@ export default function PublicStatusPage() {
         onClick={exportToExcel}
         className="w-full rounded-xl bg-[#16A34A] py-3 text-sm font-semibold text-white"
       >
-        Export Transactions to Excel
+        {t("public.export_excel")}
       </button>
 
       {lastPayment && (
         <div className="bg-white rounded-xl shadow-sm p-4">
-          <p className="text-xs text-gray-500">Last Payment</p>
+          <p className="text-xs text-gray-500">{t("public.last_payment")}</p>
           <p className="text-sm font-medium text-[#16A34A]">
             ₱{Number(lastPayment.amount).toLocaleString()} on{" "}
             {normalizeDate(lastPayment.date)}
@@ -193,12 +195,12 @@ export default function PublicStatusPage() {
 
       <div className="space-y-3">
         <h2 className="text-sm font-semibold text-gray-700">
-          Transaction History
+          {t("public.transaction_history")}
         </h2>
 
         {transactions.length === 0 && (
           <div className="bg-white rounded-xl p-4 shadow-sm text-sm text-gray-500">
-            No transactions yet.
+            {t("public.no_transactions")}
           </div>
         )}
 
@@ -258,8 +260,7 @@ export default function PublicStatusPage() {
       </div>
 
       <div className="text-center text-xs text-gray-500 pt-6">
-        This page is read-only. For corrections or concerns, please contact
-        the store directly.
+        {t("public.footer")}
       </div>
     </div>
   );

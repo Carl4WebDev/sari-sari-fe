@@ -11,6 +11,7 @@ import AddReminderModal from "../modals/AddReminderModal";
 
 import { useCollectionReminder } from "../../context/collection-reminders/useCollectionReminder";
 import GlobalModal from "../../../shared/components/GlobalModal";
+import { useTranslation } from "../../../shared/i18n/useTranslation";
 
 interface LoanItem {
   product: string;
@@ -37,6 +38,7 @@ interface Note {
 const ITEMS_PER_PAGE = 3;
 
 export default function BorrowerDetailsPage() {
+  const { t } = useTranslation();
   const { id } = useParams();
   const navigate = useNavigate();
   const location = useLocation();
@@ -48,6 +50,13 @@ export default function BorrowerDetailsPage() {
   message: "",
   type: "info",
 });
+
+const [confirmModal, setConfirmModal] = useState<{
+  isOpen: boolean;
+  title: string;
+  message: string;
+  onConfirm: () => void;
+}>({ isOpen: false, title: "", message: "", onConfirm: () => {} });
 
 
   const [dateFilter, setDateFilter] = useState("");
@@ -136,22 +145,19 @@ clearError: clearBorrowerError,
 
   const ledgerTransactions = useMemo(() => {
   let runningBalance = 0;
+  const withBalance = [];
 
-  return filteredTransactions
-    .slice()
-    .reverse()
-    .map((t) => {
-      runningBalance =
-        t.type === "LOAN"
-          ? runningBalance + Number(t.amount)
-          : runningBalance - Number(t.amount);
+  for (let i = filteredTransactions.length - 1; i >= 0; i--) {
+    const t = filteredTransactions[i];
+    runningBalance =
+      t.type === "LOAN"
+        ? runningBalance + Number(t.amount)
+        : runningBalance - Number(t.amount);
 
-      return {
-        ...t,
-        runningBalance,
-      };
-    })
-    .reverse();
+    withBalance[i] = { ...t, runningBalance };
+  }
+
+  return withBalance;
 }, [filteredTransactions]);
 
 useEffect(() => {
@@ -170,13 +176,14 @@ useEffect(() => {
 
   const borrower = useMemo(() => {
     if (!borrowers) return null;
-
-    const sorted = [...borrowers].sort(
-      (a: any, b: any) => a.borrower_id - b.borrower_id
-    );
-
-    return sorted.find((b: any) => String(b.borrower_id) === String(id));
+    return borrowers.find((b: any) => String(b.borrower_id) === String(id));
   }, [borrowers, id]);
+
+const totalPages = Math.ceil(ledgerTransactions.length / ITEMS_PER_PAGE);
+const paginatedTransactions = useMemo(() => ledgerTransactions.slice(
+    (currentPage - 1) * ITEMS_PER_PAGE,
+    currentPage * ITEMS_PER_PAGE
+  ), [ledgerTransactions, currentPage]);
 
 if (!borrower) {
   return <div className="p-6 text-gray-500">Loading borrower details...</div>;
@@ -190,12 +197,6 @@ if (!borrower) {
     contact: borrower.contact_number,
     profileImageUrl: borrower.profile_image_url
   };
-
-const totalPages = Math.ceil(ledgerTransactions.length / ITEMS_PER_PAGE);
-const paginatedTransactions = ledgerTransactions.slice(
-    (currentPage - 1) * ITEMS_PER_PAGE,
-    currentPage * ITEMS_PER_PAGE
-  );
 
   const profileImageUrl = borrower.profile_image_url || null;
 
@@ -265,13 +266,18 @@ const handleUpdateNote = async () => {
   }
 };
 
-const handleDeleteNote = async (noteId: number) => {
+const handleDeleteNote = (noteId: number) => {
   if (!id) return;
 
-  const confirmed = window.confirm("Delete this note?");
-  if (!confirmed) return;
-
-  await deleteBorrowerNote(id, noteId);
+  setConfirmModal({
+    isOpen: true,
+    title: "Delete Note",
+    message: "Are you sure you want to delete this note?",
+    onConfirm: async () => {
+      await deleteBorrowerNote(id, noteId);
+      setConfirmModal(prev => ({ ...prev, isOpen: false }));
+    },
+  });
 };
 
   const handleExport = () => {
@@ -423,14 +429,14 @@ const handleDeleteNote = async (noteId: number) => {
             type="button"
             onClick={() => fileInputRef.current?.click()}
             disabled={uploadingProfileImage}
-className="relative h-56 w-56 lg:h-64 lg:w-64 rounded-full"          >
+className="relative h-24 w-24 sm:h-32 sm:w-32 lg:h-40 lg:w-40 rounded-full"          >
             {profileImageUrl ? (
               <img
                 src={profileImageUrl}
                 alt="Borrower profile"
-className="h-56 w-56 lg:h-64 lg:w-64 rounded-full border-4 border-[#1E3A8A] object-cover shadow-xl"              />
+className="h-24 w-24 sm:h-32 sm:w-32 lg:h-40 lg:w-40 rounded-full border-4 border-[#1E3A8A] object-cover shadow-xl"              />
             ) : (
-              <div className="flex h-56 w-56 lg:h-64 lg:w-64 items-center justify-center rounded-full border-4 border-red-600 bg-red-100 text-6xl font-bold text-red-700 shadow-xl">
+              <div className="flex h-24 w-24 sm:h-32 sm:w-32 lg:h-40 lg:w-40 items-center justify-center rounded-full border-4 border-[#1E3A8A] bg-blue-50 text-3xl sm:text-4xl lg:text-5xl font-bold text-[#1E3A8A] shadow-xl">
                 {borrower.first_name?.[0]}
                 {borrower.last_name?.[0]}
               </div>
@@ -541,7 +547,7 @@ className="h-56 w-56 lg:h-64 lg:w-64 rounded-full border-4 border-[#1E3A8A] obje
               )} */}
             </div>
 
-            <span className="text-xs text-gray-400">{t.date}</span>
+            <span className="text-xs text-gray-500">{t.date}</span>
             {t.type === "PAYMENT" && (
   <div className="mt-2 rounded-lg border border-green-100 bg-green-50 px-3 py-2">
     <p className="text-xs text-gray-500">Payment Method</p>
@@ -562,10 +568,10 @@ className="h-56 w-56 lg:h-64 lg:w-64 rounded-full border-4 border-[#1E3A8A] obje
               <div className="text-sm text-gray-600 space-y-1">
                 {t.items.map((item, idx) => (
                   <div key={idx} className="flex justify-between">
-                    <span className="text-blue-700 text-[20px]">
+                    <span className="text-blue-700 text-sm">
                       {item.quantity} × {item.product}
                     </span>
-                    <span className="text-blue-500 text-[20px]">
+                    <span className="text-blue-500 text-sm">
                       ₱{(item.quantity * item.price).toLocaleString()}
                     </span>
                   </div>
@@ -658,7 +664,7 @@ className="h-56 w-56 lg:h-64 lg:w-64 rounded-full border-4 border-[#1E3A8A] obje
 <div className="border-t pt-6 space-y-4">
   <h2 className="text-lg font-semibold text-[#1E3A8A]">Notes</h2>
 
-  <div className="space-y-2 max-h-40 overflow-y-auto">
+  <div className="space-y-2 max-h-60 overflow-y-auto">
     {(borrowerNotes || []).length === 0 && (
       <div className="rounded-lg bg-gray-100 p-3 text-sm text-gray-500">
         No notes yet.
@@ -739,7 +745,7 @@ className="h-56 w-56 lg:h-64 lg:w-64 rounded-full border-4 border-[#1E3A8A] obje
 
     <button
       onClick={handleAddNote}
-      className="rounded-lg bg-[#1E3A8A] px-4 text-white p-4 text-sm w-full"
+      className="rounded-lg bg-[#1E3A8A] p-4 text-white text-sm w-full"
     >
       Send
     </button>
@@ -763,17 +769,16 @@ className="h-56 w-56 lg:h-64 lg:w-64 rounded-full border-4 border-[#1E3A8A] obje
   <button
     disabled={balance > 0 || !borrower.is_active}
     onClick={async () => {
-      const confirmed = window.confirm(
-        "Archive this borrower?"
-      );
-
-      if (!confirmed) return;
-
-      await archiveBorrower(borrower.borrower_id);
-
-      await fetchBorrowers();
-
-      navigate("/borrowers");
+      setConfirmModal({
+        isOpen: true,
+        title: "Archive Borrower",
+        message: "Are you sure you want to archive this borrower?",
+        onConfirm: async () => {
+          await archiveBorrower(borrower.borrower_id);
+          await fetchBorrowers();
+          navigate("/borrowers");
+        },
+      });
     }}
     className="w-1/3 rounded-xl bg-gray-700 py-3 font-semibold text-white disabled:opacity-50"
   >
@@ -851,6 +856,29 @@ className="h-56 w-56 lg:h-64 lg:w-64 rounded-full border-4 border-[#1E3A8A] obje
     clearReminderError();
   }}
 />
+
+{confirmModal.isOpen && (
+  <div className="fixed inset-0 z-[100] flex items-center justify-center bg-black/40">
+    <div className="w-[90%] max-w-sm rounded-2xl bg-white p-6 shadow-2xl">
+      <h2 className="text-lg font-semibold text-[#1E3A8A]">{confirmModal.title}</h2>
+      <p className="mt-3 text-sm text-gray-600">{confirmModal.message}</p>
+      <div className="mt-6 flex gap-3">
+        <button
+          onClick={() => setConfirmModal(prev => ({ ...prev, isOpen: false }))}
+          className="flex-1 rounded-xl border border-gray-300 py-3 text-sm font-medium text-gray-700"
+        >
+          Cancel
+        </button>
+        <button
+          onClick={confirmModal.onConfirm}
+          className="flex-1 rounded-xl bg-red-500 py-3 text-sm font-semibold text-white"
+        >
+          Confirm
+        </button>
+      </div>
+    </div>
+  </div>
+)}
     </div>
   );
 

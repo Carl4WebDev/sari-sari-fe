@@ -2,6 +2,7 @@ import { useEffect, useState } from "react";
 import { usePayment } from "../../context/payments/usePayment";
 import { useBorrower } from "../../context/borrowers/useBorrower";
 import GlobalModal from "../../../shared/components/GlobalModal";
+import { useTranslation } from "../../../shared/i18n/useTranslation";
 
 interface Borrower {
   id: number;
@@ -27,6 +28,7 @@ export default function AddPaymentModal({
   isClose,
   borrower,
 }: Props) {
+  const { t } = useTranslation();
   const { createPayment, error: paymentError, clearError: clearPaymentError } = usePayment();
 const {
   fetchBorrowerTransactions,
@@ -35,6 +37,7 @@ const {
 } = useBorrower();
 
   const [animate, setAnimate] = useState(false);
+  const [loading, setLoading] = useState(false);
 
   const [globalModal, setGlobalModal] = useState({
     isOpen: false,

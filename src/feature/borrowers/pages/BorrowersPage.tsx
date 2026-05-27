@@ -7,8 +7,10 @@ import ArchivedBorrowersModal from "../modals/ArchivedBorrowersModal";
 
 import GlobalModal from "../../../shared/components/GlobalModal";
 import AddBorrowerModal from "../../dashboard/modals/AddBorrowerModal";
+import { useTranslation } from "../../../shared/i18n/useTranslation";
 
 export default function BorrowersPage() {
+  const { t } = useTranslation();
   const [search, setSearch] = useState("");
   const navigate = useNavigate();
 const [isAddBorrowerOpen, setIsAddBorrowerOpen] = useState(false);
@@ -68,8 +70,8 @@ const handleExport = () => {
 
     setGlobalModal({
   isOpen: true,
-  title: "Copied",
-  message: "No borrowers to export.",
+  title: t("borrowers.copied"),
+  message: t("borrowers.no_export"),
   type: "success",
 });
     return;
@@ -96,7 +98,7 @@ const handleExport = () => {
     b.dob ?? "",
     calculateAge(b.dob),
     Number(b.balance || 0),
-    Number(b.balance || 0) <= 0 ? "Fully Paid" : "With Balance",
+    Number(b.balance || 0) <= 0 ? t("borrowers.fully_paid") : t("borrowers.with_balance"),
   ]);
 
   const csvContent = [
@@ -153,19 +155,19 @@ const handleBorrowerCreated = async (borrower: any) => {
       
       {/* Header */}
       <div className="rounded-2xl bg-gradient-to-r from-[#1E3A8A] to-[#2563EB] p-5 text-white shadow-sm">
-        <h1 className="text-2xl font-bold">Borrowers</h1>
+        <h1 className="text-2xl font-bold">{t("borrowers.title")}</h1>
         <p className="mt-1 text-sm text-blue-100">
-          Manage borrower records, loans, and contact details.
+          {t("borrowers.subtitle")}
         </p>
 
         <div className="mt-5 grid grid-cols-2 gap-3">
           <div className="rounded-xl bg-white/15 p-3">
-            <p className="text-xs text-blue-100">Total Borrowers</p>
+            <p className="text-xs text-blue-100">{t("borrowers.total_borrowers")}</p>
             <p className="text-xl font-bold">{borrowers.length}</p>
           </div>
 
           <div className="rounded-xl bg-white/15 p-3">
-            <p className="text-xs text-blue-100">Showing</p>
+            <p className="text-xs text-blue-100">{t("borrowers.showing")}</p>
             <p className="text-xl font-bold">{filteredBorrowers.length}</p>
           </div>
         </div>
@@ -181,7 +183,7 @@ const handleBorrowerCreated = async (borrower: any) => {
       </span>
 
       <input
-        placeholder="Search..."
+        placeholder={t("borrowers.search")}
         value={search}
         onFocus={() => setIsSearchFocused(true)}
         onBlur={() => setIsSearchFocused(false)}
@@ -227,7 +229,7 @@ const handleBorrowerCreated = async (borrower: any) => {
         className="h-14 w-14 shrink-0 rounded-full border-2 border-[#1E3A8A] object-cover"
       />
     ) : (
-      <div className="flex h-14 w-14 shrink-0 items-center justify-center rounded-full border-2 border-red-500 bg-red-100 text-sm font-bold text-red-700">
+      <div className="flex h-14 w-14 shrink-0 items-center justify-center rounded-full border-2 border-[#1E3A8A] bg-blue-50 text-sm font-bold text-[#1E3A8A]">
         {b.first_name?.[0]}
         {b.last_name?.[0]}
       </div>
@@ -243,18 +245,18 @@ const handleBorrowerCreated = async (borrower: any) => {
           </h2>
 
           <p className="mt-0.5 truncate text-xs text-gray-500">
-            📞 {b.contact_number || "No contact"}
+            📞 {b.contact_number || t("borrowers.no_contact")}
           </p>
 
-          <p className="text-[11px] text-gray-400">
-            Age: {calculateAge(b.dob)}
+          <p className="text-[11px] text-gray-500">
+            {t("borrowers.age_label")} {calculateAge(b.dob)}
           </p>
         </div>
 
         {/* Balance */}
         <div className="text-right">
-          <p className="text-[10px] uppercase tracking-wide text-gray-400">
-            Balance
+          <p className="text-[10px] uppercase tracking-wide text-gray-500">
+            {t("borrowers.balance")}
           </p>
 
           <p className="text-sm font-bold text-[#1E3A8A]">
@@ -269,8 +271,8 @@ const handleBorrowerCreated = async (borrower: any) => {
             }`}
           >
             {Number(b.balance || 0) <= 0
-              ? "Paid"
-              : "Unpaid"}
+              ? t("borrowers.paid")
+              : t("borrowers.unpaid")}
           </span>
         </div>
       </div>
@@ -284,40 +286,42 @@ const handleBorrowerCreated = async (borrower: any) => {
           <div className="rounded-2xl border bg-white p-8 text-center shadow-sm">
             <p className="text-4xl">📭</p>
             <h3 className="mt-3 text-base font-semibold text-gray-800">
-              No borrowers found
+              {t("borrowers.empty_title")}
             </h3>
             <p className="mt-1 text-sm text-gray-500">
-              Try searching another name or contact number.
+              {t("borrowers.empty_hint")}
             </p>
           </div>
         )}
       </div>
 
       {/* Pagination */}
+      {!loading && filteredBorrowers.length > 0 && totalPages > 1 && (
+        <div className="flex items-center justify-center gap-3 pt-2 pb-24">
+          <button
+            disabled={currentPage === 1}
+            onClick={() => setCurrentPage((p) => p - 1)}
+            className="rounded-xl border px-5 py-2.5 text-sm font-medium disabled:cursor-not-allowed disabled:opacity-40"
+          >
+            {t("borrowers.prev")}
+          </button>
+
+          <span className="text-sm font-medium text-gray-600">
+            {currentPage} / {totalPages}
+          </span>
+
+          <button
+            disabled={currentPage === totalPages}
+            onClick={() => setCurrentPage((p) => p + 1)}
+            className="rounded-xl border px-5 py-2.5 text-sm font-medium disabled:cursor-not-allowed disabled:opacity-40"
+          >
+            {t("borrowers.next")}
+          </button>
+        </div>
+      )}
+
+      {/* Floating Footer Actions */}
       {!loading && filteredBorrowers.length > 0 && (
-        <div className="fixed bottom-0 left-0 right-0 border-t bg-white p-3 shadow-lg sm:static sm:border-none sm:bg-transparent sm:p-0 sm:shadow-none">
-          <div className="mx-auto flex max-w-md items-center justify-between gap-3 sm:justify-center">
-            <button
-              disabled={currentPage === 1}
-              onClick={() => setCurrentPage((p) => p - 1)}
-              className="rounded-xl border px-5 py-2.5 text-sm font-medium disabled:cursor-not-allowed disabled:opacity-40"
-            >
-              Prev
-            </button>
-
-            <span className="text-sm font-medium text-gray-600">
-              {currentPage} / {totalPages}
-            </span>
-
-            <button
-              disabled={currentPage === totalPages}
-              onClick={() => setCurrentPage((p) => p + 1)}
-              className="rounded-xl border px-5 py-2.5 text-sm font-medium disabled:cursor-not-allowed disabled:opacity-40"
-            >
-              Next
-            </button>
-          </div>
-          {/* Floating Footer Actions */}
 <div className="fixed bottom-0 left-0 z-30 w-full border-t border-gray-200 bg-white/95 backdrop-blur">
   <div className="mx-auto grid max-w-2xl grid-cols-3 gap-2 p-3">
 
@@ -329,7 +333,7 @@ const handleBorrowerCreated = async (borrower: any) => {
       <span className="text-lg">＋</span>
 
       <span className="mt-1 text-[11px] font-medium">
-        Borrower
+        {t("borrowers.add_borrower")}
       </span>
     </button>
 
@@ -341,7 +345,7 @@ const handleBorrowerCreated = async (borrower: any) => {
       <span className="text-lg">🖨️</span>
 
       <span className="mt-1 text-[11px] font-medium">
-        Export
+        {t("borrowers.export")}
       </span>
     </button>
 
@@ -353,12 +357,11 @@ const handleBorrowerCreated = async (borrower: any) => {
       <span className="text-lg">📦</span>
 
       <span className="mt-1 text-[11px] font-medium">
-        Archive
+        {t("borrowers.archive")}
       </span>
     </button>
   </div>
 </div>
-        </div>
       )}
       <GlobalModal
   isOpen={globalModal.isOpen}

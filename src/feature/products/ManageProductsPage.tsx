@@ -2,6 +2,7 @@ import { useEffect, useMemo, useState } from "react";
 import { useProduct } from "../context/products/useProduct";
 import ProductModal from "./modals/ProductModal";
 import ArchivedProductsModal from "./modals/ArchivedProductsModal";
+import { useTranslation } from "../../shared/i18n/useTranslation";
 
 interface Product {
   product_id: number;
@@ -11,6 +12,7 @@ interface Product {
 }
 
 export default function ManageProductsPage() {
+const { t } = useTranslation();
 const {
   products,
   archivedProducts,
@@ -53,12 +55,20 @@ const {
     setIsModalOpen(true);
   };
 
+const [confirmModal, setConfirmModal] = useState<{
+  isOpen: boolean;
+  productId: number | null;
+}>({ isOpen: false, productId: null });
+
 const handleArchive = async (productId: number) => {
-  const confirmArchive = confirm("Archive this product?");
+  setConfirmModal({ isOpen: true, productId });
+};
 
-  if (!confirmArchive) return;
-
-  await archiveProduct(productId);
+const confirmArchive = async () => {
+  if (confirmModal.productId) {
+    await archiveProduct(confirmModal.productId);
+  }
+  setConfirmModal({ isOpen: false, productId: null });
 };
 
   return (
@@ -120,7 +130,7 @@ const handleArchive = async (productId: number) => {
 </div>
 
       {/* Product List */}
-      <div className="space-y-3">
+      <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
         {loading && (
           <div className="rounded-2xl border bg-white p-5 text-sm text-gray-500 shadow-sm">
             Loading products...
@@ -166,7 +176,7 @@ const handleArchive = async (productId: number) => {
 onClick={(e) => {
   e.stopPropagation();
   handleOpenEdit(product);
-}}          className="rounded-lg border border-[#1E3A8A] px-3 py-1.5 text-[11px] font-medium text-[#1E3A8A]"
+}}          className="rounded-lg border border-[#1E3A8A] px-3 py-2 text-xs font-medium text-[#1E3A8A]"
         >
           Edit
         </button>
@@ -177,7 +187,7 @@ onClick={(e) => {
   handleArchive(product.product_id);
 }}
           disabled={actionLoading}
-          className="rounded-lg border border-red-600 px-3 py-1.5 text-[11px] font-medium text-red-600 disabled:opacity-50"
+          className="rounded-lg border border-red-600 px-3 py-2 text-xs font-medium text-red-600 disabled:opacity-50"
         >
           archive
         </button>
@@ -237,6 +247,29 @@ onClick={(e) => {
     </button>
   </div>
 </div>
+
+      {confirmModal.isOpen && (
+        <div className="fixed inset-0 z-[100] flex items-center justify-center bg-black/40">
+          <div className="w-[90%] max-w-sm rounded-2xl bg-white p-6 shadow-2xl">
+            <h2 className="text-lg font-semibold text-[#1E3A8A]">Archive Product</h2>
+            <p className="mt-3 text-sm text-gray-600">Are you sure you want to archive this product?</p>
+            <div className="mt-6 flex gap-3">
+              <button
+                onClick={() => setConfirmModal({ isOpen: false, productId: null })}
+                className="flex-1 rounded-xl border border-gray-300 py-3 text-sm font-medium text-gray-700"
+              >
+                Cancel
+              </button>
+              <button
+                onClick={confirmArchive}
+                className="flex-1 rounded-xl bg-red-500 py-3 text-sm font-semibold text-white"
+              >
+                Archive
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }

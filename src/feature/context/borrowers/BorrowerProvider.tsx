@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useCallback, useMemo } from "react";
 import { BorrowerContext } from "./BorrowerContext";
 
 import {
@@ -23,7 +23,7 @@ export const BorrowerProvider = ({ children }) => {
   const [uploadingProfileImage, setUploadingProfileImage] = useState(false);
   const [error, setError] = useState(null);
 
-  const clearError = () => setError(null);
+  const clearError = useCallback(() => setError(null), []);
   const [borrowerNotes, setBorrowerNotes] = useState([]);
 
   const [archivedBorrowers, setArchivedBorrowers] = useState([]);
@@ -31,7 +31,7 @@ export const BorrowerProvider = ({ children }) => {
   const [transactions, setTransactions] = useState([]);
 
 
-  const updateBorrowerNote = async (
+  const updateBorrowerNote = useCallback(async (
   borrowerId,
   noteId,
   noteText
@@ -55,9 +55,9 @@ export const BorrowerProvider = ({ children }) => {
 
   setLoading(false);
   return res;
-};
+}, []);
 
-const deleteBorrowerNote = async (
+const deleteBorrowerNote = useCallback(async (
   borrowerId,
   noteId
 ) => {
@@ -79,9 +79,9 @@ const deleteBorrowerNote = async (
 
   setLoading(false);
   return res;
-};
+}, []);
 
-  const fetchBorrowerNotes = async (borrowerId) => {
+  const fetchBorrowerNotes = useCallback(async (borrowerId) => {
   setLoading(true);
   setError(null);
 
@@ -96,9 +96,9 @@ const deleteBorrowerNote = async (
   setBorrowerNotes(res.data);
   setLoading(false);
   return res;
-};
+}, []);
 
-const createBorrowerNote = async (borrowerId, noteText) => {
+const createBorrowerNote = useCallback(async (borrowerId, noteText) => {
   setLoading(true);
   setError(null);
 
@@ -116,9 +116,9 @@ const createBorrowerNote = async (borrowerId, noteText) => {
 
   setLoading(false);
   return res;
-};
+}, []);
 
-const fetchArchivedBorrowers = async () => {
+const fetchArchivedBorrowers = useCallback(async () => {
   setLoading(true);
   setError(null);
 
@@ -134,9 +134,9 @@ const fetchArchivedBorrowers = async () => {
 
   setLoading(false);
   return res;
-};
+}, []);
 
-const reactivateBorrower = async (borrowerId) => {
+const reactivateBorrower = useCallback(async (borrowerId) => {
   setLoading(true);
   setError(null);
 
@@ -153,9 +153,9 @@ const reactivateBorrower = async (borrowerId) => {
 
   setLoading(false);
   return res;
-};
+}, []);
 
-  const archiveBorrower = async (borrowerId) => {
+  const archiveBorrower = useCallback(async (borrowerId) => {
   setLoading(true);
   setError(null);
 
@@ -171,12 +171,12 @@ const reactivateBorrower = async (borrowerId) => {
 
   setLoading(false);
   return res;
-};
+}, []);
 
   // -------------------------
   // FETCH BORROWERS
   // -------------------------
-  const fetchBorrowers = async () => {
+  const fetchBorrowers = useCallback(async () => {
     setLoading(true);
     setError(null);
 
@@ -192,12 +192,12 @@ const reactivateBorrower = async (borrowerId) => {
     setLoading(false);
 
     return res;
-  };
+  }, []);
 
   // -------------------------
   // CREATE BORROWER
   // -------------------------
-  const createBorrower = async (payload) => {
+  const createBorrower = useCallback(async (payload) => {
     setLoading(true);
     setError(null);
 
@@ -213,12 +213,12 @@ const reactivateBorrower = async (borrowerId) => {
 
     setLoading(false);
     return res;
-  };
+  }, []);
 
   // -------------------------
   // FETCH BORROWER TRANSACTIONS
   // -------------------------
-  const fetchBorrowerTransactions = async (borrowerId) => {
+  const fetchBorrowerTransactions = useCallback(async (borrowerId) => {
     setLoading(true);
     setError(null);
 
@@ -251,12 +251,12 @@ const reactivateBorrower = async (borrowerId) => {
     setLoading(false);
 
     return formatted;
-  };
+  }, []);
 
   // -------------------------
   // UPLOAD BORROWER PROFILE IMAGE
   // -------------------------
-const uploadBorrowerProfileImage = async (borrowerId, file) => {
+const uploadBorrowerProfileImage = useCallback(async (borrowerId, file) => {
   setUploadingProfileImage(true);
   setError(null);
 
@@ -283,7 +283,7 @@ const uploadBorrowerProfileImage = async (borrowerId, file) => {
 
   setUploadingProfileImage(false);
   return res;
-};
+}, []);
 
 
 // const updatePublicAccess = async (borrowerId, enabled) => {
@@ -307,7 +307,7 @@ const uploadBorrowerProfileImage = async (borrowerId, file) => {
 //   return res;
 // };
 
-const updatePublicLoanAccess = async (
+const updatePublicLoanAccess = useCallback(async (
   borrowerId,
   enabled
 ) => {
@@ -334,33 +334,40 @@ const updatePublicLoanAccess = async (
   setLoading(false);
 
   return res;
-};
-  return (
-    <BorrowerContext.Provider
-      value={{
-        borrowers,
-        transactions,
-        loading,
-        uploadingProfileImage,
-        error,
-        clearError,
-        archivedBorrowers,
-          borrowerNotes,
+}, []);
 
-        fetchBorrowers,
-        createBorrower,
-        fetchBorrowerTransactions,
-        uploadBorrowerProfileImage,
-        updatePublicLoanAccess,
-        archiveBorrower,
-          fetchArchivedBorrowers,
-  reactivateBorrower,
+  const value = useMemo(() => ({
+    borrowers,
+    transactions,
+    loading,
+    uploadingProfileImage,
+    error,
+    clearError,
+    archivedBorrowers,
+    borrowerNotes,
+    fetchBorrowers,
+    createBorrower,
+    fetchBorrowerTransactions,
+    uploadBorrowerProfileImage,
+    updatePublicLoanAccess,
+    archiveBorrower,
+    fetchArchivedBorrowers,
+    reactivateBorrower,
     fetchBorrowerNotes,
-  createBorrowerNote,
-  updateBorrowerNote,
-deleteBorrowerNote,
-      }}
-    >
+    createBorrowerNote,
+    updateBorrowerNote,
+    deleteBorrowerNote,
+  }), [
+    borrowers, transactions, loading, uploadingProfileImage, error,
+    archivedBorrowers, borrowerNotes,
+    clearError, fetchBorrowers, createBorrower, fetchBorrowerTransactions,
+    uploadBorrowerProfileImage, updatePublicLoanAccess, archiveBorrower,
+    fetchArchivedBorrowers, reactivateBorrower, fetchBorrowerNotes,
+    createBorrowerNote, updateBorrowerNote, deleteBorrowerNote,
+  ]);
+
+  return (
+    <BorrowerContext.Provider value={value}>
       {children}
     </BorrowerContext.Provider>
   );

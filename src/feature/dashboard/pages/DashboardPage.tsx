@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useEffect, useState, useMemo, useCallback } from "react";
 import {
   ResponsiveContainer,
   BarChart,
@@ -19,9 +19,11 @@ import ReminderNotificationModal from "../modals/ReminderNotificationModal";
 import { useDashboard } from "../../context/dashboard/useDashboard";
 import { useCollectionReminder } from "../../context/collection-reminders/useCollectionReminder";
 import GlobalModal from "../../../shared/components/GlobalModal";
+import { useTranslation } from "../../../shared/i18n/useTranslation";
 
 
 export default function DashboardPage() {
+  const { t } = useTranslation();
   const {
     dashboard,
     loading,
@@ -67,26 +69,29 @@ useEffect(() => {
   }
 }, [reminderError]);
 
-  const chartData = [
+  const chartData = useMemo(() => [
     {
-      name: "Paid",
+      name: t("dashboard.paid"),
       value: dashboard?.fully_paid || 0,
     },
     {
-      name: "Unpaid",
+      name: t("dashboard.unpaid"),
       value: dashboard?.with_balance || 0,
     },
-  ];
+  ], [dashboard]);
 
-  const monthlyUtangTrend =
-  dashboard?.monthly_utang_trend || [];
+  const monthlyUtangTrend = useMemo(() =>
+    dashboard?.monthly_utang_trend || []
+  , [dashboard]);
 
-  const topBorrowers = dashboard?.top_borrowers || [];
+  const topBorrowers = useMemo(() =>
+    dashboard?.top_borrowers || []
+  , [dashboard]);
 
-  const refreshDashboard = async () => {
+  const refreshDashboard = useCallback(async () => {
   await fetchDashboard();
   await fetchDashboardReminders();
-};
+}, [fetchDashboard, fetchDashboardReminders]);
 
   return (
     <div className="space-y-6 pb-10">
@@ -127,9 +132,9 @@ useEffect(() => {
 <div className="flex items-start justify-between gap-4">
   <div>
     <h1 className="text-2xl font-semibold text-[#1E3A8A]">
-      Dashboard
+      {t("dashboard.title")}
     </h1>
-    <p className="text-sm text-gray-500">Utang overview</p>
+    <p className="text-sm text-gray-500">{t("dashboard.subtitle")}</p>
   </div>
 
   <button
@@ -151,31 +156,31 @@ useEffect(() => {
       <div className="space-y-4">
         <button
           onClick={() => setIsBorrowerOpen(true)}
-          className="w-full rounded-xl bg-[#1E3A8A] py-4 text-lg font-semibold text-white"
+          className="w-full rounded-xl bg-[#1E3A8A] py-3 text-sm font-semibold text-white"
         >
-          + Add New Borrower
+          + {t("dashboard.add_borrower")}
         </button>
 
         <button
           onClick={() => setIsLoanOpen(true)}
-          className="w-full rounded-xl bg-[#1E3A8A] py-4 text-lg font-semibold text-white"
+          className="w-full rounded-xl bg-[#1E3A8A] py-3 text-sm font-semibold text-white"
         >
-          + Add Loan
+          + {t("dashboard.add_loan")}
         </button>
 
         <button
           onClick={() => setIsQuickPaymentOpen(true)}
-          className="w-full rounded-lg bg-[#16A34A] py-4 font-semibold text-white"
+          className="w-full rounded-xl bg-[#16A34A] py-3 text-sm font-semibold text-white"
         >
-          + Add Payment
+          + {t("dashboard.add_payment")}
         </button>
       </div>
 
 
       {/* Summary */}
-      <div className="grid grid-cols-1 gap-4">
+      <div className="grid grid-cols-2 lg:grid-cols-4 gap-3">
         <SummaryCard
-          title="Total Outstanding Utang"
+          title={t("dashboard.total_utang")}
           value={`₱${Number(
             dashboard?.total_utang || 0
           ).toLocaleString()}`}
@@ -183,21 +188,21 @@ useEffect(() => {
         />
 
         <SummaryCard
-          title="Total Borrowers"
+          title={t("dashboard.total_borrowers")}
           value={String(
             dashboard?.total_borrowers || 0
           )}
         />
 
         <SummaryCard
-          title="New Borrowers Today"
+          title={t("dashboard.new_today")}
           value={String(
             dashboard?.new_borrowers_today || 0
           )}
         />
 
         <SummaryCard
-          title="New Borrowers This Month"
+          title={t("dashboard.new_month")}
           value={String(
             dashboard?.new_borrowers_this_month || 0
           )}
@@ -208,17 +213,15 @@ useEffect(() => {
       <div className="rounded-xl border border-gray-200 bg-white p-5 shadow-sm">
         <div className="mb-4">
           <h2 className="text-lg font-semibold text-[#1E3A8A]">
-            Borrower Analytics
+            {t("dashboard.analytics")}
           </h2>
 
           <p className="text-sm text-gray-500">
-            Paid vs unpaid borrowers
+            {t("dashboard.analytics_subtitle")}
           </p>
 
-          <p className="mt-2 text-xs leading-5 text-gray-400">
-  This graph compares borrowers who already paid their balances
-  versus borrowers who still have remaining utang.
-  Higher unpaid borrowers may indicate collection risk.
+          <p className="mt-2 text-xs leading-5 text-gray-500">
+  {t("dashboard.analytics_desc")}
 </p>
         </div>
 
@@ -243,16 +246,14 @@ useEffect(() => {
 <div className="rounded-xl border border-gray-200 bg-white p-5 shadow-sm">
   <div className="mb-4">
     <h2 className="text-lg font-semibold text-[#1E3A8A]">
-      Monthly Utang Trend
+      {t("dashboard.monthly_trend")}
     </h2>
 
     <p className="text-sm text-gray-500">
-      Total outstanding balance trend per month
+      {t("dashboard.monthly_trend_subtitle")}
     </p>
-    <p className="mt-2 text-xs leading-5 text-gray-400">
-  This graph shows how total borrower utang changes monthly.
-  Rising values may mean more borrowers are taking loans,
-  while lower values may indicate stronger collections/payments.
+    <p className="mt-2 text-xs leading-5 text-gray-500">
+  {t("dashboard.monthly_trend_desc")}
 </p>
   </div>
 
@@ -275,7 +276,7 @@ useEffect(() => {
       </ResponsiveContainer>
     ) : (
       <div className="flex h-full items-center justify-center text-sm text-gray-500">
-        No monthly trend data yet
+        {t("dashboard.no_trend")}
       </div>
     )}
   </div>
@@ -284,16 +285,15 @@ useEffect(() => {
 <div className="rounded-xl border border-gray-200 bg-white p-5 shadow-sm">
   <div className="mb-4">
     <h2 className="text-lg font-semibold text-[#1E3A8A]">
-      Top Borrowers
+      {t("dashboard.top_borrowers")}
     </h2>
 
     <p className="text-sm text-gray-500">
-      Borrowers with the highest remaining balances
+      {t("dashboard.top_borrowers_subtitle")}
     </p>
 
-    <p className="mt-2 text-xs leading-5 text-gray-400">
-      Use this to quickly identify customers with the biggest unpaid utang.
-      These borrowers may need follow-up or payment reminders first.
+    <p className="mt-2 text-xs leading-5 text-gray-500">
+      {t("dashboard.top_borrowers_desc")}
     </p>
   </div>
 
@@ -318,7 +318,7 @@ useEffect(() => {
     </p>
 
     <p className="text-xs text-gray-500">
-      High balance borrower
+      {t("dashboard.high_balance")}
     </p>
   </div>
 </Link>
@@ -331,7 +331,7 @@ useEffect(() => {
       ))
     ) : ( 
       <div className="rounded-xl bg-gray-50 p-4 text-center text-sm text-gray-500">
-        No unpaid borrowers
+        {t("dashboard.no_unpaid")}
       </div>
     )}
   </div>
@@ -341,13 +341,13 @@ useEffect(() => {
       {/* Insights */}
       <div className="rounded-xl border border-gray-200 bg-white p-5 shadow-sm">
         <h2 className="mb-4 text-lg font-semibold text-[#1E3A8A]">
-          Insights
+          {t("dashboard.insights")}
         </h2>
 
         <div className="space-y-4 text-sm">
           <div className="flex items-center justify-between">
             <span className="text-gray-500">
-              Fully Paid Borrowers
+              {t("dashboard.fully_paid_insight")}
             </span>
 
             <span className="font-semibold text-[#16A34A]">
@@ -357,7 +357,7 @@ useEffect(() => {
 
           <div className="flex items-center justify-between">
             <span className="text-gray-500">
-              Borrowers With Balance
+              {t("dashboard.with_balance_insight")}
             </span>
 
             <span className="font-semibold text-red-500">
@@ -367,7 +367,7 @@ useEffect(() => {
 
           <div className="flex items-center justify-between">
             <span className="text-gray-500">
-              Busiest Day
+              {t("dashboard.busiest_day")}
             </span>
 
             <span className="font-semibold text-gray-800">
@@ -377,7 +377,7 @@ useEffect(() => {
 
           <div className="flex items-center justify-between">
             <span className="text-gray-500">
-              Busiest Hour
+              {t("dashboard.busiest_hour")}
             </span>
 
             <span className="font-semibold text-gray-800">
@@ -391,11 +391,11 @@ useEffect(() => {
 <div className="rounded-xl border border-gray-200 bg-white p-5 shadow-sm">
   <div className="mb-4">
     <h2 className="text-lg font-semibold text-[#1E3A8A]">
-      Recent Activities
+      {t("dashboard.recent_activities")}
     </h2>
 
     <p className="text-sm text-gray-500">
-      Latest borrower transactions
+      {t("dashboard.recent_activities_subtitle")}
     </p>
   </div>
 
@@ -417,8 +417,8 @@ useEffect(() => {
 
     <p className="text-xs text-gray-500">
       {activity.type === "LOAN"
-        ? "Borrowed"
-        : "Paid"}
+        ? t("dashboard.borrowed")
+        : t("dashboard.paid_label")}
     </p>
   </div>
 </Link>
@@ -435,7 +435,7 @@ useEffect(() => {
               {Number(activity.amount).toLocaleString()}
             </p>
 
-            <p className="text-xs text-gray-400">
+            <p className="text-xs text-gray-500">
               {new Date(
                 activity.created_at
               ).toLocaleDateString()}
@@ -445,7 +445,7 @@ useEffect(() => {
       ))
     ) : (
       <div className="rounded-xl bg-gray-50 p-4 text-center text-sm text-gray-500">
-        No recent activities
+        {t("dashboard.no_activities")}
       </div>
     )}
   </div>
@@ -454,7 +454,7 @@ useEffect(() => {
       {/* Loading */}
       {loading && (
         <div className="rounded-xl border border-gray-200 bg-white p-5 text-center text-sm text-gray-500 shadow-sm">
-          Loading dashboard...
+          {t("dashboard.title")}...
         </div>
       )}
 

@@ -1,5 +1,6 @@
 import { useEffect, useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
+import { useTranslation } from "../../../shared/i18n/useTranslation";
 
 interface Props {
   isOpen: boolean;
@@ -18,6 +19,7 @@ export default function ReminderNotificationModal({
   reminders,
   onMarkDone,
 }: Props) {
+  const { t } = useTranslation();
   const [animate, setAnimate] = useState(false);
 
   useEffect(() => {

@@ -1,10 +1,12 @@
 import { useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { useUser } from "../../context/users/useUser.js";
+import { useTranslation } from "../../../shared/i18n/useTranslation";
 
 export default function LoginPage() {
   const { login, loading, error } = useUser();
   const navigate = useNavigate();
+  const { t } = useTranslation();
 
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
@@ -23,13 +25,13 @@ export default function LoginPage() {
     <div className="flex min-h-screen items-center justify-center bg-[#F3F4F6] px-4">
       <div className="w-full max-w-sm rounded-xl bg-white p-8 shadow-md">
         <h1 className="mb-8 text-center text-2xl font-semibold text-[#1E3A8A]">
-          Login
+          {t("auth.login")}
         </h1>
 
         <form className="space-y-5" onSubmit={handleSubmit}>
           <div>
             <label className="block text-sm font-medium text-gray-700">
-              Email
+              {t("auth.email")}
             </label>
             <input
               type="email"
@@ -43,7 +45,7 @@ export default function LoginPage() {
 
           <div>
             <label className="block text-sm font-medium text-gray-700">
-              Password
+              {t("auth.password")}
             </label>
             <input
               type="password"
@@ -60,23 +62,23 @@ export default function LoginPage() {
           )}
 
 <p className="text-center text-xs leading-5 text-gray-500">
-  Your information is handled with care and used only for your store account.
+  {t("auth.info_notice")}
 </p>
           <button
             type="submit"
             disabled={loading}
             className="w-full rounded-lg bg-[#1E3A8A] py-2 text-sm font-medium text-white transition hover:bg-[#172E6B] disabled:opacity-60"
           >
-            {loading ? "Logging in..." : "Login"}
+            {loading ? t("auth.logging_in") : t("auth.login")}
           </button>
 
           <div className="text-center text-sm text-gray-600">
-            No account?{" "}
+            {t("auth.no_account")}{" "}
             <Link
               to="/register"
               className="font-medium text-[#1E3A8A] hover:underline"
             >
-              Create one
+              {t("auth.create_one")}
             </Link>
           </div>
         </form>

@@ -1,6 +1,7 @@
 import { useEffect, useState } from "react";
 import { useBorrower } from "../../context/borrowers/useBorrower";
 import GlobalModal from "../../../shared/components/GlobalModal";
+import { useTranslation } from "../../../shared/i18n/useTranslation";
 
 interface Props {
   isOpen: boolean;
@@ -13,7 +14,7 @@ export default function AddBorrowerModal({
   isClose,
   onBorrowerCreated,
 }: Props) {
-
+  const { t } = useTranslation();
   const { createBorrower, clearError: clearBorrowerError } = useBorrower();
 
   const [form, setForm] = useState({

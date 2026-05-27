@@ -1,13 +1,16 @@
 import { useState } from "react";
 import { useMediaQuery } from "../../../shared/hooks/useMediaQuery";
-import { Link } from "react-router-dom";
+import { Link, useLocation } from "react-router-dom";
+import { useTranslation } from "../../../shared/i18n/useTranslation";
 
 import {useUser} from "../../context/users/useUser.js"
 
 export default function Sidebar() {
 
   const { clearUser } = useUser();
+  const location = useLocation();
   const user = JSON.parse(localStorage.getItem("user") || "{}");
+  const { t, language, setLanguage } = useTranslation();
 
   const isMobile = useMediaQuery("(max-width: 768px)");
   const [isOpen, setIsOpen] = useState(false);
@@ -54,8 +57,8 @@ className={`
 >
 {/* Header */}
 <div className="border-b border-gray-200 px-5 py-6 text-center">
-  <p className="text-xs font-medium uppercase tracking-wide text-gray-400">
-    Store
+  <p className="text-xs font-medium uppercase tracking-wide text-gray-500">
+    {t("nav.store_label")}
   </p>
 
   <h2 className="mt-2 text-lg font-semibold leading-snug text-[#1E3A8A] break-words">
@@ -72,24 +75,51 @@ className={`
         {/* Navigation */}
 <nav className="flex-1 overflow-y-auto px-3 py-6 space-y-2">
           <Link to={"/dashboard"} onClick={handleClose}>
-            <SidebarItem label="Dashboard" />
+            <SidebarItem label={t("nav.dashboard")} active={location.pathname === "/dashboard"} />
           </Link>
           <Link to={"/borrowers"} onClick={handleClose}>
-            <SidebarItem label="Borrowers" />
+            <SidebarItem label={t("nav.borrowers")} active={location.pathname.startsWith("/borrowers")} />
           </Link>
           <Link to={"/products"} onClick={handleClose}>
-            <SidebarItem label="Manage Products" />
+            <SidebarItem label={t("nav.products")} active={location.pathname === "/products"} />
           </Link>
         </nav>
 
+        {/* Language Toggle */}
+        <div className="px-3 pb-2 border-t border-gray-200 pt-3">
+          <p className="text-[10px] font-medium uppercase tracking-wide text-gray-400 mb-2 text-center">{t("lang.label")}</p>
+          <div className="flex gap-2">
+            <button
+              onClick={() => setLanguage("en")}
+              className={`flex-1 rounded-lg py-2 text-xs font-semibold transition ${
+                language === "en"
+                  ? "bg-[#1E3A8A] text-white"
+                  : "border border-gray-300 text-gray-600 hover:bg-gray-50"
+              }`}
+            >
+              {t("lang.en")}
+            </button>
+            <button
+              onClick={() => setLanguage("fil")}
+              className={`flex-1 rounded-lg py-2 text-xs font-semibold transition ${
+                language === "fil"
+                  ? "bg-[#1E3A8A] text-white"
+                  : "border border-gray-300 text-gray-600 hover:bg-gray-50"
+              }`}
+            >
+              {t("lang.fil")}
+            </button>
+          </div>
+        </div>
+
         {/* Logout (bottom) */}
-        <div className="p-3 border-t border-gray-200">
+        <div className="p-3">
           <Link
             to={"/"}
             onClick={handleLogout}
             className="block w-full rounded-lg px-3 py-3 text-sm font-medium text-white bg-[#1E3A8A] hover:bg-[#172E6B] text-center transition"
           >
-            Logout
+            {t("nav.logout")}
           </Link>
         </div>
       </aside>
@@ -97,9 +127,13 @@ className={`
   );
 }
 
-function SidebarItem({ label }) {
+function SidebarItem({ label, active = false }: { label: string; active?: boolean }) {
   return (
-    <div className="flex items-center rounded-lg px-3 py-3 text-sm font-medium text-gray-700 hover:bg-[#F3F4F6] hover:text-[#1E3A8A] transition cursor-pointer">
+    <div className={`flex items-center rounded-lg px-3 py-3 text-sm font-medium transition cursor-pointer ${
+      active
+        ? "bg-[#1E3A8A] text-white"
+        : "text-gray-700 hover:bg-[#F3F4F6] hover:text-[#1E3A8A]"
+    }`}>
       <span>{label}</span>
     </div>
   );

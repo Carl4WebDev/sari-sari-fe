@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useCallback, useMemo } from "react";
 import { UserContext } from "./UserContext.js";
 import {
   loginUser,
@@ -9,12 +9,12 @@ export const UserProvider = ({ children }) => {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
 
-  const clearError = () => setError(null);
+  const clearError = useCallback(() => setError(null), []);
 
   // -------------------------
   // LOGIN
   // -------------------------
-  const login = async (email, password) => {
+  const login = useCallback(async (email, password) => {
     setLoading(true);
     setError(null);
 
@@ -32,12 +32,12 @@ export const UserProvider = ({ children }) => {
 
     setLoading(false);
     return res;
-  };
+  }, []);
 
   // -------------------------
   // REGISTER
   // -------------------------
-  const register = async (payload) => {
+  const register = useCallback(async (payload) => {
     setLoading(true);
     setError(null);
 
@@ -51,30 +51,27 @@ export const UserProvider = ({ children }) => {
 
     setLoading(false);
     return res;
-  };
+  }, []);
 
   // -------------------------
   // LOGOUT
   // -------------------------
-  const clearUser = () => {
+  const clearUser = useCallback(() => {
     localStorage.removeItem("user_token");
     localStorage.removeItem("user");
-    setUserInfo(null);
-  };
+  }, []);
+
+  const value = useMemo(() => ({
+    loading,
+    error,
+    clearError,
+    login,
+    register,
+    clearUser,
+  }), [loading, error, clearError, login, register, clearUser]);
 
   return (
-    <UserContext.Provider
-      value={{
-        loading,
-        error,
-        clearError,
-
-        // auth
-        login,
-        register,
-        clearUser,
-      }}
-    >
+    <UserContext.Provider value={value}>
       {children}
     </UserContext.Provider>
   );
