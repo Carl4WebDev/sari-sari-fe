@@ -99,14 +99,14 @@ const confirmArchive = async () => {
 
       {/* Header */}
       <div className="rounded-2xl bg-gradient-to-r from-[#1E3A8A] to-[#2563EB] p-5 text-white shadow-sm">
-        <h1 className="text-2xl font-bold">Products</h1>
+        <h1 className="text-2xl font-bold">{t("products.title")}</h1>
 
         <p className="mt-1 text-sm text-blue-100">
-          Manage products used when adding borrower loans.
+          {t("products.subtitle")}
         </p>
 
         <div className="mt-5 rounded-xl bg-white/15 p-3">
-          <p className="text-xs text-blue-100">Total Products</p>
+          <p className="text-xs text-blue-100">{t("products.total_products")}</p>
           <p className="text-xl font-bold">{products.length}</p>
         </div>
       </div>
@@ -122,7 +122,7 @@ const confirmArchive = async () => {
       <input
         value={search}
         onChange={(e) => setSearch(e.target.value)}
-        placeholder="Search product..."
+        placeholder={t("products.search")}
         className="w-full rounded-xl border border-gray-200 py-2.5 pl-9 pr-3 text-sm outline-none transition focus:border-[#1E3A8A] focus:ring-2 focus:ring-blue-100"
       />
     </div>
@@ -133,7 +133,7 @@ const confirmArchive = async () => {
       <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
         {loading && (
           <div className="rounded-2xl border bg-white p-5 text-sm text-gray-500 shadow-sm">
-            Loading products...
+            {t("products.loading")}
           </div>
         )}
 
@@ -164,7 +164,7 @@ const confirmArchive = async () => {
     {/* Right Side */}
     <div className="text-right">
       <p className="text-[10px] uppercase tracking-wide text-gray-400">
-        Price
+        {t("products.price")}
       </p>
 
       <p className="text-sm font-bold text-[#1E3A8A]">
@@ -178,7 +178,7 @@ onClick={(e) => {
   handleOpenEdit(product);
 }}          className="rounded-lg border border-[#1E3A8A] px-3 py-2 text-xs font-medium text-[#1E3A8A]"
         >
-          Edit
+          {t("products.edit")}
         </button>
 
         <button
@@ -189,7 +189,7 @@ onClick={(e) => {
           disabled={actionLoading}
           className="rounded-lg border border-red-600 px-3 py-2 text-xs font-medium text-red-600 disabled:opacity-50"
         >
-          archive
+          {t("products.archive")}
         </button>
       </div>
     </div>
@@ -202,18 +202,18 @@ onClick={(e) => {
             <p className="text-4xl">📦</p>
 
             <h3 className="mt-3 text-base font-semibold text-gray-800">
-              No products found
+              {t("products.no_products")}
             </h3>
 
             <p className="mt-1 text-sm text-gray-500">
-              Add products so loan entry becomes faster and standardized.
+              {t("products.no_products_hint")}
             </p>
 
             <button
               onClick={handleOpenAdd}
               className="mt-5 rounded-xl bg-[#1E3A8A] px-5 py-3 text-sm font-semibold text-white"
             >
-              + Add Product
+              + {t("products.add_product")}
             </button>
           </div>
         )}
@@ -230,7 +230,7 @@ onClick={(e) => {
       <span className="text-lg">＋</span>
 
       <span className="mt-1 text-[11px] font-medium">
-        Add Product
+        {t("products.add_product")}
       </span>
     </button>
 
@@ -242,7 +242,7 @@ onClick={(e) => {
       <span className="text-lg">📦</span>
 
       <span className="mt-1 text-[11px] font-medium">
-        Archived
+        {t("products.archived")}
       </span>
     </button>
   </div>
@@ -251,20 +251,20 @@ onClick={(e) => {
       {confirmModal.isOpen && (
         <div className="fixed inset-0 z-[100] flex items-center justify-center bg-black/40">
           <div className="w-[90%] max-w-sm rounded-2xl bg-white p-6 shadow-2xl">
-            <h2 className="text-lg font-semibold text-[#1E3A8A]">Archive Product</h2>
-            <p className="mt-3 text-sm text-gray-600">Are you sure you want to archive this product?</p>
+            <h2 className="text-lg font-semibold text-[#1E3A8A]">{t("products.archive")}</h2>
+            <p className="mt-3 text-sm text-gray-600">{t("products.confirm_archive")}</p>
             <div className="mt-6 flex gap-3">
               <button
                 onClick={() => setConfirmModal({ isOpen: false, productId: null })}
                 className="flex-1 rounded-xl border border-gray-300 py-3 text-sm font-medium text-gray-700"
               >
-                Cancel
+                {t("common.cancel")}
               </button>
               <button
                 onClick={confirmArchive}
                 className="flex-1 rounded-xl bg-red-500 py-3 text-sm font-semibold text-white"
               >
-                Archive
+                {t("products.archive")}
               </button>
             </div>
           </div>
