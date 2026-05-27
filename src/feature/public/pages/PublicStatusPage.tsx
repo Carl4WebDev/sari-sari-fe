@@ -52,15 +52,15 @@ export default function PublicStatusPage() {
   };
 
   const totalBalance = useMemo(() => {
-    return transactions.reduce((acc, t) => {
-      return t.type === "LOAN"
-        ? acc + Number(t.amount)
-        : acc - Number(t.amount);
+    return transactions.reduce((acc, txn) => {
+      return txn.type === "LOAN"
+        ? acc + Number(txn.amount)
+        : acc - Number(txn.amount);
     }, 0);
   }, [transactions]);
 
   const lastPayment = transactions
-    .filter((t) => t.type === "PAYMENT")
+    .filter((txn) => txn.type === "PAYMENT")
     .slice(-1)[0];
 
   const exportToExcel = () => {
@@ -204,30 +204,30 @@ export default function PublicStatusPage() {
           </div>
         )}
 
-        {transactions.map((t) => (
+        {transactions.map((txn) => (
           <div
-            key={t.id}
+            key={txn.id}
             className="bg-white rounded-xl p-4 shadow-sm space-y-2"
           >
             <div className="flex justify-between">
               <span
                 className={`text-xs font-semibold ${
-                  t.type === "LOAN"
+                  txn.type === "LOAN"
                     ? "text-[#1E3A8A]"
                     : "text-[#16A34A]"
                 }`}
               >
-                {t.type}
+                {txn.type}
               </span>
 
               <span className="text-xs text-gray-400">
-                {normalizeDate(t.date)}
+                {normalizeDate(txn.date)}
               </span>
             </div>
 
-            {t.type === "LOAN" && t.items && (
+            {txn.type === "LOAN" && txn.items && (
               <div className="text-sm text-gray-600 space-y-1">
-                {t.items.map((item, idx) => (
+                {txn.items.map((item, idx) => (
                   <div key={idx} className="flex justify-between">
                     <span>
                       {item.quantity} × {item.product}
@@ -246,13 +246,13 @@ export default function PublicStatusPage() {
             <div className="flex justify-end">
               <span
                 className={`text-sm font-bold ${
-                  t.type === "LOAN"
+                  txn.type === "LOAN"
                     ? "text-[#1E3A8A]"
                     : "text-[#16A34A]"
                 }`}
               >
-                {t.type === "LOAN" ? "+" : "-"}₱
-                {Number(t.amount).toLocaleString()}
+                {txn.type === "LOAN" ? "+" : "-"}₱
+                {Number(txn.amount).toLocaleString()}
               </span>
             </div>
           </div>

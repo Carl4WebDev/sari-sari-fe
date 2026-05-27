@@ -146,7 +146,15 @@ export const translations = {
     "details.save": "Save",
     "details.cancel": "Cancel",
     "details.confirm_delete_note": "Delete this note?",
-    "details.confirm_archive": "Archive this borrower? Only allowed when balance is zero.",
+    "details.confirm_archive": "Are you sure you want to archive this borrower?",
+    "details.loading": "Loading borrower details...",
+    "details.confirm_payment": "Confirm Payment",
+    "details.quick_pay_message": "Record ₱{amount} cash payment from {name}?\n\nCurrent Balance: ₱{currentBalance}\nNew Balance: ₱{newBalance}",
+    "details.no_profile_uploaded": "No profile image uploaded",
+    "details.custom_amount": "Custom Amount",
+    "details.copy_status_link": "Copy Loan Status Link",
+    "details.no_reminders_yet": "No reminders yet.",
+    "details.confirm": "Confirm",
 
     // Loan
     "loan.add_title": "Add Loan",
@@ -382,7 +390,15 @@ export const translations = {
     "details.save": "I-save",
     "details.cancel": "Kanselahin",
     "details.confirm_delete_note": "I-delete ang talang ito?",
-    "details.confirm_archive": "I-archive ang mangungutang na ito? Pinapayagan lang kapag zero ang balance.",
+    "details.confirm_archive": "Sigurado ka bang i-a-archive ang mangungutang na ito?",
+    "details.loading": "Naglo-load ng detalye ng mangungutang...",
+    "details.confirm_payment": "Kumpirmahin ang Bayad",
+    "details.quick_pay_message": "I-record ang ₱{amount} na cash payment mula kay {name}?\n\nKasalukuyang Balance: ₱{currentBalance}\nBagong Balance: ₱{newBalance}",
+    "details.no_profile_uploaded": "Walang na-upload na profile image",
+    "details.custom_amount": "Custom na Halaga",
+    "details.copy_status_link": "Kopyahin ang Status Link",
+    "details.no_reminders_yet": "Wala pang paalala.",
+    "details.confirm": "Kumpirmahin",
 
     // Loan
     "loan.add_title": "Magdagdag ng Utang",

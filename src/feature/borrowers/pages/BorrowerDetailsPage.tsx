@@ -125,8 +125,13 @@ const handleQuickPay = (amount: number) => {
 
   setConfirmModal({
     isOpen: true,
-    title: "Confirm Payment",
-    message: `Record ₱${amount.toLocaleString()} cash payment from ${borrowerName}?\n\nCurrent Balance: ₱${totalBalance.toLocaleString()}\nNew Balance: ₱${Math.max(0, newBalance).toLocaleString()}`,
+    title: t("details.confirm_payment"),
+    message: t("details.quick_pay_message", {
+      amount: amount.toLocaleString(),
+      name: borrowerName,
+      currentBalance: totalBalance.toLocaleString(),
+      newBalance: Math.max(0, newBalance).toLocaleString(),
+    }),
     onConfirm: async () => {
       setConfirmModal(prev => ({ ...prev, isOpen: false }));
       setQuickPayLoading(amount);
@@ -164,7 +169,7 @@ const handleQuickPay = (amount: number) => {
     if (err) {
       setGlobalModal({
         isOpen: true,
-        title: "Error",
+        title: t("common.error"),
         message: err,
         type: "error",
       });
@@ -172,18 +177,18 @@ const handleQuickPay = (amount: number) => {
   }, [borrowerError, reminderError]);
   
   const totalBalance = useMemo(() => {
-    return transactions.reduce((acc, t) => {
-      return t.type === "LOAN" ? acc + t.amount : acc - t.amount;
+    return transactions.reduce((acc, txn) => {
+      return txn.type === "LOAN" ? acc + txn.amount : acc - txn.amount;
     }, 0);
   }, [transactions]);
 
   const filteredTransactions = useMemo(() => {
-    return transactions.filter((t) => {
-      const matchDate = dateFilter ? t.date === dateFilter : true;
+    return transactions.filter((txn) => {
+      const matchDate = dateFilter ? txn.date === dateFilter : true;
 
       const matchProduct =
-        t.type === "LOAN" && productFilter
-          ? t.items?.some((i) =>
+        txn.type === "LOAN" && productFilter
+          ? txn.items?.some((i) =>
               i.product.toLowerCase().includes(productFilter.toLowerCase())
             )
           : true;
@@ -235,7 +240,7 @@ const paginatedTransactions = useMemo(() => ledgerTransactions.slice(
   ), [ledgerTransactions, currentPage]);
 
 if (!borrower) {
-  return <div className="p-6 text-gray-500">Loading borrower details...</div>;
+  return <div className="p-6 text-gray-500">{t("details.loading")}</div>;
 }
 
   const borrowerAdapter = {
@@ -252,7 +257,7 @@ if (!borrower) {
 const balance = Number(totalBalance || 0);
 
 const paymentStatus =
-  balance <= 0 ? "Fully Paid" : "With Balance";
+  balance <= 0 ? t("details.fully_paid") : t("details.with_balance");
 
 const paymentStatusColor =
   balance <= 0
@@ -261,8 +266,8 @@ const paymentStatusColor =
 
 const activityStatus =
   borrower.is_active
-    ? "Active"
-    : "Archived";
+    ? t("details.active")
+    : t("details.archived");
 
 const activityStatusColor =
   borrower.is_active
@@ -320,8 +325,8 @@ const handleDeleteNote = (noteId: number) => {
 
   setConfirmModal({
     isOpen: true,
-    title: "Delete Note",
-    message: "Are you sure you want to delete this note?",
+    title: t("details.delete"),
+    message: t("details.confirm_delete_note"),
     onConfirm: async () => {
       await deleteBorrowerNote(id, noteId);
       setConfirmModal(prev => ({ ...prev, isOpen: false }));
@@ -407,7 +412,7 @@ const handleDeleteNote = (noteId: number) => {
           onClick={() => navigate(-1)}
           className="text-sm text-[#1E3A8A] font-medium"
         >
-          ← Back
+          ← {t("details.back")}
         </button>
       </div>
 
@@ -449,7 +454,7 @@ const handleDeleteNote = (noteId: number) => {
                 onClick={() => setIsPaymentModalOpen(true)}
                 className="mt-3 w-full rounded-xl border border-[#1E3A8A] py-2.5 text-sm font-medium text-[#1E3A8A] transition hover:bg-blue-50"
               >
-                {t("common.save")} — Custom Amount
+                {t("details.custom_amount")}
               </button>
             </div>
           )}
@@ -457,7 +462,7 @@ const handleDeleteNote = (noteId: number) => {
 {/* Public Link */}
 <div className="border rounded-xl p-4 bg-gray-50 space-y-3">
   <p className="text-sm font-semibold text-[#1E3A8A]">
-    Public Loan Status Access
+    {t("details.public_access")}
   </p>
   <button
   onClick={async () => {
@@ -473,13 +478,13 @@ const handleDeleteNote = (noteId: number) => {
   }`}
 >
   {borrower.token_enabled
-    ? "Disable Public Access"
-    : "Enable Public Access"}
+    ? t("details.disable_access")
+    : t("details.enable_access")}
 </button>
 
   <div className="flex justify-between items-center">
     <span className="text-sm text-gray-600">
-      Status Page Enabled
+      {t("details.status_page_enabled")}
     </span>
 
     <span
@@ -499,14 +504,14 @@ const handleDeleteNote = (noteId: number) => {
       navigator.clipboard.writeText(publicStatusLink);
       setGlobalModal({
   isOpen: true,
-  title: "Copied",
-  message: "Loan status link copied successfully.",
+  title: t("details.copied"),
+  message: t("details.link_copied"),
   type: "success",
 });
     }}
     className="w-full rounded-lg bg-[#1E3A8A] py-3 text-white text-sm font-medium disabled:opacity-50 disabled:cursor-not-allowed"
   >
-    📩 Copy Loan Status Link
+    📩 {t("details.copy_status_link")}
   </button>
 </div>
 
@@ -514,7 +519,7 @@ const handleDeleteNote = (noteId: number) => {
   onClick={() => setIsReminderModalOpen(true)}
   className="w-full rounded-xl bg-orange-500 py-3 text-white font-semibold"
 >
-  + Add Reminder
+  + {t("details.add_reminder")}
 </button>
 
         </div>
@@ -539,7 +544,7 @@ className="h-24 w-24 sm:h-32 sm:w-32 lg:h-40 lg:w-40 rounded-full border-4 borde
             )}
 
             <span className="absolute bottom-4 right-3 rounded-full bg-[#1E3A8A] px-4 py-3 text-sm font-semibold text-white shadow-lg">
-              {uploadingProfileImage ? "..." : "Edit"}
+              {uploadingProfileImage ? "..." : t("details.edit")}
             </span>
           </button>
 
@@ -553,7 +558,7 @@ className="h-24 w-24 sm:h-32 sm:w-32 lg:h-40 lg:w-40 rounded-full border-4 borde
 
           {!profileImageUrl && (
             <p className="mt-2 text-xs font-medium text-red-600">
-              No profile image uploaded
+              {t("details.no_profile_uploaded")}
             </p>
           )}
 
@@ -567,7 +572,7 @@ className="h-24 w-24 sm:h-32 sm:w-32 lg:h-40 lg:w-40 rounded-full border-4 borde
           </p>
 
           <p className="text-center text-sm text-gray-500">
-            Age {calculateAge(borrower.dob)}
+            {t("details.age")} {calculateAge(borrower.dob)}
           </p>
 
           <div className="mt-4 flex flex-wrap justify-center gap-2">
@@ -596,7 +601,7 @@ className="h-24 w-24 sm:h-32 sm:w-32 lg:h-40 lg:w-40 rounded-full border-4 borde
         />
 
         <input
-          placeholder="Filter by product..."
+          placeholder={t("details.filter_product")}
           value={productFilter}
           onChange={(e) => setProductFilter(e.target.value)}
           className="flex-1 rounded-lg border border-gray-300 px-3 py-3 text-sm"
@@ -606,63 +611,47 @@ className="h-24 w-24 sm:h-32 sm:w-32 lg:h-40 lg:w-40 rounded-full border-4 borde
           onClick={handleExport}
           className="rounded-lg bg-[#1E3A8A] px-4 py-3 text-sm font-medium text-white"
         >
-          Export
+          {t("details.export")}
         </button>
       </div>
 
       {/* Transactions */}
 <div className="space-y-4 pb-24">
-        {paginatedTransactions.map((t) => (
+        {paginatedTransactions.map((txn) => (
           <div
-            key={t.id}
+            key={txn.id}
             className="rounded-xl border border-gray-200 bg-white p-4 shadow-sm space-y-2"
           >
             <div className="flex justify-between items-center">
               <span
                 className={`text-sm font-semibold ${
-                  t.type === "LOAN" ? "text-[#1E3A8A]" : "text-[#16A34A]"
+                  txn.type === "LOAN" ? "text-[#1E3A8A]" : "text-[#16A34A]"
                 }`}
               >
-                {t.type}
+                {txn.type}
               </span>
-
-              {/* {t.type === "LOAN" && (
-                <button
-                  onClick={() => {
-                    setSelectedLoan({
-                      id: t.id,
-                      borrowerId: borrower.borrower_id,
-                      items: t.items || [],
-                    });
-                    setIsEditLoanOpen(true);
-                  }}
-                  className="text-xs text-gray-500 underline"
-                >
-                  Edit
-                </button>
-              )} */}
             </div>
 
-            <span className="text-xs text-gray-500">{t.date}</span>
-            {t.type === "PAYMENT" && (
+            <span className="text-xs text-gray-500">{txn.date}</span>
+            {txn.type === "PAYMENT" && (
   <div className="mt-2 rounded-lg border border-green-100 bg-green-50 px-3 py-2">
-    <p className="text-xs text-gray-500">Payment Method</p>
+    <p className="text-xs text-gray-500">{t("details.payment_method")}</p>
 
     <p className="text-sm font-semibold text-[#16A34A]">
-      {t.payment_method || "N/A"}
+      {txn.payment_method || "N/A"}
     </p>
 
-    {t.payment_note && (
+    {txn.payment_note && (
       <p className="mt-1 text-xs text-gray-600">
-        {t.payment_note}
+        {txn.payment_note}
       </p>
     )}
   </div>
 )}
 
-            {t.type === "LOAN" && t.items && (
+            {txn.type === "LOAN" && txn.items && (
               <div className="text-sm text-gray-600 space-y-1">
-                {t.items.map((item, idx) => (
+                {txn.items.map((item, idx) => (
                   <div key={idx} className="flex justify-between">
                     <span className="text-blue-700 text-sm">
                       {item.quantity} × {item.product}
@@ -676,19 +665,19 @@ className="h-24 w-24 sm:h-32 sm:w-32 lg:h-40 lg:w-40 rounded-full border-4 borde
             )}
 
             <div className="flex justify-between rounded-lg bg-gray-50 px-3 py-2 text-sm">
-  <span className="text-gray-500">Running Balance</span>
+  <span className="text-gray-500">{t("details.running_balance")}</span>
   <span className="font-semibold text-[#1E3A8A]">
-    ₱{Number(t.runningBalance || 0).toLocaleString()}
+    ₱{Number(txn.runningBalance || 0).toLocaleString()}
   </span>
 </div>
 
             <div className="flex justify-end">
               <span
                 className={`text-base font-bold ${
-                  t.type === "LOAN" ? "text-[#1E3A8A]" : "text-[#16A34A]"
+                  txn.type === "LOAN" ? "text-[#1E3A8A]" : "text-[#16A34A]"
                 }`}
               >
-                {t.type === "LOAN" ? "+" : "-"}₱{t.amount.toLocaleString()}
+                {txn.type === "LOAN" ? "+" : "-"}₱{txn.amount.toLocaleString()}
               </span>
             </div>
           </div>
@@ -717,12 +706,12 @@ className="h-24 w-24 sm:h-32 sm:w-32 lg:h-40 lg:w-40 rounded-full border-4 borde
       {/* Collection Reminders */}
 <div className="border-t pt-6 space-y-4">
   <h2 className="text-lg font-semibold text-[#1E3A8A]">
-    Collection Reminders
+    {t("details.collection_reminders")}
   </h2>
 
   {(borrowerReminders || []).length === 0 && (
     <div className="rounded-lg bg-gray-100 p-3 text-sm text-gray-500">
-      No reminders yet.
+      {t("details.no_reminders_yet")}
     </div>
   )}
 
@@ -743,7 +732,7 @@ className="h-24 w-24 sm:h-32 sm:w-32 lg:h-40 lg:w-40 rounded-full border-4 borde
         </div>
 
         <p className="mt-1 text-sm text-gray-500">
-          Due: {new Date(reminder.due_date).toLocaleDateString()}
+          {t("details.due")} {new Date(reminder.due_date).toLocaleDateString()}
         </p>
 
         {reminder.note && (
@@ -758,12 +747,12 @@ className="h-24 w-24 sm:h-32 sm:w-32 lg:h-40 lg:w-40 rounded-full border-4 borde
 
 {/* Notes */}
 <div className="border-t pt-6 space-y-4">
-  <h2 className="text-lg font-semibold text-[#1E3A8A]">Notes</h2>
+  <h2 className="text-lg font-semibold text-[#1E3A8A]">{t("details.notes")}</h2>
 
   <div className="space-y-2 max-h-60 overflow-y-auto">
     {(borrowerNotes || []).length === 0 && (
       <div className="rounded-lg bg-gray-100 p-3 text-sm text-gray-500">
-        No notes yet.
+        {t("details.no_notes")}
       </div>
     )}
 
@@ -793,7 +782,7 @@ className="h-24 w-24 sm:h-32 sm:w-32 lg:h-40 lg:w-40 rounded-full border-4 borde
                 onClick={handleUpdateNote}
                 className="rounded-lg bg-[#1E3A8A] px-3 py-2 text-xs text-white"
               >
-                Save
+                {t("details.save")}
               </button>
 
               <button
@@ -803,7 +792,7 @@ className="h-24 w-24 sm:h-32 sm:w-32 lg:h-40 lg:w-40 rounded-full border-4 borde
                 }}
                 className="rounded-lg border border-gray-300 px-3 py-2 text-xs text-gray-700"
               >
-                Cancel
+                {t("details.cancel")}
               </button>
             </>
           ) : (
@@ -815,14 +804,14 @@ className="h-24 w-24 sm:h-32 sm:w-32 lg:h-40 lg:w-40 rounded-full border-4 borde
                 }}
                 className="text-xs text-[#1E3A8A] underline"
               >
-                Edit
+                {t("details.edit")}
               </button>
 
               <button
                 onClick={() => handleDeleteNote(note.borrower_note_id)}
                 className="text-xs text-red-500 underline"
               >
-                Delete
+                {t("details.delete")}
               </button>
             </>
           )}
@@ -835,7 +824,7 @@ className="h-24 w-24 sm:h-32 sm:w-32 lg:h-40 lg:w-40 rounded-full border-4 borde
     <input
       value={noteInput}
       onChange={(e) => setNoteInput(e.target.value)}
-      placeholder="Add a note..."
+      placeholder={t("details.add_note_placeholder")}
       className="flex-1 rounded-lg border border-gray-300 px-5 py-5 text-sm"
     />
 
@@ -843,7 +832,7 @@ className="h-24 w-24 sm:h-32 sm:w-32 lg:h-40 lg:w-40 rounded-full border-4 borde
       onClick={handleAddNote}
       className="rounded-lg bg-[#1E3A8A] p-4 text-white text-sm w-full"
     >
-      Send
+      {t("details.send")}
     </button>
   </div>
   {/* Desktop Actions */}
@@ -852,14 +841,14 @@ className="h-24 w-24 sm:h-32 sm:w-32 lg:h-40 lg:w-40 rounded-full border-4 borde
     onClick={() => setIsLoanModalOpen(true)}
     className="w-1/3 rounded-xl border border-[#1E3A8A] py-3 font-semibold text-[#1E3A8A]"
   >
-    + Add Loan
+    + {t("details.add_loan")}
   </button>
 
   <button
     onClick={() => setIsPaymentModalOpen(true)}
     className="w-1/3 rounded-xl bg-[#16A34A] py-3 font-semibold text-white"
   >
-    + Add Payment
+    + {t("details.add_payment")}
   </button>
 
   <button
@@ -867,8 +856,8 @@ className="h-24 w-24 sm:h-32 sm:w-32 lg:h-40 lg:w-40 rounded-full border-4 borde
     onClick={async () => {
       setConfirmModal({
         isOpen: true,
-        title: "Archive Borrower",
-        message: "Are you sure you want to archive this borrower?",
+        title: t("details.archive_borrower"),
+        message: t("details.confirm_archive"),
         onConfirm: async () => {
           await archiveBorrower(borrower.borrower_id);
           await fetchBorrowers();
@@ -878,7 +867,7 @@ className="h-24 w-24 sm:h-32 sm:w-32 lg:h-40 lg:w-40 rounded-full border-4 borde
     }}
     className="w-1/3 rounded-xl bg-gray-700 py-3 font-semibold text-white disabled:opacity-50"
   >
-    Archive Borrower
+    {t("details.archive_borrower")}
   </button>
 </div>
 
@@ -897,7 +886,7 @@ className="h-24 w-24 sm:h-32 sm:w-32 lg:h-40 lg:w-40 rounded-full border-4 borde
       <span className="text-lg">🧾</span>
 
       <span className="mt-1 text-[11px] font-medium">
-        Add Loan
+        {t("details.add_loan")}
       </span>
     </button>
 
@@ -909,7 +898,7 @@ className="h-24 w-24 sm:h-32 sm:w-32 lg:h-40 lg:w-40 rounded-full border-4 borde
       <span className="text-lg">₱</span>
 
       <span className="mt-1 text-[11px] font-medium">
-        Add Payment
+        {t("details.add_payment")}
       </span>
     </button>
 
@@ -919,8 +908,8 @@ className="h-24 w-24 sm:h-32 sm:w-32 lg:h-40 lg:w-40 rounded-full border-4 borde
       onClick={() => {
         setConfirmModal({
           isOpen: true,
-          title: "Archive Borrower",
-          message: "Are you sure you want to archive this borrower?",
+          title: t("details.archive_borrower"),
+          message: t("details.confirm_archive"),
           onConfirm: async () => {
             await archiveBorrower(borrower.borrower_id);
             await fetchBorrowers();
@@ -970,13 +959,13 @@ className="h-24 w-24 sm:h-32 sm:w-32 lg:h-40 lg:w-40 rounded-full border-4 borde
           onClick={() => setConfirmModal(prev => ({ ...prev, isOpen: false }))}
           className="flex-1 rounded-xl border border-gray-300 py-3 text-sm font-medium text-gray-700"
         >
-          Cancel
+          {t("details.cancel")}
         </button>
         <button
           onClick={confirmModal.onConfirm}
           className="flex-1 rounded-xl bg-red-500 py-3 text-sm font-semibold text-white"
         >
-          Confirm
+          {t("details.confirm")}
         </button>
       </div>
     </div>
