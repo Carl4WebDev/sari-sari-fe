@@ -9,6 +9,7 @@ import ArchivedBorrowersModal from "../modals/ArchivedBorrowersModal";
 import GlobalModal from "../../../shared/components/GlobalModal";
 import AddBorrowerModal from "../../dashboard/modals/AddBorrowerModal";
 import { useTranslation } from "../../../shared/i18n/useTranslation";
+import { generateBorrowersPDF } from "../../../shared/utils/exportToPDF";
 
 export default function BorrowersPage() {
   const { t } = useTranslation();
@@ -66,15 +67,14 @@ const [globalModal, setGlobalModal] = useState({
     return filteredBorrowers.slice(start, start + itemsPerPage);
   }, [filteredBorrowers, currentPage]);
 
-const handleExport = () => {
+const handleExportCSV = () => {
   if (!filteredBorrowers.length) {
-
     setGlobalModal({
-  isOpen: true,
-  title: t("borrowers.copied"),
-  message: t("borrowers.no_export"),
-  type: "success",
-});
+      isOpen: true,
+      title: t("borrowers.copied"),
+      message: t("borrowers.no_export"),
+      type: "success",
+    });
     return;
   }
 
@@ -123,6 +123,21 @@ const handleExport = () => {
   link.click();
 
   URL.revokeObjectURL(url);
+};
+
+const handleExportPDF = () => {
+  if (!filteredBorrowers.length) {
+    setGlobalModal({
+      isOpen: true,
+      title: t("borrowers.copied"),
+      message: t("borrowers.no_export"),
+      type: "success",
+    });
+    return;
+  }
+
+  const user = JSON.parse(localStorage.getItem("user") || "{}");
+  generateBorrowersPDF(filteredBorrowers, user.store_name || "");
 };
 
 const handleBorrowerCreated = async (borrower: any) => {
@@ -324,7 +339,7 @@ const handleBorrowerCreated = async (borrower: any) => {
       {/* Floating Footer Actions */}
       {!loading && filteredBorrowers.length > 0 && (
 <div className="fixed bottom-0 left-0 z-30 w-full border-t border-gray-200 bg-white/95 backdrop-blur">
-  <div className="mx-auto grid max-w-2xl grid-cols-3 gap-2 p-3">
+  <div className="mx-auto grid max-w-2xl grid-cols-4 gap-2 p-3">
 
     {/* Add Borrower */}
     <button
@@ -338,15 +353,27 @@ const handleBorrowerCreated = async (borrower: any) => {
       </span>
     </button>
 
-    {/* Export */}
+    {/* Export CSV */}
     <button
-      onClick={handleExport}
+      onClick={handleExportCSV}
       className="flex flex-col items-center justify-center rounded-xl bg-[#1E3A8A] py-2 text-white shadow-sm transition hover:bg-[#172f70]"
     >
-      <span className="text-lg">🖨️</span>
+      <span className="text-lg">📄</span>
 
       <span className="mt-1 text-[11px] font-medium">
-        {t("borrowers.export")}
+        {t("common.export_csv")}
+      </span>
+    </button>
+
+    {/* Export PDF */}
+    <button
+      onClick={handleExportPDF}
+      className="flex flex-col items-center justify-center rounded-xl bg-[#DC2626] py-2 text-white shadow-sm transition hover:bg-[#B91C1C]"
+    >
+      <span className="text-lg">📕</span>
+
+      <span className="mt-1 text-[11px] font-medium">
+        {t("common.export_pdf")}
       </span>
     </button>
 

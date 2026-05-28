@@ -4,6 +4,7 @@ import { useMemo, useState, useEffect } from "react";
 import { useBorrower } from "../../context/borrowers/useBorrower";
 import { calculateAge } from "../../components/utility/calculateAge";
 import { resolveImageUrl } from "../../../shared/utils/resolveImageUrl";
+import { generateTransactionsPDF } from "../../../shared/utils/exportToPDF";
 
 import AddPaymentModal from "../modals/AddPaymentModal";
 import AddLoanModalBorrowerDetails from "../modals/AddLoanModalBorrowerDetails";
@@ -322,8 +323,48 @@ const handleDeleteNote = (noteId: number) => {
   });
 };
 
-  const handleExport = () => {
-    console.log("Export to Excel");
+  const handleExportCSV = () => {
+    const headers = ["Type", "Date", "Items", "Loan", "Payment", "Running Balance"];
+
+    const rows = ledgerTransactions.map((txn: any) => {
+      const items = txn.items?.length
+        ? txn.items.map((i: any) => `${i.product} x${i.quantity}`).join("; ")
+        : "";
+
+      return [
+        txn.type,
+        txn.date,
+        items,
+        txn.type === "LOAN" ? txn.amount : "",
+        txn.type === "PAYMENT" ? txn.amount : "",
+        txn.runningBalance || 0,
+      ];
+    });
+
+    const csvContent = [
+      headers.join(","),
+      ...rows.map((row: any[]) =>
+        row.map((v) => `"${String(v ?? "").replace(/"/g, '""')}"`).join(",")
+      ),
+    ].join("\n");
+
+    const blob = new Blob([csvContent], { type: "text/csv;charset=utf-8;" });
+    const url = URL.createObjectURL(blob);
+    const link = document.createElement("a");
+    link.href = url;
+    link.download = `${borrower.first_name}-${borrower.last_name}-transactions.csv`;
+    link.click();
+    URL.revokeObjectURL(url);
+  };
+
+  const handleExportPDF = () => {
+    const user = JSON.parse(localStorage.getItem("user") || "{}");
+    generateTransactionsPDF(
+      `${borrower.first_name} ${borrower.last_name}`,
+      ledgerTransactions,
+      totalBalance,
+      user.store_name || "",
+    );
   };
 
   const refreshBorrowerDetails = async () => {
@@ -599,10 +640,17 @@ const handleDeleteNote = (noteId: number) => {
         />
 
         <button
-          onClick={handleExport}
-          className="rounded-lg bg-[#1E3A8A] px-4 py-3 text-sm font-medium text-white"
+          onClick={handleExportCSV}
+          className="rounded-lg bg-[#1E3A8A] px-3 py-3 text-xs font-medium text-white"
         >
-          {t("details.export")}
+          {t("common.export_csv")}
+        </button>
+
+        <button
+          onClick={handleExportPDF}
+          className="rounded-lg bg-[#DC2626] px-3 py-3 text-xs font-medium text-white"
+        >
+          {t("common.export_pdf")}
         </button>
       </div>
 

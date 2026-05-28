@@ -3,6 +3,7 @@ import { useProduct } from "../context/products/useProduct";
 import ProductModal from "./modals/ProductModal";
 import ArchivedProductsModal from "./modals/ArchivedProductsModal";
 import { useTranslation } from "../../shared/i18n/useTranslation";
+import { generateProductsPDF } from "../../shared/utils/exportToPDF";
 
 interface Product {
   product_id: number;
@@ -220,7 +221,7 @@ onClick={(e) => {
       </div>
       {/* Floating Product Footer Actions */}
 <div className="fixed bottom-0 left-0 z-30 w-full border-t border-gray-200 bg-white/95 backdrop-blur">
-  <div className="mx-auto grid max-w-2xl grid-cols-2 gap-2 p-3">
+  <div className="mx-auto grid max-w-2xl grid-cols-3 gap-2 p-3">
 
     {/* Add Product */}
     <button
@@ -243,6 +244,21 @@ onClick={(e) => {
 
       <span className="mt-1 text-[11px] font-medium">
         {t("products.archived")}
+      </span>
+    </button>
+
+    {/* Export PDF */}
+    <button
+      onClick={() => {
+        const user = JSON.parse(localStorage.getItem("user") || "{}");
+        generateProductsPDF(filteredProducts, user.store_name || "");
+      }}
+      className="flex flex-col items-center justify-center rounded-xl bg-[#DC2626] py-2 text-white shadow-sm transition hover:bg-[#B91C1C]"
+    >
+      <span className="text-lg">📕</span>
+
+      <span className="mt-1 text-[11px] font-medium">
+        {t("common.export_pdf")}
       </span>
     </button>
   </div>

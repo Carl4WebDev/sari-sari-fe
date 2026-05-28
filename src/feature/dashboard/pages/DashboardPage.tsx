@@ -23,6 +23,7 @@ import { useTranslation } from "../../../shared/i18n/useTranslation";
 import OnboardingWizard from "../../../shared/components/OnboardingWizard";
 import TutorialGuide from "../../../shared/components/TutorialGuide";
 import { useTutorial } from "../../../shared/hooks/useTutorial";
+import { generateDashboardPDF } from "../../../shared/utils/exportToPDF";
 
 
 export default function DashboardPage() {
@@ -179,8 +180,21 @@ useEffect(() => {
     <p className="text-sm text-gray-500">{t("dashboard.subtitle")}</p>
   </div>
 
-  <button
-    onClick={() => setIsReminderModalOpen(true)}
+  <div className="flex items-center gap-2">
+    <button
+      onClick={() => {
+        if (!dashboard) return;
+        const user = JSON.parse(localStorage.getItem("user") || "{}");
+        generateDashboardPDF(dashboard, user.store_name || "");
+      }}
+      className="rounded-xl border border-[#1E3A8A] bg-white px-3 py-3 text-sm text-[#1E3A8A] shadow-sm"
+      title={t("common.export_pdf")}
+    >
+      📕
+    </button>
+
+    <button
+      onClick={() => setIsReminderModalOpen(true)}
     className="relative rounded-xl border border-[#1E3A8A] bg-white px-4 py-3 text-sm font-semibold text-[#1E3A8A] shadow-sm"
   >
     🔔
@@ -192,6 +206,7 @@ useEffect(() => {
       </span>
     )}
   </button>
+  </div>
 </div>
 
       {/* Actions */}

@@ -3,6 +3,7 @@ import { useEffect, useMemo } from "react";
 import { usePublicStatus } from "../../public/context/usePublicStatus";
 import { useTranslation } from "../../../shared/i18n/useTranslation";
 import { resolveImageUrl } from "../../../shared/utils/resolveImageUrl";
+import { generateTransactionsPDF } from "../../../shared/utils/exportToPDF";
 
 interface LoanItem {
   product: string;
@@ -63,6 +64,21 @@ export default function PublicStatusPage() {
   const lastPayment = transactions
     .filter((txn) => txn.type === "PAYMENT")
     .slice(-1)[0];
+
+  const exportToPDF = () => {
+    generateTransactionsPDF(
+      borrower?.name || "",
+      transactions.map((txn, i, arr) => {
+        let runningBalance = 0;
+        for (let j = arr.length - 1; j >= i; j--) {
+          runningBalance += arr[j].type === "LOAN" ? Number(arr[j].amount) : -Number(arr[j].amount);
+        }
+        return { ...txn, runningBalance };
+      }),
+      totalBalance,
+      storeName,
+    );
+  };
 
   const exportToExcel = () => {
     const rows = [
@@ -177,12 +193,20 @@ export default function PublicStatusPage() {
         </p>
       </div>
 
-      <button
-        onClick={exportToExcel}
-        className="w-full rounded-xl bg-[#16A34A] py-3 text-sm font-semibold text-white"
-      >
-        {t("public.export_excel")}
-      </button>
+      <div className="grid grid-cols-2 gap-2">
+        <button
+          onClick={exportToExcel}
+          className="rounded-xl bg-[#16A34A] py-3 text-sm font-semibold text-white"
+        >
+          {t("common.export_csv")}
+        </button>
+        <button
+          onClick={exportToPDF}
+          className="rounded-xl bg-[#DC2626] py-3 text-sm font-semibold text-white"
+        >
+          {t("common.export_pdf")}
+        </button>
+      </div>
 
       {lastPayment && (
         <div className="bg-white rounded-xl shadow-sm p-4">

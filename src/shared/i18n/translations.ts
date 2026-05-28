@@ -40,6 +40,8 @@ export const translations = {
     // Common
     "common.cancel": "Cancel",
     "common.save": "Save",
+    "common.export_csv": "Export CSV",
+    "common.export_pdf": "Export PDF",
     "common.close": "Close",
     "common.required": "Required Fields",
     "common.error": "Error",
@@ -332,6 +334,8 @@ export const translations = {
     // Common
     "common.cancel": "Kanselahin",
     "common.save": "I-save",
+    "common.export_csv": "I-export ang CSV",
+    "common.export_pdf": "I-export ang PDF",
     "common.close": "Isara",
     "common.required": "Kinakailangan",
     "common.error": "Error",
