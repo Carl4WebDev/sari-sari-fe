@@ -205,6 +205,14 @@ export const translations = {
     "details.copy_status_link": "Copy Loan Status Link",
     "details.no_reminders_yet": "No reminders yet.",
     "details.confirm": "Confirm",
+    "details.void": "Void",
+    "details.voided": "VOIDED",
+    "details.void_transaction": "Void Transaction",
+    "details.confirm_void": "Void this {type} of ₱{amount}? The balance will be reversed.",
+    "details.void_reason_placeholder": "Reason for voiding (optional)...",
+    "details.voided_on": "Voided on {date}",
+    "details.void_reason_label": "Reason:",
+    "details.excluded": "excluded",
 
     // Loan
     "loan.add_title": "Add Loan",
@@ -264,6 +272,7 @@ export const translations = {
     "public.transaction_history": "Transaction History",
     "public.no_transactions": "No transactions yet.",
     "public.footer": "Powered by Listahub",
+    "public.voided_notice": "This transaction was voided and does not affect the total balance.",
 
     // Borrower Modal
     "borrower_modal.title": "Add Borrower",
@@ -487,6 +496,14 @@ export const translations = {
     "details.copy_status_link": "Kopyahin ang Status Link",
     "details.no_reminders_yet": "Wala pang paalala.",
     "details.confirm": "Kumpirmahin",
+    "details.void": "I-void",
+    "details.voided": "NA-VOID",
+    "details.void_transaction": "I-void ang Transaksyon",
+    "details.confirm_void": "I-void ang {type} na ₱{amount}? Babalik ang balance.",
+    "details.void_reason_placeholder": "Dahilan ng pag-void (opsyonal)...",
+    "details.voided_on": "Na-void noong {date}",
+    "details.void_reason_label": "Dahilan:",
+    "details.excluded": "hindi kasama",
 
     // Loan
     "loan.add_title": "Magdagdag ng Utang",
@@ -546,6 +563,7 @@ export const translations = {
     "public.transaction_history": "Kasaysayan ng Transaksyon",
     "public.no_transactions": "Wala pang transaksyon.",
     "public.footer": "Pinapagana ng Listahub",
+    "public.voided_notice": "Ang transaksyong ito ay na-void at hindi nakakaapekto sa kabuuang balance.",
 
     // Borrower Modal
     "borrower_modal.title": "Magdagdag ng Mangungutang",

@@ -288,7 +288,13 @@ if (!res?.ok) {
         </div>
 
         {/* Sticky Footer */}
-        <div className="shrink-0 border-t border-gray-100 p-6 pt-4">
+        <div className="shrink-0 border-t border-gray-100 p-6 pt-4 space-y-3">
+          <div className="flex items-center justify-between rounded-lg bg-gray-50 px-4 py-2">
+            <span className="text-sm text-gray-500">Total</span>
+            <span className="text-lg font-bold text-[#1E3A8A]">
+              ₱{items.reduce((sum, i) => sum + (Number(i.quantity) || 0) * (Number(i.price) || 0), 0).toLocaleString()}
+            </span>
+          </div>
           <div className="flex gap-3">
             <button
               onClick={isClose}

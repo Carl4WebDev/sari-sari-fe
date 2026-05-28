@@ -17,6 +17,9 @@ interface Transaction {
   date: string;
   items?: LoanItem[];
   amount: number;
+  voided?: boolean;
+  voided_at?: string;
+  void_reason?: string;
 }
 
 export default function PublicStatusPage() {
@@ -54,21 +57,24 @@ export default function PublicStatusPage() {
   };
 
   const totalBalance = useMemo(() => {
-    return transactions.reduce((acc, txn) => {
-      return txn.type === "LOAN"
-        ? acc + Number(txn.amount)
-        : acc - Number(txn.amount);
-    }, 0);
+    return transactions
+      .filter((txn) => !txn.voided)
+      .reduce((acc, txn) => {
+        return txn.type === "LOAN"
+          ? acc + Number(txn.amount)
+          : acc - Number(txn.amount);
+      }, 0);
   }, [transactions]);
 
   const lastPayment = transactions
-    .filter((txn) => txn.type === "PAYMENT")
+    .filter((txn) => txn.type === "PAYMENT" && !txn.voided)
     .slice(-1)[0];
 
   const exportToPDF = () => {
+    const activeTxns = transactions.filter((txn) => !txn.voided);
     generateTransactionsPDF(
       borrower?.name || "",
-      transactions.map((txn, i, arr) => {
+      activeTxns.map((txn, i, arr) => {
         let runningBalance = 0;
         for (let j = arr.length - 1; j >= i; j--) {
           runningBalance += arr[j].type === "LOAN" ? Number(arr[j].amount) : -Number(arr[j].amount);
@@ -232,32 +238,49 @@ export default function PublicStatusPage() {
         {transactions.map((txn) => (
           <div
             key={txn.id}
-            className="bg-white rounded-xl p-4 shadow-sm space-y-2"
+            className={`rounded-xl p-4 shadow-sm space-y-2 ${
+              txn.voided ? "bg-red-50 border border-red-200 opacity-75" : "bg-white"
+            }`}
           >
-            <div className="flex justify-between">
-              <span
-                className={`text-xs font-semibold ${
-                  txn.type === "LOAN"
-                    ? "text-[#1E3A8A]"
-                    : "text-[#16A34A]"
-                }`}
-              >
-                {txn.type}
-              </span>
+            <div className="flex justify-between items-center">
+              <div className="flex items-center gap-2">
+                <span
+                  className={`text-xs font-semibold ${
+                    txn.voided
+                      ? "text-gray-400 line-through"
+                      : txn.type === "LOAN"
+                        ? "text-[#1E3A8A]"
+                        : "text-[#16A34A]"
+                  }`}
+                >
+                  {txn.type}
+                </span>
+                {txn.voided && (
+                  <span className="rounded bg-red-100 px-2 py-0.5 text-[10px] font-bold text-red-600">
+                    {t("details.voided")}
+                  </span>
+                )}
+              </div>
 
-              <span className="text-xs text-gray-400">
+              <span className={`text-xs ${txn.voided ? "text-gray-400" : "text-gray-400"}`}>
                 {normalizeDate(txn.date)}
               </span>
             </div>
 
+            {txn.voided && (
+              <p className="text-xs text-red-400 italic">
+                {t("public.voided_notice")}
+              </p>
+            )}
+
             {txn.type === "LOAN" && txn.items && (
-              <div className="text-sm text-gray-600 space-y-1">
+              <div className={`text-sm space-y-1 ${txn.voided ? "text-gray-400" : "text-gray-600"}`}>
                 {txn.items.map((item, idx) => (
                   <div key={idx} className="flex justify-between">
-                    <span>
+                    <span className={txn.voided ? "line-through" : ""}>
                       {item.quantity} × {item.product}
                     </span>
-                    <span>
+                    <span className={txn.voided ? "line-through" : ""}>
                       ₱
                       {(
                         Number(item.quantity) * Number(item.price)
@@ -271,9 +294,11 @@ export default function PublicStatusPage() {
             <div className="flex justify-end">
               <span
                 className={`text-sm font-bold ${
-                  txn.type === "LOAN"
-                    ? "text-[#1E3A8A]"
-                    : "text-[#16A34A]"
+                  txn.voided
+                    ? "text-gray-400 line-through"
+                    : txn.type === "LOAN"
+                      ? "text-[#1E3A8A]"
+                      : "text-[#16A34A]"
                 }`}
               >
                 {txn.type === "LOAN" ? "+" : "-"}₱

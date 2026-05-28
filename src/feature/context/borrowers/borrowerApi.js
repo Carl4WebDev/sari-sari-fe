@@ -81,3 +81,10 @@ export const deleteBorrowerNoteApi = (borrowerId, noteId) =>
   apiRequest(`/api/borrowers/${borrowerId}/notes/${noteId}`, {
     method: "DELETE",
   });
+
+// VOID transaction
+export const voidTransactionApi = (borrowerId, transactionId, reason) =>
+  apiRequest(`/api/borrowers/${borrowerId}/transactions/${transactionId}/void`, {
+    method: "PATCH",
+    body: JSON.stringify({ reason }),
+  });

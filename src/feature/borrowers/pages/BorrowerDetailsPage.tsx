@@ -1,5 +1,5 @@
 import { useParams, useNavigate, useLocation } from "react-router-dom";
-import { useMemo, useState, useEffect } from "react";
+import { useMemo, useState, useEffect, useRef } from "react";
 
 import { useBorrower } from "../../context/borrowers/useBorrower";
 import { calculateAge } from "../../components/utility/calculateAge";
@@ -32,6 +32,9 @@ interface Transaction {
   amount: number;
   payment_method?: string;
   payment_note?: string;
+  voided?: boolean;
+  voided_at?: string;
+  void_reason?: string;
 }
 
 interface Note {
@@ -61,7 +64,11 @@ const [confirmModal, setConfirmModal] = useState<{
   title: string;
   message: string;
   onConfirm: () => void;
+  showReasonInput?: boolean;
 }>({ isOpen: false, title: "", message: "", onConfirm: () => {} });
+
+const [voidReasonInput, setVoidReasonInput] = useState("");
+const voidReasonRef = useRef("");
 
 
   const [dateFilter, setDateFilter] = useState("");
@@ -95,6 +102,7 @@ const [editingNoteText, setEditingNoteText] = useState("");
     createBorrowerNote,
     updateBorrowerNote,
     deleteBorrowerNote,
+    voidTransaction,
     error: borrowerError,
     clearError: clearBorrowerError,
   } = useBorrower();
@@ -178,9 +186,11 @@ const handleQuickPay = (amount: number) => {
   }, [borrowerError, reminderError]);
   
   const totalBalance = useMemo(() => {
-    return transactions.reduce((acc, txn) => {
-      return txn.type === "LOAN" ? acc + txn.amount : acc - txn.amount;
-    }, 0);
+    return transactions
+      .filter((txn) => !txn.voided)
+      .reduce((acc, txn) => {
+        return txn.type === "LOAN" ? acc + txn.amount : acc - txn.amount;
+      }, 0);
   }, [transactions]);
 
   const filteredTransactions = useMemo(() => {
@@ -204,12 +214,16 @@ const handleQuickPay = (amount: number) => {
 
   for (let i = filteredTransactions.length - 1; i >= 0; i--) {
     const t = filteredTransactions[i];
-    runningBalance =
-      t.type === "LOAN"
-        ? runningBalance + Number(t.amount)
-        : runningBalance - Number(t.amount);
 
-    withBalance[i] = { ...t, runningBalance };
+    if (t.voided) {
+      withBalance[i] = { ...t, runningBalance: null };
+    } else {
+      runningBalance =
+        t.type === "LOAN"
+          ? runningBalance + Number(t.amount)
+          : runningBalance - Number(t.amount);
+      withBalance[i] = { ...t, runningBalance };
+    }
   }
 
   return withBalance;
@@ -324,7 +338,7 @@ const handleDeleteNote = (noteId: number) => {
 };
 
   const handleExportCSV = () => {
-    const headers = ["Type", "Date", "Items", "Loan", "Payment", "Running Balance"];
+    const headers = ["Type", "Date", "Items", "Loan", "Payment", "Running Balance", "Status"];
 
     const rows = ledgerTransactions.map((txn: any) => {
       const items = txn.items?.length
@@ -337,7 +351,8 @@ const handleDeleteNote = (noteId: number) => {
         items,
         txn.type === "LOAN" ? txn.amount : "",
         txn.type === "PAYMENT" ? txn.amount : "",
-        txn.runningBalance || 0,
+        txn.voided ? "VOIDED" : (txn.runningBalance || 0),
+        txn.voided ? "VOIDED" : "",
       ];
     });
 
@@ -659,43 +674,99 @@ const handleDeleteNote = (noteId: number) => {
         {paginatedTransactions.map((txn) => (
           <div
             key={txn.id}
-            className="rounded-xl border border-gray-200 bg-white p-4 shadow-sm space-y-2"
+            className={`rounded-xl border bg-white p-4 shadow-sm space-y-2 ${
+              txn.voided ? "border-red-200 opacity-75" : "border-gray-200"
+            }`}
           >
             <div className="flex justify-between items-center">
-              <span
-                className={`text-sm font-semibold ${
-                  txn.type === "LOAN" ? "text-[#1E3A8A]" : "text-[#16A34A]"
-                }`}
-              >
-                {txn.type}
-              </span>
+              <div className="flex items-center gap-2">
+                <span
+                  className={`text-sm font-semibold ${
+                    txn.voided
+                      ? "text-gray-400 line-through"
+                      : txn.type === "LOAN"
+                        ? "text-[#1E3A8A]"
+                        : "text-[#16A34A]"
+                  }`}
+                >
+                  {txn.type}
+                </span>
+                {txn.voided && (
+                  <span className="rounded bg-red-100 px-2 py-0.5 text-[10px] font-bold text-red-600">
+                    {t("details.voided")}
+                  </span>
+                )}
+              </div>
+              {!txn.voided && (
+                <button
+                  onClick={() => {
+                    setVoidReasonInput("");
+                    voidReasonRef.current = "";
+                    setConfirmModal({
+                      isOpen: true,
+                      title: t("details.void_transaction"),
+                      message: t("details.confirm_void", {
+                        type: txn.type,
+                        amount: txn.amount.toLocaleString(),
+                      }),
+                      showReasonInput: true,
+                      onConfirm: async () => {
+                        setConfirmModal((prev) => ({ ...prev, isOpen: false }));
+                        await voidTransaction(Number(id), txn.id, voidReasonRef.current || undefined);
+                      },
+                    });
+                  }}
+                  className="rounded-lg border border-red-300 px-2 py-1 text-[11px] font-medium text-red-600 hover:bg-red-50"
+                >
+                  {t("details.void")}
+                </button>
+              )}
             </div>
 
-            <span className="text-xs text-gray-500">{txn.date}</span>
+            <span className={`text-xs ${txn.voided ? "text-gray-400" : "text-gray-500"}`}>
+              {txn.date}
+            </span>
+
+            {txn.voided && txn.voided_at && (
+              <p className="text-xs text-red-400">
+                {t("details.voided_on", { date: txn.voided_at.split("T")[0] })}
+              </p>
+            )}
+
+            {txn.voided && txn.void_reason && (
+              <p className="text-xs text-gray-400">
+                {t("details.void_reason_label")} {txn.void_reason}
+              </p>
+            )}
+
             {txn.type === "PAYMENT" && (
-  <div className="mt-2 rounded-lg border border-green-100 bg-green-50 px-3 py-2">
-    <p className="text-xs text-gray-500">{t("details.payment_method")}</p>
-
-    <p className="text-sm font-semibold text-[#16A34A]">
-      {txn.payment_method || "N/A"}
-    </p>
-
-    {txn.payment_note && (
-      <p className="mt-1 text-xs text-gray-600">
-        {txn.payment_note}
-      </p>
-    )}
-  </div>
-)}
+              <div className={`mt-2 rounded-lg border px-3 py-2 ${
+                txn.voided
+                  ? "border-gray-200 bg-gray-50"
+                  : "border-green-100 bg-green-50"
+              }`}>
+                <p className="text-xs text-gray-500">{t("details.payment_method")}</p>
+                <p className={`text-sm font-semibold ${
+                  txn.voided ? "text-gray-400 line-through" : "text-[#16A34A]"
+                }`}>
+                  {txn.payment_method || "N/A"}
+                </p>
+                {txn.payment_note && (
+                  <p className={`mt-1 text-xs ${txn.voided ? "text-gray-400" : "text-gray-600"}`}>
+                    {txn.payment_note}
+                  </p>
+                )}
+              </div>
+            )}
 
             {txn.type === "LOAN" && txn.items && (
-              <div className="text-sm text-gray-600 space-y-1">
+              <div className={`text-sm space-y-1 ${txn.voided ? "text-gray-400" : "text-gray-600"}`}>
                 {txn.items.map((item, idx) => (
                   <div key={idx} className="flex justify-between">
-                    <span className="text-blue-700 text-sm">
+                    <span className={txn.voided ? "line-through text-gray-400" : "text-blue-700 text-sm"}>
                       {item.quantity} × {item.product}
                     </span>
-                    <span className="text-blue-500 text-sm">
+                    <span className={txn.voided ? "line-through text-gray-400" : "text-blue-500 text-sm"}>
                       ₱{(item.quantity * item.price).toLocaleString()}
                     </span>
                   </div>
@@ -703,17 +774,26 @@ const handleDeleteNote = (noteId: number) => {
               </div>
             )}
 
-            <div className="flex justify-between rounded-lg bg-gray-50 px-3 py-2 text-sm">
-  <span className="text-gray-500">{t("details.running_balance")}</span>
-  <span className="font-semibold text-[#1E3A8A]">
-    ₱{Number(txn.runningBalance || 0).toLocaleString()}
+            <div className={`flex justify-between rounded-lg px-3 py-2 text-sm ${
+              txn.voided ? "bg-red-50" : "bg-gray-50"
+            }`}>
+  <span className={txn.voided ? "text-red-400" : "text-gray-500"}>{t("details.running_balance")}</span>
+  <span className={`font-semibold ${txn.voided ? "text-red-400" : "text-[#1E3A8A]"}`}>
+    {txn.voided
+      ? `(${t("details.excluded")})`
+      : `₱${Number(txn.runningBalance || 0).toLocaleString()}`
+    }
   </span>
 </div>
 
             <div className="flex justify-end">
               <span
                 className={`text-base font-bold ${
-                  txn.type === "LOAN" ? "text-[#1E3A8A]" : "text-[#16A34A]"
+                  txn.voided
+                    ? "text-gray-400 line-through"
+                    : txn.type === "LOAN"
+                      ? "text-[#1E3A8A]"
+                      : "text-[#16A34A]"
                 }`}
               >
                 {txn.type === "LOAN" ? "+" : "-"}₱{txn.amount.toLocaleString()}
@@ -993,6 +1073,15 @@ const handleDeleteNote = (noteId: number) => {
     <div className="w-[90%] max-w-sm rounded-2xl bg-white p-6 shadow-2xl">
       <h2 className="text-lg font-semibold text-[#1E3A8A]">{confirmModal.title}</h2>
       <p className="mt-3 text-sm text-gray-600">{confirmModal.message}</p>
+      {confirmModal.showReasonInput && (
+        <textarea
+          value={voidReasonInput}
+          onChange={(e) => { setVoidReasonInput(e.target.value); voidReasonRef.current = e.target.value; }}
+          placeholder={t("details.void_reason_placeholder")}
+          className="mt-3 w-full rounded-lg border border-gray-300 px-3 py-2 text-sm text-gray-700 resize-none"
+          rows={2}
+        />
+      )}
       <div className="mt-6 flex gap-3">
         <button
           onClick={() => setConfirmModal(prev => ({ ...prev, isOpen: false }))}

@@ -16,6 +16,7 @@ import {
   createBorrowerNoteApi,
   updateBorrowerNoteApi,
 deleteBorrowerNoteApi,
+voidTransactionApi,
 } from "./borrowerApi";
 
 export const BorrowerProvider = ({ children }) => {
@@ -261,6 +262,10 @@ const reactivateBorrower = useCallback(async (borrowerId) => {
   payment_method: t.payment_method,
   payment_note: t.payment_note,
 
+  voided: t.voided || false,
+  voided_at: t.voided_at || null,
+  void_reason: t.void_reason || null,
+
   items:
     t.items?.map((i) => ({
       product: i.product_name,
@@ -358,6 +363,24 @@ const updatePublicLoanAccess = useCallback(async (
   return res;
 }, []);
 
+const voidTransaction = useCallback(async (borrowerId, transactionId, reason) => {
+  setLoading(true);
+  setError(null);
+
+  const res = await voidTransactionApi(borrowerId, transactionId, reason);
+
+  if (!res?.ok) {
+    setError(res?.message || "Failed to void transaction");
+    setLoading(false);
+    return res;
+  }
+
+  await fetchBorrowerTransactions(borrowerId);
+
+  setLoading(false);
+  return res;
+}, [fetchBorrowerTransactions]);
+
   const value = useMemo(() => ({
     borrowers,
     transactions,
@@ -380,13 +403,14 @@ const updatePublicLoanAccess = useCallback(async (
     createBorrowerNote,
     updateBorrowerNote,
     deleteBorrowerNote,
+    voidTransaction,
   }), [
     borrowers, transactions, loading, uploadingProfileImage, error,
     archivedBorrowers, borrowerNotes,
     clearError, fetchBorrowers, createBorrower, updateBorrower, fetchBorrowerTransactions,
     uploadBorrowerProfileImage, updatePublicLoanAccess, archiveBorrower,
     fetchArchivedBorrowers, reactivateBorrower, fetchBorrowerNotes,
-    createBorrowerNote, updateBorrowerNote, deleteBorrowerNote,
+    createBorrowerNote, updateBorrowerNote, deleteBorrowerNote, voidTransaction,
   ]);
 
   return (
