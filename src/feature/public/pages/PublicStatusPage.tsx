@@ -2,6 +2,7 @@ import { useParams } from "react-router-dom";
 import { useEffect, useMemo } from "react";
 import { usePublicStatus } from "../../public/context/usePublicStatus";
 import { useTranslation } from "../../../shared/i18n/useTranslation";
+import { resolveImageUrl } from "../../../shared/utils/resolveImageUrl";
 
 interface LoanItem {
   product: string;
@@ -151,7 +152,7 @@ export default function PublicStatusPage() {
       <div className="bg-white rounded-xl shadow-sm p-5 space-y-3 text-center">
         {borrower.profile_image_url ? (
           <img
-            src={borrower.profile_image_url}
+            src={resolveImageUrl(borrower.profile_image_url)}
             alt={borrower.name}
             className="mx-auto h-20 w-20 rounded-full object-cover border"
           />

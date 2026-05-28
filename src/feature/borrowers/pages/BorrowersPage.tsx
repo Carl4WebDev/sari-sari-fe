@@ -2,6 +2,7 @@ import { useEffect, useMemo, useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { useBorrower } from "../../context/borrowers/useBorrower";
 import { calculateAge } from "../../components/utility/calculateAge";
+import { resolveImageUrl } from "../../../shared/utils/resolveImageUrl";
 
 import ArchivedBorrowersModal from "../modals/ArchivedBorrowersModal";
 
@@ -224,7 +225,7 @@ const handleBorrowerCreated = async (borrower: any) => {
     {/* Profile */}
     {b.profile_image_url ? (
       <img
-        src={b.profile_image_url}
+        src={resolveImageUrl(b.profile_image_url)}
         alt={`${b.first_name} ${b.last_name}`}
         className="h-14 w-14 shrink-0 rounded-full border-2 border-[#1E3A8A] object-cover"
       />

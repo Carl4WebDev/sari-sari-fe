@@ -3,6 +3,7 @@ import { useMemo, useState, useEffect, useRef } from "react";
 
 import { useBorrower } from "../../context/borrowers/useBorrower";
 import { calculateAge } from "../../components/utility/calculateAge";
+import { resolveImageUrl } from "../../../shared/utils/resolveImageUrl";
 
 import AddPaymentModal from "../modals/AddPaymentModal";
 import AddLoanModalBorrowerDetails from "../modals/AddLoanModalBorrowerDetails";
@@ -249,10 +250,10 @@ if (!borrower) {
     lName: borrower.last_name,
     age: calculateAge(borrower.dob),
     contact: borrower.contact_number,
-    profileImageUrl: borrower.profile_image_url
+    profileImageUrl: resolveImageUrl(borrower.profile_image_url)
   };
 
-  const profileImageUrl = borrower.profile_image_url || null;
+  const profileImageUrl = resolveImageUrl(borrower.profile_image_url);
 
 const balance = Number(totalBalance || 0);
 
@@ -353,7 +354,7 @@ const handleDeleteNote = (noteId: number) => {
   isClose={() => setIsLoanModalOpen(false)}
   borrowerId={borrower.borrower_id}
   borrowerName={`${borrower.first_name} ${borrower.last_name}`}
-  profileImageUrl={borrower.profile_image_url}
+  profileImageUrl={resolveImageUrl(borrower.profile_image_url)}
   onLoanCreated={async (totalAmount) => {
     await refreshBorrowerDetails();
     setSuccessToast({

@@ -32,7 +32,7 @@ const { products, fetchProducts, createProduct, error: productError, clearError:
   const [animate, setAnimate] = useState(false);
 
 const [items, setItems] = useState([
-  { product: "", quantity: "1", price: "" },
+  { product: "", product_id: null as number | null, quantity: "1", price: "" },
 ]);
 
 const [isProductModalOpen, setIsProductModalOpen] = useState(false);
@@ -86,7 +86,7 @@ useEffect(() => {
   const addNewItem = () => {
     setItems([
   ...items,
-  { product: "", quantity: "1", price: "" },
+  { product: "", product_id: null, quantity: "1", price: "" },
 ]);
   };
 
@@ -115,6 +115,7 @@ useEffect(() => {
       borrower_id: borrowerId,
       items: items.map((i) => ({
         product_name: i.product,
+        product_id: i.product_id,
         quantity: Number(i.quantity),
         price: Number(i.price),
       })),
@@ -195,6 +196,7 @@ if (!res?.ok) {
     updated[index] = {
       ...updated[index],
       product: selectedProduct?.product_name || "",
+      product_id: selectedProduct?.product_id || null,
       price: selectedProduct
         ? String(selectedProduct.product_price)
         : "",

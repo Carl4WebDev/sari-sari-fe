@@ -1,5 +1,6 @@
 import { useEffect, useState } from "react";
 import { calculateAge } from "../../components/utility/calculateAge";
+import { resolveImageUrl } from "../../../shared/utils/resolveImageUrl";
 
 interface Props {
   isOpen: boolean;
@@ -110,7 +111,7 @@ export default function ArchivedBorrowersModal({
                 <div className="flex items-center gap-3">
                   {b.profile_image_url ? (
                     <img
-                      src={b.profile_image_url}
+                      src={resolveImageUrl(b.profile_image_url)}
                       alt={`${b.first_name} ${b.last_name}`}
                       className="h-14 w-14 rounded-full border-2 border-gray-300 object-cover"
                     />
