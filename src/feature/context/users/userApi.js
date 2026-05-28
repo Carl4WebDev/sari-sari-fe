@@ -11,3 +11,20 @@ export const registerUser = (payload) =>
     method: "POST",
     body: JSON.stringify(payload),
   });
+
+export const getProfile = () =>
+  apiRequest("/api/users/profile", {
+    method: "GET",
+  });
+
+export const updateStoreName = (store_name) =>
+  apiRequest("/api/users/profile/store-name", {
+    method: "PATCH",
+    body: JSON.stringify({ store_name }),
+  });
+
+export const changePassword = (current_password, new_password) =>
+  apiRequest("/api/users/profile/password", {
+    method: "PATCH",
+    body: JSON.stringify({ current_password, new_password }),
+  });

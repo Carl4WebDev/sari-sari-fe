@@ -83,6 +83,9 @@ className={`
           <Link to={"/products"} onClick={handleClose}>
             <SidebarItem label={t("nav.products")} active={location.pathname === "/products"} />
           </Link>
+          <Link to={"/profile"} onClick={handleClose}>
+            <SidebarItem label={t("nav.profile")} active={location.pathname === "/profile"} />
+          </Link>
         </nav>
 
         {/* Language Toggle */}

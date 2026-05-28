@@ -19,6 +19,7 @@ const DashboardPage = lazy(() => import("../feature/dashboard/pages/DashboardPag
 const BorrowersPage = lazy(() => import("../feature/borrowers/pages/BorrowersPage"));
 const BorrowerDetailsPage = lazy(() => import("../feature/borrowers/pages/BorrowerDetailsPage"));
 const ManageProductsPage = lazy(() => import("../feature/products/ManageProductsPage"));
+const UserManagementPage = lazy(() => import("../feature/users/pages/UserManagementPage"));
 const PublicStatusPage = lazy(() => import("../feature/public/pages/PublicStatusPage"));
 
 function PageLoader() {
@@ -71,6 +72,7 @@ export default function AppRoutes() {
           <Route path="/borrowers" element={<SuspenseWrap><BorrowersPage /></SuspenseWrap>} />
           <Route path="/borrowers/:id" element={<SuspenseWrap><BorrowerDetailsPage /></SuspenseWrap>} />
           <Route path="/products" element={<SuspenseWrap><ManageProductsPage /></SuspenseWrap>} />
+          <Route path="/profile" element={<SuspenseWrap><UserManagementPage /></SuspenseWrap>} />
         </Route>
       </Routes>
     </UserProvider>

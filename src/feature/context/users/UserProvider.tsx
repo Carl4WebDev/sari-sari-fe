@@ -3,11 +3,15 @@ import { UserContext } from "./UserContext.js";
 import {
   loginUser,
   registerUser,
+  getProfile,
+  updateStoreName as updateStoreNameApi,
+  changePassword as changePasswordApi,
 } from "./userApi.js";
 
 export const UserProvider = ({ children }) => {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
+  const [profile, setProfile] = useState(null);
 
   const clearError = useCallback(() => setError(null), []);
 
@@ -59,16 +63,79 @@ export const UserProvider = ({ children }) => {
   const clearUser = useCallback(() => {
     localStorage.removeItem("user_token");
     localStorage.removeItem("user");
+    setProfile(null);
+  }, []);
+
+  // -------------------------
+  // PROFILE
+  // -------------------------
+  const fetchProfile = useCallback(async () => {
+    setLoading(true);
+    setError(null);
+
+    const res = await getProfile();
+
+    if (!res?.ok) {
+      setError(res?.message || "Failed to fetch profile");
+      setLoading(false);
+      return res;
+    }
+
+    setProfile(res.data);
+    setLoading(false);
+    return res;
+  }, []);
+
+  const updateStoreName = useCallback(async (storeName) => {
+    setLoading(true);
+    setError(null);
+
+    const res = await updateStoreNameApi(storeName);
+
+    if (!res?.ok) {
+      setError(res?.message || "Failed to update store name");
+      setLoading(false);
+      return res;
+    }
+
+    // Update localStorage user object
+    const stored = JSON.parse(localStorage.getItem("user") || "{}");
+    stored.store_name = res.data.store_name;
+    localStorage.setItem("user", JSON.stringify(stored));
+
+    setProfile((prev) => (prev ? { ...prev, store_name: res.data.store_name } : prev));
+    setLoading(false);
+    return res;
+  }, []);
+
+  const changePassword = useCallback(async (currentPassword, newPassword) => {
+    setLoading(true);
+    setError(null);
+
+    const res = await changePasswordApi(currentPassword, newPassword);
+
+    if (!res?.ok) {
+      setError(res?.message || "Failed to change password");
+      setLoading(false);
+      return res;
+    }
+
+    setLoading(false);
+    return res;
   }, []);
 
   const value = useMemo(() => ({
     loading,
     error,
+    profile,
     clearError,
     login,
     register,
     clearUser,
-  }), [loading, error, clearError, login, register, clearUser]);
+    fetchProfile,
+    updateStoreName,
+    changePassword,
+  }), [loading, error, profile, clearError, login, register, clearUser, fetchProfile, updateStoreName, changePassword]);
 
   return (
     <UserContext.Provider value={value}>

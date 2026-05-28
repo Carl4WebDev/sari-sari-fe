@@ -9,6 +9,7 @@ export const translations = {
     "nav.borrowers": "Borrowers",
     "nav.products": "Products",
     "nav.logout": "Logout",
+    "nav.profile": "Profile",
 
     // Language
     "lang.label": "Language",
@@ -100,6 +101,20 @@ export const translations = {
     "tutorial.loan_ready_title": "Now complete the loan",
     "tutorial.loan_ready_desc": "Select the product you just added, set the quantity, and save the loan.",
     "tutorial.skip": "Skip tutorial",
+
+    // User Profile
+    "user.profile": "Profile",
+    "user.store_info": "Store Information",
+    "user.store_name": "Store Name",
+    "user.save_store_name": "Save Store Name",
+    "user.change_password": "Change Password",
+    "user.current_password": "Current Password",
+    "user.new_password": "New Password",
+    "user.confirm_password": "Confirm Password",
+    "user.profile_updated": "Store name updated successfully",
+    "user.password_changed": "Password changed successfully",
+    "user.password_mismatch": "New passwords do not match",
+    "user.password_hint": "Password must be at least 8 characters",
 
     // Borrowers
     "borrowers.title": "Borrowers",
@@ -276,6 +291,7 @@ export const translations = {
     "nav.borrowers": "Mangungutang",
     "nav.products": "Produkto",
     "nav.logout": "Mag-logout",
+    "nav.profile": "Profile",
 
     // Language
     "lang.label": "Wika",
@@ -355,6 +371,20 @@ export const translations = {
     "tutorial.loan_ready_title": "Kumpletuhin ang utang",
     "tutorial.loan_ready_desc": "Piliin ang produktong idinagdag mo, itakda ang dami, at i-save ang utang.",
     "tutorial.skip": "Laktawan ang tutorial",
+
+    // User Profile
+    "user.profile": "Profile",
+    "user.store_info": "Impormasyon ng Tindahan",
+    "user.store_name": "Pangalan ng Tindahan",
+    "user.save_store_name": "I-save ang Pangalan ng Tindahan",
+    "user.change_password": "Palitan ang Password",
+    "user.current_password": "Kasalukuyang Password",
+    "user.new_password": "Bagong Password",
+    "user.confirm_password": "Kumpirmahin ang Password",
+    "user.profile_updated": "Matagumpay na na-update ang pangalan ng tindahan",
+    "user.password_changed": "Matagumpay na napalitan ang password",
+    "user.password_mismatch": "Hindi tugma ang bagong password",
+    "user.password_hint": "Ang password ay dapat hindi bababa sa 8 character",
 
     // Borrowers
     "borrowers.title": "Mangungutang",
