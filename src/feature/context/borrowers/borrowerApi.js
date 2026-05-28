@@ -13,6 +13,13 @@ export const createBorrowerApi = (payload) =>
     body: JSON.stringify(payload),
   });
 
+// UPDATE borrower
+export const updateBorrowerApi = (borrowerId, payload) =>
+  apiRequest(`/api/borrowers/${borrowerId}`, {
+    method: "PATCH",
+    body: JSON.stringify(payload),
+  });
+
 // GET borrower transactions
 export const getBorrowerTransactionsApi = (borrowerId) =>
   apiRequest(`/api/borrowers/${borrowerId}/transactions`, {

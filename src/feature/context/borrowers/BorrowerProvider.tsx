@@ -4,6 +4,7 @@ import { BorrowerContext } from "./BorrowerContext";
 import {
   getBorrowersApi,
   createBorrowerApi,
+  updateBorrowerApi,
   getBorrowerTransactionsApi,
   uploadBorrowerProfileImageApi,
   // updateBorrowerPublicAccessApi,
@@ -216,6 +217,27 @@ const reactivateBorrower = useCallback(async (borrowerId) => {
   }, []);
 
   // -------------------------
+  // UPDATE BORROWER
+  // -------------------------
+  const updateBorrower = useCallback(async (borrowerId, payload) => {
+    setLoading(true);
+    setError(null);
+
+    const res = await updateBorrowerApi(borrowerId, payload);
+
+    if (!res?.ok) {
+      setError(res?.message || "Failed to update borrower");
+      setLoading(false);
+      return res;
+    }
+
+    await fetchBorrowers();
+
+    setLoading(false);
+    return res;
+  }, []);
+
+  // -------------------------
   // FETCH BORROWER TRANSACTIONS
   // -------------------------
   const fetchBorrowerTransactions = useCallback(async (borrowerId) => {
@@ -347,6 +369,7 @@ const updatePublicLoanAccess = useCallback(async (
     borrowerNotes,
     fetchBorrowers,
     createBorrower,
+    updateBorrower,
     fetchBorrowerTransactions,
     uploadBorrowerProfileImage,
     updatePublicLoanAccess,
@@ -360,7 +383,7 @@ const updatePublicLoanAccess = useCallback(async (
   }), [
     borrowers, transactions, loading, uploadingProfileImage, error,
     archivedBorrowers, borrowerNotes,
-    clearError, fetchBorrowers, createBorrower, fetchBorrowerTransactions,
+    clearError, fetchBorrowers, createBorrower, updateBorrower, fetchBorrowerTransactions,
     uploadBorrowerProfileImage, updatePublicLoanAccess, archiveBorrower,
     fetchArchivedBorrowers, reactivateBorrower, fetchBorrowerNotes,
     createBorrowerNote, updateBorrowerNote, deleteBorrowerNote,

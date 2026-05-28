@@ -1,5 +1,5 @@
 import { useParams, useNavigate, useLocation } from "react-router-dom";
-import { useMemo, useState, useEffect, useRef } from "react";
+import { useMemo, useState, useEffect } from "react";
 
 import { useBorrower } from "../../context/borrowers/useBorrower";
 import { calculateAge } from "../../components/utility/calculateAge";
@@ -9,6 +9,7 @@ import AddPaymentModal from "../modals/AddPaymentModal";
 import AddLoanModalBorrowerDetails from "../modals/AddLoanModalBorrowerDetails";
 import EditLoanModal from "../modals/EditLoanModal";
 import AddReminderModal from "../modals/AddReminderModal";
+import EditBorrowerModal from "../modals/EditBorrowerModal";
 
 import { useCollectionReminder } from "../../context/collection-reminders/useCollectionReminder";
 import { usePayment } from "../../context/payments/usePayment";
@@ -45,7 +46,7 @@ export default function BorrowerDetailsPage() {
   const { id } = useParams();
   const navigate = useNavigate();
   const location = useLocation();
-  const fileInputRef = useRef<HTMLInputElement | null>(null);
+  const [isEditBorrowerOpen, setIsEditBorrowerOpen] = useState(false);
 
   const [globalModal, setGlobalModal] = useState({
   isOpen: false,
@@ -85,18 +86,16 @@ const [editingNoteText, setEditingNoteText] = useState("");
     transactions,
     fetchBorrowers,
     fetchBorrowerTransactions,
-    uploadBorrowerProfileImage,
-    uploadingProfileImage,
     loading,
-    updatePublicLoanAccess ,
+    updatePublicLoanAccess,
     archiveBorrower,
-borrowerNotes,
-fetchBorrowerNotes,
-createBorrowerNote,
-updateBorrowerNote,
-deleteBorrowerNote,
-error: borrowerError,
-clearError: clearBorrowerError,
+    borrowerNotes,
+    fetchBorrowerNotes,
+    createBorrowerNote,
+    updateBorrowerNote,
+    deleteBorrowerNote,
+    error: borrowerError,
+    clearError: clearBorrowerError,
   } = useBorrower();
 
   const {
@@ -282,18 +281,6 @@ const publicStatusLink = publicToken
   ? `${window.location.origin}/status/${publicToken}`
   : "";
 
-  const handleProfileImageChange = async (
-    e: React.ChangeEvent<HTMLInputElement>
-  ) => {
-    const file = e.target.files?.[0];
-
-    if (!file || !id) return;
-
-    await uploadBorrowerProfileImage(id, file);
-
-    e.target.value = "";
-  };
-
 const handleAddNote = async () => {
   if (!noteInput.trim() || !id) return;
 
@@ -349,6 +336,16 @@ const handleDeleteNote = (noteId: number) => {
 
   return (
     <div className="space-y-6 pb-32">
+
+<EditBorrowerModal
+  isOpen={isEditBorrowerOpen}
+  isClose={() => setIsEditBorrowerOpen(false)}
+  borrower={borrower}
+  onBorrowerUpdated={async () => {
+    await fetchBorrowers();
+  }}
+/>
+
 <AddLoanModalBorrowerDetails
   isOpen={isLoanModalOpen}
   isClose={() => setIsLoanModalOpen(false)}
@@ -527,35 +524,21 @@ const handleDeleteNote = (noteId: number) => {
 
         {/* Right Column */}
         <div className="flex flex-col items-center justify-center rounded-xl border bg-white p-6 shadow-sm">
-          <button
-            type="button"
-            onClick={() => fileInputRef.current?.click()}
-            disabled={uploadingProfileImage}
-className="relative h-24 w-24 sm:h-32 sm:w-32 lg:h-40 lg:w-40 rounded-full"          >
+          {/* Profile Image (display only) */}
+          <div className="h-24 w-24 sm:h-32 sm:w-32 lg:h-40 lg:w-40 rounded-full">
             {profileImageUrl ? (
               <img
                 src={profileImageUrl}
                 alt="Borrower profile"
-className="h-24 w-24 sm:h-32 sm:w-32 lg:h-40 lg:w-40 rounded-full border-4 border-[#1E3A8A] object-cover shadow-xl"              />
+                className="h-24 w-24 sm:h-32 sm:w-32 lg:h-40 lg:w-40 rounded-full border-4 border-[#1E3A8A] object-cover shadow-xl"
+              />
             ) : (
               <div className="flex h-24 w-24 sm:h-32 sm:w-32 lg:h-40 lg:w-40 items-center justify-center rounded-full border-4 border-[#1E3A8A] bg-blue-50 text-3xl sm:text-4xl lg:text-5xl font-bold text-[#1E3A8A] shadow-xl">
                 {borrower.first_name?.[0]}
                 {borrower.last_name?.[0]}
               </div>
             )}
-
-            <span className="absolute bottom-4 right-3 rounded-full bg-[#1E3A8A] px-4 py-3 text-sm font-semibold text-white shadow-lg">
-              {uploadingProfileImage ? "..." : t("details.edit")}
-            </span>
-          </button>
-
-          <input
-            ref={fileInputRef}
-            type="file"
-            accept="image/png,image/jpeg,image/jpg,image/webp"
-            onChange={handleProfileImageChange}
-            className="hidden"
-          />
+          </div>
 
           {!profileImageUrl && (
             <p className="mt-2 text-xs font-medium text-red-600">
@@ -589,6 +572,13 @@ className="h-24 w-24 sm:h-32 sm:w-32 lg:h-40 lg:w-40 rounded-full border-4 borde
     {activityStatus}
   </span>
 </div>
+
+          <button
+            onClick={() => setIsEditBorrowerOpen(true)}
+            className="mt-4 w-full rounded-xl border border-[#1E3A8A] py-2.5 text-sm font-medium text-[#1E3A8A] transition hover:bg-blue-50"
+          >
+            {t("details.edit_profile")}
+          </button>
         </div>
       </div>
 
