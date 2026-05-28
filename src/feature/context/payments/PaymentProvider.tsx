@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useCallback, useMemo } from "react";
 import { PaymentContext } from "./PaymentContext";
 import { createPaymentApi } from "./paymentApi";
 
@@ -6,13 +6,9 @@ export const PaymentProvider = ({ children }) => {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
 
-  const clearError = () => setError(null);
+  const clearError = useCallback(() => setError(null), []);
 
-  // -------------------------
-  // CREATE PAYMENT
-  // -------------------------
-
-  const createPayment = async (payload) => {
+  const createPayment = useCallback(async (payload) => {
     setLoading(true);
     setError(null);
 
@@ -26,17 +22,17 @@ export const PaymentProvider = ({ children }) => {
 
     setLoading(false);
     return res;
-  };
+  }, []);
+
+  const value = useMemo(() => ({
+    loading,
+    error,
+    clearError,
+    createPayment,
+  }), [loading, error, clearError, createPayment]);
 
   return (
-    <PaymentContext.Provider
-      value={{
-        loading,
-        error,
-        clearError,
-        createPayment,
-      }}
-    >
+    <PaymentContext.Provider value={value}>
       {children}
     </PaymentContext.Provider>
   );

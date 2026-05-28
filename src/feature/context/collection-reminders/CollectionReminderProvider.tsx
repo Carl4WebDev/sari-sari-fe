@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useCallback, useMemo } from "react";
 import { CollectionReminderContext } from "./CollectionReminderContext";
 import {
   createReminderApi,
@@ -16,13 +16,12 @@ export const CollectionReminderProvider = ({ children }) => {
   });
 
   const [borrowerReminders, setBorrowerReminders] = useState([]);
-
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
 
-  const clearError = () => setError(null);
+  const clearError = useCallback(() => setError(null), []);
 
-  const createReminder = async (payload) => {
+  const createReminder = useCallback(async (payload) => {
     setLoading(true);
     setError(null);
 
@@ -36,9 +35,9 @@ export const CollectionReminderProvider = ({ children }) => {
 
     setLoading(false);
     return res;
-  };
+  }, []);
 
-  const fetchDashboardReminders = async () => {
+  const fetchDashboardReminders = useCallback(async () => {
     setLoading(true);
     setError(null);
 
@@ -60,9 +59,9 @@ export const CollectionReminderProvider = ({ children }) => {
 
     setLoading(false);
     return res;
-  };
+  }, []);
 
-  const fetchBorrowerReminders = async (borrowerId) => {
+  const fetchBorrowerReminders = useCallback(async (borrowerId) => {
     setLoading(true);
     setError(null);
 
@@ -77,9 +76,9 @@ export const CollectionReminderProvider = ({ children }) => {
     setBorrowerReminders(res.data || []);
     setLoading(false);
     return res;
-  };
+  }, []);
 
-  const updateReminderStatus = async (reminderId, status) => {
+  const updateReminderStatus = useCallback(async (reminderId, status) => {
     setLoading(true);
     setError(null);
 
@@ -93,9 +92,9 @@ export const CollectionReminderProvider = ({ children }) => {
 
     setLoading(false);
     return res;
-  };
+  }, []);
 
-  const deleteReminder = async (reminderId) => {
+  const deleteReminder = useCallback(async (reminderId) => {
     setLoading(true);
     setError(null);
 
@@ -109,24 +108,27 @@ export const CollectionReminderProvider = ({ children }) => {
 
     setLoading(false);
     return res;
-  };
+  }, []);
+
+  const value = useMemo(() => ({
+    dashboardReminders,
+    borrowerReminders,
+    loading,
+    error,
+    clearError,
+    createReminder,
+    fetchDashboardReminders,
+    fetchBorrowerReminders,
+    updateReminderStatus,
+    deleteReminder,
+  }), [
+    dashboardReminders, borrowerReminders, loading, error, clearError,
+    createReminder, fetchDashboardReminders, fetchBorrowerReminders,
+    updateReminderStatus, deleteReminder,
+  ]);
 
   return (
-    <CollectionReminderContext.Provider
-      value={{
-        dashboardReminders,
-        borrowerReminders,
-        loading,
-        error,
-        clearError,
-
-        createReminder,
-        fetchDashboardReminders,
-        fetchBorrowerReminders,
-        updateReminderStatus,
-        deleteReminder,
-      }}
-    >
+    <CollectionReminderContext.Provider value={value}>
       {children}
     </CollectionReminderContext.Provider>
   );

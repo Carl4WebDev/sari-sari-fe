@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useCallback, useMemo } from "react";
 import { LoanContext } from "./LoanContext";
 import { createLoanApi } from "./loanApi";
 
@@ -6,12 +6,9 @@ export const LoanProvider = ({ children }) => {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
 
-  const clearError = () => setError(null);
+  const clearError = useCallback(() => setError(null), []);
 
-  // -------------------------
-  // CREATE LOAN
-  // -------------------------
-  const createLoan = async (payload) => {
+  const createLoan = useCallback(async (payload) => {
     setLoading(true);
     setError(null);
 
@@ -25,17 +22,17 @@ export const LoanProvider = ({ children }) => {
 
     setLoading(false);
     return res;
-  };
+  }, []);
+
+  const value = useMemo(() => ({
+    loading,
+    error,
+    clearError,
+    createLoan,
+  }), [loading, error, clearError, createLoan]);
 
   return (
-    <LoanContext.Provider
-      value={{
-        loading,
-        error,
-        clearError,
-        createLoan,
-      }}
-    >
+    <LoanContext.Provider value={value}>
       {children}
     </LoanContext.Provider>
   );

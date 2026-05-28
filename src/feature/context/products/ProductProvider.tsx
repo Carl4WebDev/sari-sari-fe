@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useCallback, useMemo } from "react";
 import { ProductContext } from "./ProductContext";
 
 import {
@@ -6,7 +6,7 @@ import {
   createProductApi,
   updateProductApi,
   deleteProductApi,
-    getArchivedProductsApi,
+  getArchivedProductsApi,
   archiveProductApi,
   reactivateProductApi,
 } from "./productApi";
@@ -16,67 +16,11 @@ export const ProductProvider = ({ children }) => {
   const [loading, setLoading] = useState(false);
   const [actionLoading, setActionLoading] = useState(false);
   const [error, setError] = useState(null);
-
-  const clearError = () => setError(null);
-
   const [archivedProducts, setArchivedProducts] = useState([]);
 
-const fetchArchivedProducts = async () => {
-  setLoading(true);
-  setError(null);
+  const clearError = useCallback(() => setError(null), []);
 
-  const res = await getArchivedProductsApi();
-
-  if (!res?.ok) {
-    setError(res?.message || "Failed to fetch archived products");
-    setLoading(false);
-    return res;
-  }
-
-  setArchivedProducts(res.data);
-  setLoading(false);
-  return res;
-};
-
-const archiveProduct = async (productId) => {
-  setLoading(true);
-  setError(null);
-
-  const res = await archiveProductApi(productId);
-
-  if (!res?.ok) {
-    setError(res?.message || "Failed to archive product");
-    setLoading(false);
-    return res;
-  }
-
-  await fetchProducts();
-  await fetchArchivedProducts();
-
-  setLoading(false);
-  return res;
-};
-
-const reactivateProduct = async (productId) => {
-  setLoading(true);
-  setError(null);
-
-  const res = await reactivateProductApi(productId);
-
-  if (!res?.ok) {
-    setError(res?.message || "Failed to reactivate product");
-    setLoading(false);
-    return res;
-  }
-
-  await fetchProducts();
-  await fetchArchivedProducts();
-
-  setLoading(false);
-  return res;
-};
-
-  const fetchProducts = async () => {
+  const fetchProducts = useCallback(async () => {
     setLoading(true);
     setError(null);
 
@@ -91,9 +35,64 @@ const reactivateProduct = async (productId) => {
     setProducts(res.data || []);
     setLoading(false);
     return res;
-  };
+  }, []);
 
-  const createProduct = async (payload) => {
+  const fetchArchivedProducts = useCallback(async () => {
+    setLoading(true);
+    setError(null);
+
+    const res = await getArchivedProductsApi();
+
+    if (!res?.ok) {
+      setError(res?.message || "Failed to fetch archived products");
+      setLoading(false);
+      return res;
+    }
+
+    setArchivedProducts(res.data);
+    setLoading(false);
+    return res;
+  }, []);
+
+  const archiveProduct = useCallback(async (productId) => {
+    setLoading(true);
+    setError(null);
+
+    const res = await archiveProductApi(productId);
+
+    if (!res?.ok) {
+      setError(res?.message || "Failed to archive product");
+      setLoading(false);
+      return res;
+    }
+
+    await fetchProducts();
+    await fetchArchivedProducts();
+
+    setLoading(false);
+    return res;
+  }, [fetchProducts, fetchArchivedProducts]);
+
+  const reactivateProduct = useCallback(async (productId) => {
+    setLoading(true);
+    setError(null);
+
+    const res = await reactivateProductApi(productId);
+
+    if (!res?.ok) {
+      setError(res?.message || "Failed to reactivate product");
+      setLoading(false);
+      return res;
+    }
+
+    await fetchProducts();
+    await fetchArchivedProducts();
+
+    setLoading(false);
+    return res;
+  }, [fetchProducts, fetchArchivedProducts]);
+
+  const createProduct = useCallback(async (payload) => {
     setActionLoading(true);
     setError(null);
 
@@ -108,9 +107,9 @@ const reactivateProduct = async (productId) => {
     await fetchProducts();
     setActionLoading(false);
     return res;
-  };
+  }, [fetchProducts]);
 
-  const updateProduct = async (productId, payload) => {
+  const updateProduct = useCallback(async (productId, payload) => {
     setActionLoading(true);
     setError(null);
 
@@ -125,9 +124,9 @@ const reactivateProduct = async (productId) => {
     await fetchProducts();
     setActionLoading(false);
     return res;
-  };
+  }, [fetchProducts]);
 
-  const deleteProduct = async (productId) => {
+  const deleteProduct = useCallback(async (productId) => {
     setActionLoading(true);
     setError(null);
 
@@ -142,28 +141,30 @@ const reactivateProduct = async (productId) => {
     await fetchProducts();
     setActionLoading(false);
     return res;
-  };
+  }, [fetchProducts]);
 
-  return (
-    <ProductContext.Provider
-      value={{
-        products,
-        loading,
-        actionLoading,
-        error,
-        clearError,
-            archivedProducts,
-
-        fetchProducts,
-        createProduct,
-        updateProduct,
-        deleteProduct,
-
-            fetchArchivedProducts,
+  const value = useMemo(() => ({
+    products,
+    loading,
+    actionLoading,
+    error,
+    clearError,
+    archivedProducts,
+    fetchProducts,
+    createProduct,
+    updateProduct,
+    deleteProduct,
+    fetchArchivedProducts,
     archiveProduct,
     reactivateProduct,
-      }}
-    >
+  }), [
+    products, loading, actionLoading, error, clearError, archivedProducts,
+    fetchProducts, createProduct, updateProduct, deleteProduct,
+    fetchArchivedProducts, archiveProduct, reactivateProduct,
+  ]);
+
+  return (
+    <ProductContext.Provider value={value}>
       {children}
     </ProductContext.Provider>
   );
