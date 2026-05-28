@@ -78,6 +78,29 @@ export const translations = {
     "dashboard.paid_label": "Paid",
     "dashboard.no_activities": "No recent activities.",
 
+    // Onboarding
+    "onboarding.welcome": "Welcome to Listahub! 👋",
+    "onboarding.subtitle": "Let's get your store set up. Follow these steps to start tracking utang.",
+    "onboarding.skip": "Skip",
+    "onboarding.step_label": "Step {index}: {title}",
+    "onboarding.step1_title": "Add your first borrower",
+    "onboarding.step1_desc": "Start by adding a customer who buys on credit (utang).",
+    "onboarding.add_borrower": "Add Borrower",
+    "onboarding.step2_title": "Record a loan",
+    "onboarding.step2_desc": "Once you have a borrower, record their first utang. You'll add products inside the loan form.",
+    "onboarding.add_loan": "Add Loan",
+
+    // Tutorial
+    "tutorial.welcome_title": "Welcome to Listahub!",
+    "tutorial.welcome_desc": "Let's set up your store. First, add a borrower — a customer who buys on credit (utang).",
+    "tutorial.add_borrower_btn": "Add Borrower",
+    "tutorial.add_products_title": "Add your products first",
+    "tutorial.add_products_desc": "Before saving the loan, add the products your borrower is buying. This makes tracking easier!",
+    "tutorial.got_it": "Got it!",
+    "tutorial.loan_ready_title": "Now complete the loan",
+    "tutorial.loan_ready_desc": "Select the product you just added, set the quantity, and save the loan.",
+    "tutorial.skip": "Skip tutorial",
+
     // Borrowers
     "borrowers.title": "Borrowers",
     "borrowers.subtitle": "Manage your borrowers",
@@ -321,6 +344,17 @@ export const translations = {
     "dashboard.borrowed": "Umutang",
     "dashboard.paid_label": "Nagbayad",
     "dashboard.no_activities": "Walang kamakailang aktibidad.",
+
+    // Tutorial
+    "tutorial.welcome_title": "Maligayang pagdating sa Listahub!",
+    "tutorial.welcome_desc": "I-set up ang iyong tindahan. Una, magdagdag ng mangungutang — isang customer na umuutang.",
+    "tutorial.add_borrower_btn": "Magdagdag ng Mangungutang",
+    "tutorial.add_products_title": "Magdagdag muna ng mga produkto",
+    "tutorial.add_products_desc": "Bago i-save ang utang, idagdag ang mga produktong binibili ng mangungutang. Mas madali ang pag-track!",
+    "tutorial.got_it": "Sige!",
+    "tutorial.loan_ready_title": "Kumpletuhin ang utang",
+    "tutorial.loan_ready_desc": "Piliin ang produktong idinagdag mo, itakda ang dami, at i-save ang utang.",
+    "tutorial.skip": "Laktawan ang tutorial",
 
     // Borrowers
     "borrowers.title": "Mangungutang",

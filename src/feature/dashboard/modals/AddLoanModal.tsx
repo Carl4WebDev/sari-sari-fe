@@ -21,12 +21,16 @@ interface Props {
   isOpen: boolean;
   isClose: () => void;
   onLoanCreated?: () => Promise<void> | void;
+  autoOpenProducts?: boolean;
+  onProductSaved?: () => void;
 }
 
 export default function AddLoanModal({
   isOpen,
   isClose,
   onLoanCreated,
+  autoOpenProducts,
+  onProductSaved,
 }: Props) {
 
   const { borrowers, fetchBorrowers } = useBorrower();
@@ -102,6 +106,20 @@ const resetLoanForm = () => {
   }, [isOpen]);
 
   // -----------------------------
+  // Auto-open ProductModal for tutorial
+  // -----------------------------
+
+  useEffect(() => {
+    if (isOpen && autoOpenProducts) {
+      // Small delay to let the loan modal animate in first
+      const timer = setTimeout(() => {
+        setIsProductModalOpen(true);
+      }, 400);
+      return () => clearTimeout(timer);
+    }
+  }, [isOpen, autoOpenProducts]);
+
+  // -----------------------------
   // Modal animation
   // -----------------------------
 
@@ -175,6 +193,14 @@ const resetLoanForm = () => {
   // -----------------------------
   // Save loan
   // -----------------------------
+
+  const handleProductSubmit = async (payload: { product_name: string; product_price: number }) => {
+    const res = await createProduct(payload);
+    if (res?.ok) {
+      onProductSaved?.();
+    }
+    return res;
+  };
 
   const handleSubmit = async () => {
 
@@ -425,7 +451,7 @@ if (!res?.ok) {
   isClose={() => setIsProductModalOpen(false)}
   mode="add"
   initialProductName={newProductName}
-  onSubmit={createProduct}
+  onSubmit={handleProductSubmit}
 />
 
 <GlobalModal

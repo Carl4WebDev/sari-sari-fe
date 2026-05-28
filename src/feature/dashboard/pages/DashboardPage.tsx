@@ -21,6 +21,8 @@ import { useCollectionReminder } from "../../context/collection-reminders/useCol
 import GlobalModal from "../../../shared/components/GlobalModal";
 import { useTranslation } from "../../../shared/i18n/useTranslation";
 import OnboardingWizard from "../../../shared/components/OnboardingWizard";
+import TutorialGuide from "../../../shared/components/TutorialGuide";
+import { useTutorial } from "../../../shared/hooks/useTutorial";
 
 
 export default function DashboardPage() {
@@ -50,6 +52,8 @@ const {
     const [isReminderModalOpen, setIsReminderModalOpen] = useState(false);
 
 const [globalModal, setGlobalModal] = useState({ isOpen: false, title: "", message: "", type: "info" });
+
+const tutorial = useTutorial(dashboard?.total_borrowers || 0);
 
 useEffect(() => {
   clearDashboardError();
@@ -102,6 +106,7 @@ useEffect(() => {
   onBorrowerCreated={async (borrower) => {
     setRecentBorrower(borrower);
     await refreshDashboard();
+    tutorial.nextStep(); // step 1 → 2
     setIsLoanOpen(true);
   }}
 />
@@ -110,7 +115,16 @@ useEffect(() => {
   isOpen={isLoanOpen}
   isClose={() => setIsLoanOpen(false)}
   borrower={recentBorrower}
-  onLoanCreated={refreshDashboard}
+  onLoanCreated={async () => {
+    await refreshDashboard();
+    tutorial.completeTutorial();
+  }}
+  autoOpenProducts={tutorial.isActive}
+  onProductSaved={() => {
+    if (tutorial.isActive) {
+      tutorial.nextStep(); // step 2 → 3
+    }
+  }}
 />
 
 <QuickAddPaymentModal
@@ -129,8 +143,26 @@ useEffect(() => {
   }}
 />
 
-      {/* Onboarding Wizard — show when no borrowers */}
-      {!loading && dashboard && (dashboard.total_borrowers || 0) === 0 && (
+      {/* Tutorial Guide — floating card for new users */}
+      <TutorialGuide
+        visible={
+          tutorial.isActive && (
+            (tutorial.currentStep === 1 && !isBorrowerOpen && !isLoanOpen) ||
+            (tutorial.currentStep === 3 && isLoanOpen)
+          )
+        }
+        step={tutorial.currentStep}
+        onAction={() => {
+          if (tutorial.currentStep === 1) {
+            setIsBorrowerOpen(true);
+          }
+          // step 3: "Got it" just dismisses the guide, user completes the loan
+        }}
+        onSkip={tutorial.skipTutorial}
+      />
+
+      {/* Onboarding Wizard — show when no borrowers (hidden during tutorial) */}
+      {!loading && dashboard && (dashboard.total_borrowers || 0) === 0 && !tutorial.isActive && (
         <OnboardingWizard
           borrowerCount={0}
           onAddBorrower={() => setIsBorrowerOpen(true)}

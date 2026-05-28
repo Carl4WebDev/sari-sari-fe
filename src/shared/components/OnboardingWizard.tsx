@@ -1,4 +1,5 @@
 import { useState } from "react";
+import { useTranslation } from "../i18n/useTranslation";
 
 interface Props {
   onAddBorrower: () => void;
@@ -11,6 +12,7 @@ export default function OnboardingWizard({
   onAddLoan,
   borrowerCount,
 }: Props) {
+  const { t } = useTranslation();
   const [dismissed, setDismissed] = useState(false);
 
   if (dismissed) return null;
@@ -18,18 +20,18 @@ export default function OnboardingWizard({
   const steps = [
     {
       done: borrowerCount > 0,
-      title: "Add your first borrower",
-      description: "Start by adding a customer who buys on credit (utang).",
+      title: t("onboarding.step1_title"),
+      description: t("onboarding.step1_desc"),
       action: onAddBorrower,
-      actionLabel: "Add Borrower",
+      actionLabel: t("onboarding.add_borrower"),
       icon: "👤",
     },
     {
       done: false,
-      title: "Record a loan",
-      description: "Once you have a borrower, record their first utang with product items.",
+      title: t("onboarding.step2_title"),
+      description: t("onboarding.step2_desc"),
       action: onAddLoan,
-      actionLabel: "Add Loan",
+      actionLabel: t("onboarding.add_loan"),
       icon: "🧾",
       disabled: borrowerCount === 0,
     },
@@ -40,17 +42,17 @@ export default function OnboardingWizard({
       <div className="flex items-start justify-between">
         <div>
           <h2 className="text-lg font-semibold text-[#1E3A8A]">
-            Welcome to Listahub! 👋
+            {t("onboarding.welcome")}
           </h2>
           <p className="mt-1 text-sm text-gray-600">
-            Let's get your store set up. Follow these steps to start tracking utang.
+            {t("onboarding.subtitle")}
           </p>
         </div>
         <button
           onClick={() => setDismissed(true)}
           className="shrink-0 rounded-lg px-3 py-1 text-xs text-gray-500 hover:bg-white"
         >
-          Skip
+          {t("onboarding.skip")}
         </button>
       </div>
 
@@ -76,7 +78,7 @@ export default function OnboardingWizard({
 
             <div className="flex-1 min-w-0">
               <p className={`text-sm font-semibold ${step.done ? "text-green-700" : "text-gray-800"}`}>
-                Step {index + 1}: {step.title}
+                {t("onboarding.step_label", { index: index + 1, title: step.title })}
               </p>
               <p className="text-xs text-gray-500 mt-0.5">
                 {step.description}
