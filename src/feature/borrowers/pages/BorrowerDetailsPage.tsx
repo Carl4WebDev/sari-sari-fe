@@ -449,6 +449,7 @@ const handleDeleteNote = (noteId: number) => {
   isClose={() => setIsReminderModalOpen(false)}
   borrowerId={borrower.borrower_id}
   currentBalance={totalBalance}
+  contactNumber={borrower.contact_number}
   onCreateReminder={async (payload) => {
     const res = await createReminder(payload);
 

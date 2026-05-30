@@ -18,7 +18,7 @@ import ReminderNotificationModal from "../modals/ReminderNotificationModal";
 
 import { useDashboard } from "../../context/dashboard/useDashboard";
 import { useCollectionReminder } from "../../context/collection-reminders/useCollectionReminder";
-import { remindAgainApi } from "../../context/collection-reminders/collectionReminderApi";
+import { remindAgainApi, sendReminderSmsApi } from "../../context/collection-reminders/collectionReminderApi";
 import GlobalModal from "../../../shared/components/GlobalModal";
 import { useTranslation } from "../../../shared/i18n/useTranslation";
 import OnboardingWizard from "../../../shared/components/OnboardingWizard";
@@ -150,6 +150,10 @@ useEffect(() => {
     await remindAgainApi(reminderId);
     await fetchDashboardReminders();
     setOverdueDismissed(false);
+  }}
+  onSendSMS={async (reminderId) => {
+    await sendReminderSmsApi(reminderId);
+    await fetchDashboardReminders();
   }}
 />
 

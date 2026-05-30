@@ -12,6 +12,7 @@ interface Props {
   };
   onMarkDone: (reminderId: number) => Promise<void>;
   onRemindAgain?: (reminderId: number) => Promise<void>;
+  onSendSMS?: (reminderId: number) => Promise<void>;
 }
 
 export default function ReminderNotificationModal({
@@ -20,6 +21,7 @@ export default function ReminderNotificationModal({
   reminders,
   onMarkDone,
   onRemindAgain,
+  onSendSMS,
 }: Props) {
   const { t } = useTranslation();
   const [animate, setAnimate] = useState(false);
@@ -78,6 +80,7 @@ export default function ReminderNotificationModal({
   emptyText="No collections for today."
   badgeClass="bg-[#1E3A8A] text-white"
   onMarkDone={onMarkDone}
+  onSendSMS={onSendSMS}
 />
 
 <ReminderSection
@@ -87,6 +90,7 @@ export default function ReminderNotificationModal({
   badgeClass="bg-red-500 text-white"
   onMarkDone={onMarkDone}
   onRemindAgain={onRemindAgain}
+  onSendSMS={onSendSMS}
 />
 
 <ReminderSection
@@ -95,6 +99,7 @@ export default function ReminderNotificationModal({
   emptyText="No upcoming reminders."
   badgeClass="bg-[#16A34A] text-white"
   onMarkDone={onMarkDone}
+  onSendSMS={onSendSMS}
 />
         </div>
       </div>
@@ -109,6 +114,7 @@ function ReminderSection({
   badgeClass,
   onMarkDone,
   onRemindAgain,
+  onSendSMS,
 }: {
   title: string;
   items: any[];
@@ -116,6 +122,7 @@ function ReminderSection({
   badgeClass: string;
   onMarkDone: (reminderId: number) => Promise<void>;
   onRemindAgain?: (reminderId: number) => Promise<void>;
+  onSendSMS?: (reminderId: number) => Promise<void>;
 }) {
 
   const navigate = useNavigate();
@@ -195,6 +202,16 @@ function ReminderSection({
       className="rounded-lg bg-orange-500 px-3 py-2 text-xs font-semibold text-white"
     >
       Remind Again
+    </button>
+  )}
+  {onSendSMS && (
+    <button
+      onClick={async () => {
+        await onSendSMS(item.reminder_id);
+      }}
+      className="rounded-lg bg-blue-500 px-3 py-2 text-xs font-semibold text-white"
+    >
+      Send SMS
     </button>
   )}
 </div>

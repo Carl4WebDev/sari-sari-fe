@@ -31,3 +31,9 @@ export const remindAgainApi = (reminderId) =>
   apiRequest(`/api/collection-reminders/${reminderId}/remind-again`, {
     method: "POST",
   });
+
+export const sendReminderSmsApi = (reminderId) =>
+  apiRequest("/api/sms/send", {
+    method: "POST",
+    body: JSON.stringify({ reminderId }),
+  });

@@ -7,6 +7,7 @@ interface Props {
   isClose: () => void;
   borrowerId: number;
   currentBalance: number;
+  contactNumber?: string | null;
   onCreateReminder: (payload: any) => Promise<any>;
 }
 
@@ -15,10 +16,12 @@ export default function AddReminderModal({
   isClose,
   borrowerId,
   currentBalance,
+  contactNumber,
   onCreateReminder,
 }: Props) {
   const [animate, setAnimate] = useState(false);
   const [loading, setLoading] = useState(false);
+  const [sendSms, setSendSms] = useState(false);
 
 
   const [globalModal, setGlobalModal] = useState({
@@ -72,9 +75,10 @@ if (amount > currentBalance) {
 
     const res = await onCreateReminder({
       borrower_id: borrowerId,
-amount_expected: amount,
+      amount_expected: amount,
       due_date: form.due_date,
       note: form.note,
+      send_sms: sendSms,
     });
 
     if (!res?.ok) {
@@ -169,6 +173,18 @@ amount_expected: amount,
             }
             className="min-h-28 w-full rounded-lg border border-gray-300 px-3 py-3 text-sm outline-none focus:border-[#1E3A8A]"
           />
+
+          {contactNumber && (
+            <label className="flex items-center gap-2 text-sm text-gray-600">
+              <input
+                type="checkbox"
+                checked={sendSms}
+                onChange={(e) => setSendSms(e.target.checked)}
+                className="h-4 w-4 rounded border-gray-300 text-[#1E3A8A] focus:ring-[#1E3A8A]"
+              />
+              Also send SMS to borrower
+            </label>
+          )}
 
           <div className="flex gap-3">
             <button
