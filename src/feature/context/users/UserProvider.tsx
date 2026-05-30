@@ -6,6 +6,7 @@ import {
   getProfile,
   updateStoreName as updateStoreNameApi,
   changePassword as changePasswordApi,
+  logoutUser,
 } from "./userApi.js";
 
 export const UserProvider = ({ children }) => {
@@ -30,8 +31,7 @@ export const UserProvider = ({ children }) => {
       return res;
     }
 
-    // store token + user
-    localStorage.setItem("user_token", res.data.token);
+    // store user info (token is in httpOnly cookie)
     localStorage.setItem("user", JSON.stringify(res.data.user));
 
     setLoading(false);
@@ -60,8 +60,8 @@ export const UserProvider = ({ children }) => {
   // -------------------------
   // LOGOUT
   // -------------------------
-  const clearUser = useCallback(() => {
-    localStorage.removeItem("user_token");
+  const clearUser = useCallback(async () => {
+    await logoutUser();
     localStorage.removeItem("user");
     setProfile(null);
   }, []);

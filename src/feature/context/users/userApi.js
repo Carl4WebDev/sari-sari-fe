@@ -28,3 +28,8 @@ export const changePassword = (current_password, new_password) =>
     method: "PATCH",
     body: JSON.stringify({ current_password, new_password }),
   });
+
+export const logoutUser = () =>
+  apiRequest("/api/users/logout", {
+    method: "POST",
+  });

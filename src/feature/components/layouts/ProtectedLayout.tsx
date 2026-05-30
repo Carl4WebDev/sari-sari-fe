@@ -1,17 +1,30 @@
+import { useEffect, useState } from "react";
 import { Navigate, Outlet } from "react-router-dom";
 import Sidebar from "../Sidebar/Sidebar";
+import { getProfile } from "../../context/users/userApi";
 
 export default function ProtectedLayout() {
-  const token = localStorage.getItem("user_token");
-  // const user = localStorage.getItem("user");
+  const [isAuthenticated, setIsAuthenticated] = useState<boolean | null>(null);
 
-// 1. Needed more checks. Like user info. I can easily create a setItem of user_token and access the dashboard
+  useEffect(() => {
+    getProfile().then((res) => {
+      setIsAuthenticated(res?.ok === true);
+    });
+  }, []);
 
-  // 🔒 Not authenticated
-  if (!token) {
+  // Still checking
+  if (isAuthenticated === null) {
+    return (
+      <div className="flex h-screen items-center justify-center">
+        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600" />
+      </div>
+    );
+  }
+
+  // Not authenticated
+  if (!isAuthenticated) {
     return <Navigate to="/" replace />;
   }
-  
 
   return (
     <div className="flex h-screen">

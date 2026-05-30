@@ -1,9 +1,9 @@
 import { Navigate, Outlet } from "react-router-dom";
 
 export default function PublicRoute() {
-  const token = localStorage.getItem("user_token");
+  const user = localStorage.getItem("user");
 
-  if (token) {
+  if (user) {
     return <Navigate to="/dashboard" replace />;
   }
 
