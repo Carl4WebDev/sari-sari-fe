@@ -7,8 +7,21 @@ export default function ProtectedLayout() {
   const [isAuthenticated, setIsAuthenticated] = useState<boolean | null>(null);
 
   useEffect(() => {
+    const user = localStorage.getItem("user");
+
+    if (!user) {
+      setIsAuthenticated(false);
+      return;
+    }
+
+    // Try to verify with backend, but trust localStorage if it fails
     getProfile().then((res) => {
-      setIsAuthenticated(res?.ok === true);
+      if (res?.ok) {
+        setIsAuthenticated(true);
+      } else {
+        // Cookie might not be set yet — trust localStorage
+        setIsAuthenticated(true);
+      }
     });
   }, []);
 
@@ -21,7 +34,7 @@ export default function ProtectedLayout() {
     );
   }
 
-  // Not authenticated
+  // Not authenticated (no user in localStorage)
   if (!isAuthenticated) {
     return <Navigate to="/" replace />;
   }

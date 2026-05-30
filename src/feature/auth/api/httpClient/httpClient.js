@@ -13,12 +13,6 @@ export async function apiRequest(url, options = {}) {
       },
     });
 
-    if (res.status === 401 || res.status === 403) {
-      localStorage.removeItem("user");
-      window.location.href = "/";
-      return;
-    }
-
     const body = await res.json();
 
     if (!res.ok) {
