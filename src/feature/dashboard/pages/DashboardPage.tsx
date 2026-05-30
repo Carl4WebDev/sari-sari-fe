@@ -18,12 +18,14 @@ import ReminderNotificationModal from "../modals/ReminderNotificationModal";
 
 import { useDashboard } from "../../context/dashboard/useDashboard";
 import { useCollectionReminder } from "../../context/collection-reminders/useCollectionReminder";
+import { remindAgainApi } from "../../context/collection-reminders/collectionReminderApi";
 import GlobalModal from "../../../shared/components/GlobalModal";
 import { useTranslation } from "../../../shared/i18n/useTranslation";
 import OnboardingWizard from "../../../shared/components/OnboardingWizard";
 import TutorialGuide from "../../../shared/components/TutorialGuide";
 import { useTutorial } from "../../../shared/hooks/useTutorial";
 import { generateDashboardPDF } from "../../../shared/utils/exportToPDF";
+import { requestPushPermission } from "../../../shared/utils/pushSubscribe";
 
 
 export default function DashboardPage() {
@@ -53,6 +55,7 @@ const {
     const [isReminderModalOpen, setIsReminderModalOpen] = useState(false);
 
 const [globalModal, setGlobalModal] = useState({ isOpen: false, title: "", message: "", type: "info" });
+const [overdueDismissed, setOverdueDismissed] = useState(false);
 
 const tutorial = useTutorial(dashboard?.total_borrowers || 0);
 
@@ -61,6 +64,7 @@ useEffect(() => {
   clearReminderError();
   fetchDashboard();
   fetchDashboardReminders();
+  requestPushPermission();
 }, []);
 
 useEffect(() => {
@@ -142,6 +146,11 @@ useEffect(() => {
     await updateReminderStatus(reminderId, "DONE");
     await fetchDashboardReminders();
   }}
+  onRemindAgain={async (reminderId) => {
+    await remindAgainApi(reminderId);
+    await fetchDashboardReminders();
+    setOverdueDismissed(false);
+  }}
 />
 
       {/* Tutorial Guide — floating card for new users */}
@@ -208,6 +217,34 @@ useEffect(() => {
   </button>
   </div>
 </div>
+
+      {/* Overdue Summary Banner */}
+      {!overdueDismissed && (dashboardReminders?.overdue?.length || 0) > 0 && (
+        <div className="rounded-xl bg-red-50 border border-red-200 p-4 flex items-center justify-between">
+          <div>
+            <p className="text-sm font-semibold text-red-800">
+              {dashboardReminders.overdue.length} overdue collection{dashboardReminders.overdue.length > 1 ? "s" : ""}
+            </p>
+            <p className="text-xs text-red-600 mt-0.5">
+              Total: ₱{dashboardReminders.overdue.reduce((sum: number, r: any) => sum + Number(r.amount_expected || 0), 0).toLocaleString()}
+            </p>
+          </div>
+          <div className="flex gap-2">
+            <button
+              onClick={() => setIsReminderModalOpen(true)}
+              className="rounded-lg bg-red-500 px-3 py-1.5 text-xs font-semibold text-white"
+            >
+              View
+            </button>
+            <button
+              onClick={() => setOverdueDismissed(true)}
+              className="rounded-lg border border-red-300 px-3 py-1.5 text-xs text-red-600"
+            >
+              Dismiss
+            </button>
+          </div>
+        </div>
+      )}
 
       {/* Actions */}
       <div className="space-y-4">

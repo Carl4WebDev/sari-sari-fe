@@ -228,6 +228,12 @@ export const translations = {
     "loan.save_loan": "Save Loan",
     "loan.required": "Required",
     "loan.select_borrower_error": "Please select a borrower.",
+    "loan.set_reminder": "Set a collection reminder?",
+    "loan.reminder_prompt": "When do you want to collect from {name}?",
+    "loan.reminder_date": "Collection date",
+    "loan.reminder_set": "Set Reminder",
+    "loan.skip_reminder": "Skip",
+    "loan.reminder_created": "Reminder set!",
 
     // Payment
     "payment.title": "Add Payment",
@@ -300,6 +306,15 @@ export const translations = {
     "reminder.no_upcoming": "No upcoming reminders.",
     "reminder.due": "Due:",
     "reminder.mark_done": "Mark Done",
+    "reminder.remind_again": "Remind Again",
+    "reminder.remind_again_set": "Reminder set for 3 days from now",
+    "reminder.overdue_summary": "You have {count} overdue collection{s} worth ₱{amount}",
+    "reminder.overdue_dismiss": "Dismiss",
+    "reminder.set_collection_date": "Set a collection date?",
+    "reminder.remind_label": "Remind me in 7 days",
+    "reminder.collection_date": "Collection date",
+    "reminder.skip_reminder": "No thanks",
+    "reminder.reminder_created": "Collection reminder set!",
   },
 
   fil: {
@@ -519,6 +534,12 @@ export const translations = {
     "loan.save_loan": "I-save ang Utang",
     "loan.required": "Kinakailangan",
     "loan.select_borrower_error": "Pumili ng mangungutang.",
+    "loan.set_reminder": "Magtakda ng paalala sa koleksyon?",
+    "loan.reminder_prompt": "Kailan mo gustong maningil kay {name}?",
+    "loan.reminder_date": "Petsa ng koleksyon",
+    "loan.reminder_set": "Itakda ang Paalala",
+    "loan.skip_reminder": "Laktawan",
+    "loan.reminder_created": "Paalala nakatakda!",
 
     // Payment
     "payment.title": "Magbayad",
@@ -591,6 +612,15 @@ export const translations = {
     "reminder.no_upcoming": "Walang darating na paalala.",
     "reminder.due": "Nakatakda:",
     "reminder.mark_done": "Tapusin",
+    "reminder.remind_again": "Paalalahanan Muli",
+    "reminder.remind_again_set": "Naitakda ang paalala sa loob ng 3 araw",
+    "reminder.overdue_summary": "May {count} overdue na koleksyon na nagkakahalaga ng ₱{amount}",
+    "reminder.overdue_dismiss": "Isara",
+    "reminder.set_collection_date": "Magtakda ng araw ng koleksyon?",
+    "reminder.remind_label": "Paalalahanan ako sa loob ng 7 araw",
+    "reminder.collection_date": "Araw ng koleksyon",
+    "reminder.skip_reminder": "Salamat na lang",
+    "reminder.reminder_created": "Naitakda na ang paalala sa koleksyon!",
   },
 } as const;
 

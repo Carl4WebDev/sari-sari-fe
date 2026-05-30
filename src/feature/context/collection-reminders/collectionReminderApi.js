@@ -26,3 +26,8 @@ export const deleteReminderApi = (reminderId) =>
   apiRequest(`/api/collection-reminders/${reminderId}`, {
     method: "DELETE",
   });
+
+export const remindAgainApi = (reminderId) =>
+  apiRequest(`/api/collection-reminders/${reminderId}/remind-again`, {
+    method: "POST",
+  });

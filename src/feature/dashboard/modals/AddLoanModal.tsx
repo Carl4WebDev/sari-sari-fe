@@ -2,6 +2,7 @@ import { useEffect, useState } from "react";
 import { useBorrower } from "../../context/borrowers/useBorrower";
 import { useLoan } from "../../context/loans/useLoan";
 import { useProduct } from "../../context/products/useProduct";
+import { createReminderApi } from "../../context/collection-reminders/collectionReminderApi";
 import ProductModal from "../../products/modals/ProductModal";
 import GlobalModal from "../../../shared/components/GlobalModal";
 
@@ -58,6 +59,14 @@ const [globalModal, setGlobalModal] = useState({
   type: "info",
 });
 
+const [showReminderPrompt, setShowReminderPrompt] = useState(false);
+const [reminderLoanTotal, setReminderLoanTotal] = useState(0);
+const [reminderDate, setReminderDate] = useState(() => {
+  const d = new Date();
+  d.setDate(d.getDate() + 7);
+  return d.toISOString().split("T")[0];
+});
+
 useEffect(() => {
   if (loanError) {
     setGlobalModal({ isOpen: true, title: "Error", message: loanError, type: "error" });
@@ -74,6 +83,7 @@ const resetLoanForm = () => {
   setSearch("");
   setSelectedBorrower(null);
   setItems([{ product: "", product_id: null, quantity: "1", price: "" }]);
+  setShowReminderPrompt(false);
 
   localStorage.removeItem("active_borrower_id");
 };
@@ -238,9 +248,30 @@ if (!res?.ok) {
 
   await onLoanCreated?.();
 
-  resetLoanForm();
-  isClose();
+  // Show reminder prompt instead of closing
+  const total = items.reduce((sum, i) => sum + (Number(i.quantity) || 0) * (Number(i.price) || 0), 0);
+  setReminderLoanTotal(total);
+  const defaultDate = new Date();
+  defaultDate.setDate(defaultDate.getDate() + 7);
+  setReminderDate(defaultDate.toISOString().split("T")[0]);
+  setShowReminderPrompt(true);
   }
+
+  const handleSetReminder = async () => {
+    if (!selectedBorrower) return;
+    await createReminderApi({
+      borrower_id: selectedBorrower.borrower_id,
+      amount_expected: reminderLoanTotal,
+      due_date: reminderDate,
+    });
+    resetLoanForm();
+    isClose();
+  };
+
+  const handleSkipReminder = () => {
+    resetLoanForm();
+    isClose();
+  };
   
 
   return (
@@ -257,6 +288,54 @@ if (!res?.ok) {
     ${animate ? "translate-y-0" : "-translate-y-full"}
   `}
 >
+        {showReminderPrompt ? (
+          /* Reminder Prompt */
+          <>
+            <div className="shrink-0 p-6 pb-4">
+              <h2 className="text-lg font-semibold text-[#1E3A8A]">
+                Collection Reminder
+              </h2>
+            </div>
+            <div className="flex-1 overflow-y-auto px-6 pb-4 space-y-4">
+              <div className="rounded-xl bg-green-50 border border-green-200 p-4 text-center">
+                <p className="text-sm text-green-700 font-medium">Loan saved!</p>
+                <p className="text-lg font-bold text-green-800 mt-1">
+                  ₱{reminderLoanTotal.toLocaleString()}
+                </p>
+              </div>
+              <p className="text-sm text-gray-600 text-center">
+                When do you want to collect from <span className="font-semibold">{selectedBorrower?.first_name}</span>?
+              </p>
+              <div>
+                <label className="text-sm text-gray-500 mb-1 block">Collection date</label>
+                <input
+                  type="date"
+                  value={reminderDate}
+                  onChange={(e) => setReminderDate(e.target.value)}
+                  className="w-full rounded-lg border border-gray-300 px-3 py-3 text-sm focus:border-[#1E3A8A] focus:ring-1 focus:ring-[#1E3A8A] outline-none"
+                />
+              </div>
+            </div>
+            <div className="shrink-0 border-t border-gray-100 p-6 pt-4 space-y-3">
+              <div className="flex gap-3">
+                <button
+                  onClick={handleSkipReminder}
+                  className="w-1/2 rounded-xl border border-gray-300 py-3 text-sm"
+                >
+                  Skip
+                </button>
+                <button
+                  onClick={handleSetReminder}
+                  className="w-1/2 rounded-xl bg-[#16A34A] py-3 text-sm text-white"
+                >
+                  Set Reminder
+                </button>
+              </div>
+            </div>
+          </>
+        ) : (
+          /* Loan Form */
+          <>
         {/* Sticky Header */}
         <div className="shrink-0 p-6 pb-4">
           <h2 className="text-lg font-semibold text-[#1E3A8A]">
@@ -451,6 +530,8 @@ if (!res?.ok) {
             </button>
           </div>
         </div>
+          </>
+        )}
       </div>
 <ProductModal
   isOpen={isProductModalOpen}

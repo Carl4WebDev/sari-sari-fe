@@ -11,6 +11,7 @@ interface Props {
     upcoming?: any[];
   };
   onMarkDone: (reminderId: number) => Promise<void>;
+  onRemindAgain?: (reminderId: number) => Promise<void>;
 }
 
 export default function ReminderNotificationModal({
@@ -18,6 +19,7 @@ export default function ReminderNotificationModal({
   isClose,
   reminders,
   onMarkDone,
+  onRemindAgain,
 }: Props) {
   const { t } = useTranslation();
   const [animate, setAnimate] = useState(false);
@@ -84,6 +86,7 @@ export default function ReminderNotificationModal({
   emptyText="No overdue reminders."
   badgeClass="bg-red-500 text-white"
   onMarkDone={onMarkDone}
+  onRemindAgain={onRemindAgain}
 />
 
 <ReminderSection
@@ -105,12 +108,14 @@ function ReminderSection({
   emptyText,
   badgeClass,
   onMarkDone,
+  onRemindAgain,
 }: {
   title: string;
   items: any[];
   emptyText: string;
   badgeClass: string;
   onMarkDone: (reminderId: number) => Promise<void>;
+  onRemindAgain?: (reminderId: number) => Promise<void>;
 }) {
 
   const navigate = useNavigate();
@@ -170,18 +175,29 @@ function ReminderSection({
                     ).toLocaleString()}
                   </p>
 
-<button
-  onClick={async () => {
-    await onMarkDone(item.reminder_id);
-
-    navigate(`/borrowers/${item.borrower_id}`, {
-      state: { openPayment: true },
-    });
-  }}
-  className="mt-3 rounded-lg bg-[#16A34A] px-3 py-2 text-xs font-semibold text-white"
->
-  Mark Done
-</button>
+<div className="mt-3 flex gap-2">
+  <button
+    onClick={async () => {
+      await onMarkDone(item.reminder_id);
+      navigate(`/borrowers/${item.borrower_id}`, {
+        state: { openPayment: true },
+      });
+    }}
+    className="rounded-lg bg-[#16A34A] px-3 py-2 text-xs font-semibold text-white"
+  >
+    Mark Done
+  </button>
+  {onRemindAgain && (
+    <button
+      onClick={async () => {
+        await onRemindAgain(item.reminder_id);
+      }}
+      className="rounded-lg bg-orange-500 px-3 py-2 text-xs font-semibold text-white"
+    >
+      Remind Again
+    </button>
+  )}
+</div>
                 </div>
               </div>
             </div>

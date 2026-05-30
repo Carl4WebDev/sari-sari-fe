@@ -1,0 +1,16 @@
+{
+  "name": "LISTAHUB",
+  "short_name": "LISTAHUB",
+  "description": "Sari-Sari Store Loan Tracker",
+  "start_url": "/dashboard",
+  "display": "standalone",
+  "background_color": "#ffffff",
+  "theme_color": "#1E3A8A",
+  "icons": [
+    {
+      "src": "/listahub_logo.png",
+      "sizes": "any",
+      "type": "image/png"
+    }
+  ]
+}
