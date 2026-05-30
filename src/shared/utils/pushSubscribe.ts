@@ -48,8 +48,9 @@ async function subscribeToPush() {
   }
 
   // Get VAPID key from backend
+  const token = localStorage.getItem("user_token");
   const keyRes = await fetch(`${API_BASE}/api/push/vapid-key`, {
-    credentials: "include",
+    headers: token ? { Authorization: `Bearer ${token}` } : {},
   });
   const keyData = await keyRes.json();
   const vapidKey = keyData?.data?.vapidPublicKey;
@@ -69,10 +70,13 @@ async function subscribeToPush() {
 
 async function saveSubscription(subscription: PushSubscription) {
   const json = subscription.toJSON();
+  const token = localStorage.getItem("user_token");
   await fetch(`${API_BASE}/api/push/subscribe`, {
     method: "POST",
-    credentials: "include",
-    headers: { "Content-Type": "application/json" },
+    headers: {
+      "Content-Type": "application/json",
+      ...(token ? { Authorization: `Bearer ${token}` } : {}),
+    },
     body: JSON.stringify({
       endpoint: json.endpoint,
       keys: json.keys,

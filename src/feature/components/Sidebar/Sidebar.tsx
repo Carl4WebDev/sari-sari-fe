@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { useMediaQuery } from "../../../shared/hooks/useMediaQuery";
-import { Link, useLocation } from "react-router-dom";
+import { Link, useLocation, useNavigate } from "react-router-dom";
 import { useTranslation } from "../../../shared/i18n/useTranslation";
 
 import {useUser} from "../../context/users/useUser.js"
@@ -9,6 +9,7 @@ export default function Sidebar() {
 
   const { clearUser } = useUser();
   const location = useLocation();
+  const navigate = useNavigate();
   const user = JSON.parse(localStorage.getItem("user") || "{}");
   const { t, language, setLanguage } = useTranslation();
 
@@ -19,8 +20,9 @@ export default function Sidebar() {
     setIsOpen(false)
   };
   const handleLogout = () => {
-        clearUser();
-    setIsOpen(false)
+    clearUser();
+    setIsOpen(false);
+    navigate("/");
   };
 
   return (
