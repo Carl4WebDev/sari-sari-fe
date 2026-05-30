@@ -62,7 +62,11 @@ export const UserProvider = ({ children }) => {
   // LOGOUT
   // -------------------------
   const clearUser = useCallback(async () => {
-    await logoutUser();
+    try {
+      await logoutUser();
+    } catch {
+      // Ignore API errors — clear local state regardless
+    }
     localStorage.removeItem("user_token");
     localStorage.removeItem("user");
     setProfile(null);
