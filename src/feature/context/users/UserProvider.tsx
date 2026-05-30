@@ -31,7 +31,8 @@ export const UserProvider = ({ children }) => {
       return res;
     }
 
-    // store user info (token is in httpOnly cookie)
+    // store token + user info
+    localStorage.setItem("user_token", res.data.token);
     localStorage.setItem("user", JSON.stringify(res.data.user));
 
     setLoading(false);
@@ -62,6 +63,7 @@ export const UserProvider = ({ children }) => {
   // -------------------------
   const clearUser = useCallback(async () => {
     await logoutUser();
+    localStorage.removeItem("user_token");
     localStorage.removeItem("user");
     setProfile(null);
   }, []);

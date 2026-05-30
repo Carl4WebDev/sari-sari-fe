@@ -1,11 +1,13 @@
 const API_BASE = import.meta.env.VITE_API_BASE;
 
 export const apiFormRequest = async (url, options = {}) => {
+  const token = localStorage.getItem("user_token");
+
   const response = await fetch(API_BASE + url, {
     method: options.method || "POST",
     body: options.body, // FormData ONLY
-    credentials: "include",
     headers: {
+      Authorization: `Bearer ${token}`,
       // ❌ DO NOT SET Content-Type (browser sets boundary for FormData)
     },
   });
