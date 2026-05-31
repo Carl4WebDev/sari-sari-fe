@@ -17,6 +17,7 @@ import { usePayment } from "../../context/payments/usePayment";
 import GlobalModal from "../../../shared/components/GlobalModal";
 import SuccessToast from "../../../shared/components/SuccessToast";
 import { useTranslation } from "../../../shared/i18n/useTranslation";
+import { useOnlineStatus } from "../../../shared/hooks/useOnlineStatus";
 
 interface LoanItem {
   product: string;
@@ -50,6 +51,7 @@ export default function BorrowerDetailsPage() {
   const { id } = useParams();
   const navigate = useNavigate();
   const location = useLocation();
+  const isOnline = useOnlineStatus();
   const [isEditBorrowerOpen, setIsEditBorrowerOpen] = useState(false);
 
   const [globalModal, setGlobalModal] = useState({
@@ -426,6 +428,13 @@ const handleDeleteNote = (noteId: number) => {
   </div>
 )}
 
+{!isOnline && !isPending && (
+  <div className="rounded-lg bg-blue-50 border border-blue-200 px-3 py-2 text-xs text-blue-700 flex items-center gap-2">
+    <span>📡</span>
+    <span>Offline — viewing cached data. Add Loan and Add Payment still available.</span>
+  </div>
+)}
+
 <EditBorrowerModal
   isOpen={isEditBorrowerOpen}
   isClose={() => setIsEditBorrowerOpen(false)}
@@ -549,7 +558,8 @@ const handleDeleteNote = (noteId: number) => {
             </div>
           )}
 
-{/* Public Link */}
+{/* Public Link — hidden offline */}
+{isOnline && (
 <div className="border rounded-xl p-4 bg-gray-50 space-y-3">
   <p className="text-sm font-semibold text-[#1E3A8A]">
     {t("details.public_access")}
@@ -604,13 +614,16 @@ const handleDeleteNote = (noteId: number) => {
     📩 {t("details.copy_status_link")}
   </button>
 </div>
+)}
 
+          {isOnline && (
           <button
   onClick={() => setIsReminderModalOpen(true)}
   className="w-full rounded-xl bg-orange-500 py-3 text-white font-semibold"
 >
   + {t("details.add_reminder")}
 </button>
+          )}
 
         </div>
 
@@ -671,12 +684,14 @@ const handleDeleteNote = (noteId: number) => {
   </span>
 </div>
 
+          {isOnline && (
           <button
             onClick={() => setIsEditBorrowerOpen(true)}
             className="mt-4 w-full rounded-xl border border-[#1E3A8A] py-2.5 text-sm font-medium text-[#1E3A8A] transition hover:bg-blue-50"
           >
             {t("details.edit_profile")}
           </button>
+          )}
         </div>
       </div>
 
@@ -739,7 +754,7 @@ const handleDeleteNote = (noteId: number) => {
                   </span>
                 )}
               </div>
-              {!txn.voided && (
+              {!txn.voided && isOnline && (
                 <button
                   onClick={() => {
                     setVoidReasonInput("");
@@ -936,6 +951,7 @@ const handleDeleteNote = (noteId: number) => {
           <p>{note.note_text}</p>
         )}
 
+        {isOnline && (
         <div className="flex gap-2">
           {editingNoteId === note.borrower_note_id ? (
             <>
@@ -977,10 +993,12 @@ const handleDeleteNote = (noteId: number) => {
             </>
           )}
         </div>
+        )}
       </div>
     ))}
   </div>
 
+  {isOnline && (
   <div className="flex flex-wrap justify-center gap-2">
     <input
       value={noteInput}
@@ -996,6 +1014,7 @@ const handleDeleteNote = (noteId: number) => {
       {t("details.send")}
     </button>
   </div>
+  )}
   {/* Desktop Actions */}
 <div className="hidden lg:flex gap-2 justify-center">
   <button
@@ -1012,6 +1031,7 @@ const handleDeleteNote = (noteId: number) => {
     + {t("details.add_payment")}
   </button>
 
+  {isOnline && (
   <button
     disabled={balance > 0 || !borrower.is_active}
     onClick={async () => {
@@ -1030,6 +1050,7 @@ const handleDeleteNote = (noteId: number) => {
   >
     {t("details.archive_borrower")}
   </button>
+  )}
 </div>
 
 {/* Mobile Bottom Footer Actions */}
@@ -1063,7 +1084,8 @@ const handleDeleteNote = (noteId: number) => {
       </span>
     </button>
 
-    {/* Archive */}
+    {/* Archive — hidden offline */}
+    {isOnline && (
     <button
       disabled={balance > 0 || !borrower.is_active}
       onClick={() => {
@@ -1086,6 +1108,7 @@ const handleDeleteNote = (noteId: number) => {
         Archive
       </span>
     </button>
+    )}
   </div>
 
 </div>

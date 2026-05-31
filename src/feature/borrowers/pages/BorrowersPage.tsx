@@ -10,11 +10,13 @@ import GlobalModal from "../../../shared/components/GlobalModal";
 import AddBorrowerModal from "../../dashboard/modals/AddBorrowerModal";
 import { useTranslation } from "../../../shared/i18n/useTranslation";
 import { generateBorrowersPDF } from "../../../shared/utils/exportToPDF";
+import { useOnlineStatus } from "../../../shared/hooks/useOnlineStatus";
 
 export default function BorrowersPage() {
   const { t } = useTranslation();
   const [search, setSearch] = useState("");
   const navigate = useNavigate();
+  const isOnline = useOnlineStatus();
 const [isAddBorrowerOpen, setIsAddBorrowerOpen] = useState(false);
 
 const {
@@ -154,6 +156,14 @@ const handleBorrowerCreated = async (borrower: any) => {
   return (
     
     <div className="min-h-screen pb-24 space-y-5">
+
+{!isOnline && (
+  <div className="rounded-lg bg-blue-50 border border-blue-200 px-3 py-2 text-xs text-blue-700 flex items-center gap-2">
+    <span>📡</span>
+    <span>{t("offline_reminder.read_only") || "Offline — viewing cached data. Add Loan and Add Payment still available."}</span>
+  </div>
+)}
+
 <ArchivedBorrowersModal
   isOpen={isArchivedOpen}
   isClose={() => setIsArchivedOpen(false)}
@@ -341,7 +351,8 @@ const handleBorrowerCreated = async (borrower: any) => {
 <div className="fixed bottom-0 left-0 z-30 w-full border-t border-gray-200 bg-white/95 backdrop-blur">
   <div className="mx-auto grid max-w-2xl grid-cols-4 gap-2 p-3">
 
-    {/* Add Borrower */}
+    {/* Add Borrower — hidden offline */}
+    {isOnline && (
     <button
       onClick={() => setIsAddBorrowerOpen(true)}
       className="flex flex-col items-center justify-center rounded-xl bg-green-600 py-2 text-white shadow-sm transition hover:bg-green-700"
@@ -352,6 +363,7 @@ const handleBorrowerCreated = async (borrower: any) => {
         {t("borrowers.add_borrower")}
       </span>
     </button>
+    )}
 
     {/* Export CSV */}
     <button

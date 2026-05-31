@@ -56,6 +56,16 @@ export default function AddBorrowerModal({
   };
 
 const handleSubmit = async () => {
+  if (!navigator.onLine) {
+    setGlobalModal({
+      isOpen: true,
+      title: t("connection.offline") || "You are offline",
+      message: "Please connect to the internet to add a new borrower.",
+      type: "warning",
+    });
+    return;
+  }
+
   if (!form.fName || !form.lName) {
     setGlobalModal({
       isOpen: true,

@@ -3,6 +3,7 @@ import { useEffect } from "react";
 import AppRoutes from "./routes";
 import { initSyncManager, destroySyncManager } from "../shared/utils/syncManager";
 import ErrorBoundary from "../shared/components/ErrorBoundary";
+import OfflineReminderModal from "../shared/components/OfflineReminderModal";
 
 export default function App() {
   useEffect(() => {
@@ -30,6 +31,7 @@ export default function App() {
   return (
     <BrowserRouter>
       <ErrorBoundary>
+        <OfflineReminderModal />
         <AppRoutes />
       </ErrorBoundary>
     </BrowserRouter>

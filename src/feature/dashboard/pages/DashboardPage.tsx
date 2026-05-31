@@ -28,12 +28,14 @@ import { useTutorial } from "../../../shared/hooks/useTutorial";
 import { generateDashboardPDF } from "../../../shared/utils/exportToPDF";
 import { requestPushPermission } from "../../../shared/utils/pushSubscribe";
 import CollectionStats from "../components/CollectionStats";
+import { useOnlineStatus } from "../../../shared/hooks/useOnlineStatus";
 import CollectionCalendar from "../components/CollectionCalendar";
 import CalendarDayPanel from "../components/CalendarDayPanel";
 
 
 export default function DashboardPage() {
   const { t } = useTranslation();
+  const isOnline = useOnlineStatus();
   const {
     dashboard,
     loading,
@@ -300,12 +302,14 @@ useEffect(() => {
 
       {/* Actions */}
       <div className="space-y-4">
+        {isOnline && (
         <button
           onClick={() => setIsBorrowerOpen(true)}
           className="w-full rounded-xl bg-[#1E3A8A] py-3 text-sm font-semibold text-white"
         >
           + {t("dashboard.add_borrower")}
         </button>
+        )}
 
         <button
           onClick={() => setIsLoanOpen(true)}

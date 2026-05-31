@@ -377,6 +377,13 @@ export const translations = {
     "connection.server_unreachable": "Server unreachable",
     "connection.will_retry": "will retry when available",
     "connection.queued_success": "Saved locally — will sync when online",
+
+    "offline_reminder.title": "You're Offline",
+    "offline_reminder.message": "You can still view your data and add loans or payments. Changes will sync automatically when you're back online.",
+    "offline_reminder.tip": "Go online to sync your data and access all features.",
+    "offline_reminder.got_it": "Got it",
+    "offline_reminder.understood": "Understood",
+    "offline_reminder.read_only": "Offline — viewing cached data. Add Loan and Add Payment still available.",
   },
 
   fil: {
@@ -745,6 +752,13 @@ export const translations = {
     "connection.server_unreachable": "Hindi maabot ang server",
     "connection.will_retry": "subukan ulit mamaya",
     "connection.queued_success": "Naka-save locally — ma-si-sync pag may internet",
+
+    "offline_reminder.title": "Wala Kang Internet",
+    "offline_reminder.message": "Pwede mo pa rin tingnan ang data at magdagdag ng loan o payment. Automatic na ma-si-sync pag bumalik ang internet.",
+    "offline_reminder.tip": "Mag-online para i-sync ang data at ma-access lahat ng features.",
+    "offline_reminder.got_it": "Sige",
+    "offline_reminder.understood": "Naintindihan ko",
+    "offline_reminder.read_only": "Offline — nakikita lang ang cached data. Pwede pa rin mag-add ng Loan at Payment.",
   },
 } as const;
 

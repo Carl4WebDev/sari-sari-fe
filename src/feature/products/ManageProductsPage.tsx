@@ -4,6 +4,7 @@ import ProductModal from "./modals/ProductModal";
 import ArchivedProductsModal from "./modals/ArchivedProductsModal";
 import { useTranslation } from "../../shared/i18n/useTranslation";
 import { generateProductsPDF } from "../../shared/utils/exportToPDF";
+import { useOnlineStatus } from "../../shared/hooks/useOnlineStatus";
 
 interface Product {
   product_id: number;
@@ -14,6 +15,7 @@ interface Product {
 
 export default function ManageProductsPage() {
 const { t } = useTranslation();
+const isOnline = useOnlineStatus();
 const {
   products,
   archivedProducts,
@@ -74,6 +76,14 @@ const confirmArchive = async () => {
 
   return (
     <div className="space-y-5 pb-24">
+
+{!isOnline && (
+  <div className="rounded-lg bg-blue-50 border border-blue-200 px-3 py-2 text-xs text-blue-700 flex items-center gap-2">
+    <span>📡</span>
+    <span>Offline — viewing cached products. Editing is available when online.</span>
+  </div>
+)}
+
       <ProductModal
         isOpen={isModalOpen}
         isClose={() => setIsModalOpen(false)}
@@ -172,6 +182,7 @@ const confirmArchive = async () => {
         ₱{Number(product.product_price || 0).toLocaleString()}
       </p>
 
+      {isOnline && (
       <div className="mt-2 flex justify-end gap-1">
         <button
 onClick={(e) => {
@@ -193,6 +204,7 @@ onClick={(e) => {
           {t("products.archive")}
         </button>
       </div>
+      )}
     </div>
   </div>
 </article>
@@ -223,7 +235,8 @@ onClick={(e) => {
 <div className="fixed bottom-0 left-0 z-30 w-full border-t border-gray-200 bg-white/95 backdrop-blur">
   <div className="mx-auto grid max-w-2xl grid-cols-3 gap-2 p-3">
 
-    {/* Add Product */}
+    {/* Add Product — hidden offline */}
+    {isOnline && (
     <button
       onClick={handleOpenAdd}
       className="flex flex-col items-center justify-center rounded-xl bg-green-600 py-2 text-white shadow-sm transition hover:bg-green-700"
@@ -234,6 +247,7 @@ onClick={(e) => {
         {t("products.add_product")}
       </span>
     </button>
+    )}
 
     {/* Archived */}
     <button
