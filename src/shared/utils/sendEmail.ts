@@ -1,6 +1,6 @@
-const EMAILJS_SERVICE_ID = "service_d4wyl2e";
-const EMAILJS_TEMPLATE_ID = "template_ra5y0ek";
-const EMAILJS_PUBLIC_KEY = "ZHn8_FBOZfQ8daVBK";
+const EMAILJS_SERVICE_ID = "service_me45l5m";
+const EMAILJS_TEMPLATE_ID = "template_ojaapbp";
+const EMAILJS_PUBLIC_KEY = "E-G0JX7fxtuXAQGRs";
 
 export async function sendCollectionReminderEmail({
   borrowerEmail,
