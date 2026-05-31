@@ -29,13 +29,48 @@ async function sendRequest(url, method, body) {
   return { ok: true, data: data.data ?? data };
 }
 
+/**
+ * Ping the server health endpoint until it responds.
+ * Render free tier spins down after 15min — first request takes 30-60s.
+ * @returns {Promise<boolean>} true if server is awake, false if max retries exceeded
+ */
+async function wakeUpServer() {
+  const MAX_WAKE_RETRIES = 12; // 12 * 5s = 60s max wait
+  const WAKE_INTERVAL = 5000;
+
+  window.dispatchEvent(new CustomEvent("sw-server-waking"));
+
+  for (let attempt = 0; attempt < MAX_WAKE_RETRIES; attempt++) {
+    try {
+      const res = await fetch(`${API_BASE}/health`, {
+        method: "GET",
+        signal: AbortSignal.timeout(8000),
+      });
+      if (res.ok) return true;
+    } catch {
+      // Server not ready yet
+    }
+    await new Promise((r) => setTimeout(r, WAKE_INTERVAL));
+  }
+
+  return false;
+}
+
 async function syncQueue() {
   if (_isSyncing) return;
   if (getQueueSize() === 0) return;
 
   _isSyncing = true;
-  const count = getQueueSize();
 
+  // Wake up the server first (handles Render cold start)
+  const isAwake = await wakeUpServer();
+  if (!isAwake) {
+    _isSyncing = false;
+    if (_onSyncError) _onSyncError({ synced: 0, failed: getQueueSize(), reason: "server_unreachable" });
+    return;
+  }
+
+  const count = getQueueSize();
   if (_onSyncStart) _onSyncStart(count);
 
   try {
@@ -50,6 +85,9 @@ async function syncQueue() {
     } else {
       if (_onSyncComplete) _onSyncComplete({ synced: results.length });
     }
+
+    // Notify UI to refetch fresh data
+    window.dispatchEvent(new CustomEvent("sw-sync-refresh"));
   } catch {
     if (_onSyncError) _onSyncError({ synced: 0, failed: getQueueSize() });
   } finally {
@@ -58,8 +96,8 @@ async function syncQueue() {
 }
 
 function handleOnline() {
-  // Give connection time to stabilize and Render server time to wake up
-  setTimeout(syncQueue, 5000);
+  // Give connection a moment to stabilize
+  setTimeout(syncQueue, 2000);
 }
 
 export function initSyncManager(callbacks = {}) {
@@ -69,9 +107,9 @@ export function initSyncManager(callbacks = {}) {
 
   window.addEventListener("online", handleOnline);
 
-  // If already online and queue has items, sync now (wait for Render to wake up)
+  // If already online and queue has items, sync now
   if (navigator.onLine && getQueueSize() > 0) {
-    setTimeout(syncQueue, 5000);
+    setTimeout(syncQueue, 2000);
   }
 }
 

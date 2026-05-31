@@ -1,7 +1,11 @@
-const CACHE_NAME = "listahub-v1";
+const CACHE_NAME = "listahub-v2";
+const SHELL_ASSETS = ["/", "/index.html", "/listahub_logo.png"];
 
-// Install: skip waiting to activate immediately
-self.addEventListener("install", () => {
+// Install: precache app shell
+self.addEventListener("install", (event) => {
+  event.waitUntil(
+    caches.open(CACHE_NAME).then((cache) => cache.addAll(SHELL_ASSETS))
+  );
   self.skipWaiting();
 });
 
@@ -71,7 +75,9 @@ self.addEventListener("push", (event) => {
 self.addEventListener("notificationclick", (event) => {
   event.notification.close();
 
-  const url = event.notification.data?.url || "/dashboard";
+  const rawUrl = event.notification.data?.url || "/dashboard";
+  // Validate: only allow relative paths, reject protocol-relative URLs (//evil.com)
+  const url = (rawUrl.startsWith("/") && !rawUrl.startsWith("//")) ? rawUrl : "/dashboard";
 
   event.waitUntil(
     clients.matchAll({ type: "window", includeUncontrolled: true }).then((windowClients) => {

@@ -111,6 +111,21 @@ if (!res?.ok) {
   return;
 }
 
+  // Queued for offline sync — show toast and close
+  if (res.queued) {
+    setGlobalModal({
+      isOpen: true,
+      title: t("connection.queued_success"),
+      message: "",
+      type: "success",
+    });
+    setForm({ amount: "", note: "", paymentType: "" });
+    setLoading(false);
+    onPaymentCreated?.(Number(form.amount));
+    isClose();
+    return;
+  }
+
   await fetchBorrowerTransactions(borrower.id);
 
   if (form.note.trim()) {

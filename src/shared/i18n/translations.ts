@@ -373,6 +373,10 @@ export const translations = {
     "connection.items": "item(s)",
     "connection.items_will_sync": "item(s) will sync shortly",
     "connection.remaining": "remaining",
+    "connection.waking": "Server is waking up",
+    "connection.server_unreachable": "Server unreachable",
+    "connection.will_retry": "will retry when available",
+    "connection.queued_success": "Saved locally — will sync when online",
   },
 
   fil: {
@@ -737,6 +741,10 @@ export const translations = {
     "connection.items": "item(s)",
     "connection.items_will_sync": "item(s) ay ma-si-sync mamaya",
     "connection.remaining": "natitira",
+    "connection.waking": "Nagigising ang server",
+    "connection.server_unreachable": "Hindi maabot ang server",
+    "connection.will_retry": "subukan ulit mamaya",
+    "connection.queued_success": "Naka-save locally — ma-si-sync pag may internet",
   },
 } as const;
 

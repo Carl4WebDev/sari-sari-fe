@@ -9,6 +9,7 @@ import {
   logoutUser,
 } from "./userApi.js";
 import { clearAllCache } from "../../../shared/utils/offlineCache";
+import { clearQueue } from "../../../shared/utils/offlineQueue";
 
 export const UserProvider = ({ children }) => {
   const [loading, setLoading] = useState(false);
@@ -36,8 +37,9 @@ export const UserProvider = ({ children }) => {
     localStorage.setItem("user_token", res.data.token);
     localStorage.setItem("user", JSON.stringify(res.data.user));
 
-    // Clear stale cache from previous account
+    // Clear stale cache and queue from previous account
     clearAllCache();
+    clearQueue();
 
     setLoading(false);
     return res;
@@ -69,6 +71,7 @@ export const UserProvider = ({ children }) => {
     localStorage.removeItem("user_token");
     localStorage.removeItem("user");
     clearAllCache();
+    clearQueue();
     setProfile(null);
     // Best-effort server-side logout (don't await)
     logoutUser().catch(() => {});

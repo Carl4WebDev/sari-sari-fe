@@ -6,21 +6,25 @@ export default function ConnectionStatus() {
   const { t } = useTranslation();
   const [isOnline, setIsOnline] = useState(navigator.onLine);
   const [pendingCount, setPendingCount] = useState(getQueueSize());
-  const [syncStatus, setSyncStatus] = useState(null);
-  const [syncDetail, setSyncDetail] = useState(null);
+  const [syncStatus, setSyncStatus] = useState<string | null>(null);
+  const [syncDetail, setSyncDetail] = useState<any>(null);
 
   useEffect(() => {
     const handleOnline = () => setIsOnline(true);
     const handleOffline = () => setIsOnline(false);
 
-    const handleSyncStart = (e) => {
-      setSyncStatus("syncing");
-      setSyncDetail({ count: e.detail?.count || 0 });
+    const handleServerWaking = () => {
+      setSyncStatus("waking");
     };
 
-    const handleSyncComplete = (e) => {
+    const handleSyncStart = (e: Event) => {
+      setSyncStatus("syncing");
+      setSyncDetail({ count: (e as CustomEvent).detail?.count || 0 });
+    };
+
+    const handleSyncComplete = (e: Event) => {
       setSyncStatus("synced");
-      setSyncDetail(e.detail);
+      setSyncDetail((e as CustomEvent).detail);
       setPendingCount(getQueueSize());
       setTimeout(() => {
         setSyncStatus(null);
@@ -28,9 +32,14 @@ export default function ConnectionStatus() {
       }, 4000);
     };
 
-    const handleSyncError = (e) => {
-      setSyncStatus("error");
-      setSyncDetail(e.detail);
+    const handleSyncError = (e: Event) => {
+      const detail = (e as CustomEvent).detail;
+      if (detail?.reason === "server_unreachable") {
+        setSyncStatus("server_unreachable");
+      } else {
+        setSyncStatus("error");
+      }
+      setSyncDetail(detail);
       setPendingCount(getQueueSize());
       setTimeout(() => {
         setSyncStatus(null);
@@ -38,11 +47,17 @@ export default function ConnectionStatus() {
       }, 6000);
     };
 
+    const handleSyncRefresh = () => {
+      setPendingCount(getQueueSize());
+    };
+
     window.addEventListener("online", handleOnline);
     window.addEventListener("offline", handleOffline);
+    window.addEventListener("sw-server-waking", handleServerWaking);
     window.addEventListener("sw-sync-start", handleSyncStart);
     window.addEventListener("sw-sync-complete", handleSyncComplete);
     window.addEventListener("sw-sync-error", handleSyncError);
+    window.addEventListener("sw-sync-refresh", handleSyncRefresh);
 
     // Poll pending count
     const interval = setInterval(() => {
@@ -52,12 +67,24 @@ export default function ConnectionStatus() {
     return () => {
       window.removeEventListener("online", handleOnline);
       window.removeEventListener("offline", handleOffline);
+      window.removeEventListener("sw-server-waking", handleServerWaking);
       window.removeEventListener("sw-sync-start", handleSyncStart);
       window.removeEventListener("sw-sync-complete", handleSyncComplete);
       window.removeEventListener("sw-sync-error", handleSyncError);
+      window.removeEventListener("sw-sync-refresh", handleSyncRefresh);
       clearInterval(interval);
     };
   }, []);
+
+  // Server waking banner
+  if (syncStatus === "waking") {
+    return (
+      <div className="bg-blue-600 text-white text-sm text-center py-2 px-4">
+        <span className="inline-block animate-spin mr-2">↻</span>
+        {t("connection.waking") || "Server is waking up"}...
+      </div>
+    );
+  }
 
   // Syncing banner
   if (syncStatus === "syncing") {
@@ -75,6 +102,15 @@ export default function ConnectionStatus() {
       <div className="bg-green-500 text-white text-sm text-center py-2 px-4">
         {t("connection.synced") || "Synced successfully!"}
         {syncDetail?.synced ? ` (${syncDetail.synced} ${t("connection.items") || "item(s)"})` : ""}
+      </div>
+    );
+  }
+
+  // Server unreachable banner
+  if (syncStatus === "server_unreachable") {
+    return (
+      <div className="bg-red-500 text-white text-sm text-center py-2 px-4">
+        {t("connection.server_unreachable") || "Server unreachable"} — {t("connection.will_retry") || "will retry when available"}
       </div>
     );
   }

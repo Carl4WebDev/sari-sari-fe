@@ -1,6 +1,20 @@
 const CACHE_PREFIX = "ssc_cache_";
 const DEFAULT_TTL = 1000 * 60 * 60 * 24; // 24 hours
 
+function getCurrentUserId() {
+  try {
+    const user = JSON.parse(localStorage.getItem("user") || "null");
+    return user?.user_id || user?.id || null;
+  } catch {
+    return null;
+  }
+}
+
+function buildKey(url) {
+  const userId = getCurrentUserId();
+  return `${CACHE_PREFIX}${userId || "anon"}_${url}`;
+}
+
 export function setCachedData(url, data, ttl = DEFAULT_TTL) {
   try {
     const entry = {
@@ -8,12 +22,12 @@ export function setCachedData(url, data, ttl = DEFAULT_TTL) {
       timestamp: Date.now(),
       expiresAt: Date.now() + ttl,
     };
-    localStorage.setItem(CACHE_PREFIX + url, JSON.stringify(entry));
+    localStorage.setItem(buildKey(url), JSON.stringify(entry));
   } catch {
     evictOldest();
     try {
       const entry = { data, timestamp: Date.now(), expiresAt: Date.now() + ttl };
-      localStorage.setItem(CACHE_PREFIX + url, JSON.stringify(entry));
+      localStorage.setItem(buildKey(url), JSON.stringify(entry));
     } catch {
       // Give up silently
     }
@@ -22,7 +36,7 @@ export function setCachedData(url, data, ttl = DEFAULT_TTL) {
 
 export function getCachedData(url) {
   try {
-    const raw = localStorage.getItem(CACHE_PREFIX + url);
+    const raw = localStorage.getItem(buildKey(url));
     if (!raw) return null;
 
     const entry = JSON.parse(raw);
