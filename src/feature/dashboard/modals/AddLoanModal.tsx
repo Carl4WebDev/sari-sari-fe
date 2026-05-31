@@ -5,6 +5,7 @@ import { useProduct } from "../../context/products/useProduct";
 import { createReminderApi } from "../../context/collection-reminders/collectionReminderApi";
 import ProductModal from "../../products/modals/ProductModal";
 import GlobalModal from "../../../shared/components/GlobalModal";
+import { useOnlineStatus } from "../../../shared/hooks/useOnlineStatus";
 
 interface Borrower {
   borrower_id: number;
@@ -37,6 +38,7 @@ export default function AddLoanModal({
   const { borrowers, fetchBorrowers } = useBorrower();
   const { createLoan, error: loanError, clearError: clearLoanError } = useLoan();
   const { products, fetchProducts, createProduct, error: productError, clearError: clearProductError } = useProduct();
+  const isOnline = useOnlineStatus();
 
   const [animate, setAnimate] = useState(false);
   const [search, setSearch] = useState("");
@@ -445,16 +447,22 @@ if (!res?.ok) {
       p.product_name.toLowerCase() ===
       item.product.toLowerCase()
   ) && (
-    <button
-      type="button"
-      onClick={() => {
-        setNewProductName(item.product);
-        setIsProductModalOpen(true);
-      }}
-      className="w-full rounded-lg border border-dashed border-[#1E3A8A] bg-blue-50 px-3 py-3 text-left text-sm font-medium text-[#1E3A8A] transition hover:bg-blue-100"
-    >
-      + Add "{item.product}" as new product
-    </button>
+    isOnline ? (
+      <button
+        type="button"
+        onClick={() => {
+          setNewProductName(item.product);
+          setIsProductModalOpen(true);
+        }}
+        className="w-full rounded-lg border border-dashed border-[#1E3A8A] bg-blue-50 px-3 py-3 text-left text-sm font-medium text-[#1E3A8A] transition hover:bg-blue-100"
+      >
+        + Add "{item.product}" as new product
+      </button>
+    ) : (
+      <div className="w-full rounded-lg border border-dashed border-gray-300 bg-gray-50 px-3 py-3 text-left text-sm text-gray-400">
+        + Add "{item.product}" — go online to add new products
+      </div>
+    )
   )}
 
                   <button
@@ -499,13 +507,19 @@ if (!res?.ok) {
               </div>
             ))}
 
-            <button
-              type="button"
-              onClick={() => setIsProductModalOpen(true)}
-              className="w-full rounded-xl border border-dashed border-[#1E3A8A] bg-blue-50 py-3 text-sm font-medium text-[#1E3A8A] transition hover:bg-blue-100"
-            >
-              + Add New Product
-            </button>
+            {isOnline ? (
+              <button
+                type="button"
+                onClick={() => setIsProductModalOpen(true)}
+                className="w-full rounded-xl border border-dashed border-[#1E3A8A] bg-blue-50 py-3 text-sm font-medium text-[#1E3A8A] transition hover:bg-blue-100"
+              >
+                + Add New Product
+              </button>
+            ) : (
+              <div className="w-full rounded-xl border border-dashed border-gray-300 bg-gray-50 py-3 text-center text-sm text-gray-400">
+                Go online to add new products
+              </div>
+            )}
         </div>
 
         {/* Sticky Footer */}

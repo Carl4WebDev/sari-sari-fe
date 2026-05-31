@@ -378,6 +378,10 @@ export const translations = {
     "connection.will_retry": "will retry when available",
     "connection.queued_success": "Saved locally — will sync when online",
 
+    "pending_modal.title": "Pending Items",
+    "pending_modal.empty": "No pending items",
+    "pending_modal.sync_hint": "These will sync automatically when you're back online.",
+
     "offline_reminder.title": "You're Offline",
     "offline_reminder.message": "You can still view your data and add loans or payments. Changes will sync automatically when you're back online.",
     "offline_reminder.tip": "Go online to sync your data and access all features.",
@@ -752,6 +756,10 @@ export const translations = {
     "connection.server_unreachable": "Hindi maabot ang server",
     "connection.will_retry": "subukan ulit mamaya",
     "connection.queued_success": "Naka-save locally — ma-si-sync pag may internet",
+
+    "pending_modal.title": "Mga Pending na Item",
+    "pending_modal.empty": "Walang pending na item",
+    "pending_modal.sync_hint": "Automatic na ma-si-sync ang mga ito pag bumalik ang internet.",
 
     "offline_reminder.title": "Wala Kang Internet",
     "offline_reminder.message": "Pwede mo pa rin tingnan ang data at magdagdag ng loan o payment. Automatic na ma-si-sync pag bumalik ang internet.",

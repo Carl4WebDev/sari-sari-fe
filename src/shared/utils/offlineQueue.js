@@ -96,6 +96,17 @@ export async function replayQueue(sendFn) {
         results.push({ item, success: false, error: "Skipped: invalid temp borrower ID" });
         continue;
       }
+      // Also check product_id overflow in loan items
+      if (body?.items && Array.isArray(body.items)) {
+        const badProduct = body.items.find(
+          (i) => i.product_id != null && (i.product_id > 2147483647 || i.product_id < 0)
+        );
+        if (badProduct) {
+          dequeue(item.id);
+          results.push({ item, success: false, error: "Skipped: invalid temp product ID" });
+          continue;
+        }
+      }
     } catch {
       // body parse failed, let it proceed to server validation
     }

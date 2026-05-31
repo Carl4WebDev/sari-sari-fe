@@ -1,6 +1,7 @@
 import { useState, useEffect } from "react";
 import { getQueueSize } from "../utils/offlineQueue";
 import { useTranslation } from "../i18n/useTranslation";
+import PendingItemsModal from "./PendingItemsModal";
 
 export default function ConnectionStatus() {
   const { t } = useTranslation();
@@ -8,6 +9,7 @@ export default function ConnectionStatus() {
   const [pendingCount, setPendingCount] = useState(getQueueSize());
   const [syncStatus, setSyncStatus] = useState<string | null>(null);
   const [syncDetail, setSyncDetail] = useState<any>(null);
+  const [showPendingModal, setShowPendingModal] = useState(false);
 
   useEffect(() => {
     const handleOnline = () => setIsOnline(true);
@@ -80,7 +82,7 @@ export default function ConnectionStatus() {
   if (syncStatus === "waking") {
     return (
       <div className="bg-blue-600 text-white text-sm text-center py-2 px-4">
-        <span className="inline-block animate-spin mr-2">↻</span>
+        <span className="inline-block animate-spin mr-2">&#8635;</span>
         {t("connection.waking") || "Server is waking up"}...
       </div>
     );
@@ -90,7 +92,7 @@ export default function ConnectionStatus() {
   if (syncStatus === "syncing") {
     return (
       <div className="bg-blue-500 text-white text-sm text-center py-2 px-4">
-        <span className="inline-block animate-spin mr-2">↻</span>
+        <span className="inline-block animate-spin mr-2">&#8635;</span>
         {t("connection.syncing") || "Syncing"} {syncDetail?.count || 0} {t("connection.items") || "item(s)"}...
       </div>
     );
@@ -124,26 +126,46 @@ export default function ConnectionStatus() {
     );
   }
 
-  // Offline banner
+  // Offline banner with clickable pending count
   if (!isOnline) {
     return (
-      <div className="bg-amber-500 text-white text-sm text-center py-2 px-4">
-        {t("connection.offline") || "You are offline"}
-        {pendingCount > 0 && (
-          <span className="ml-2 bg-white text-amber-600 text-xs font-bold px-2 py-0.5 rounded-full">
-            {pendingCount} {t("connection.pending") || "pending"}
-          </span>
-        )}
-      </div>
+      <>
+        <div className="bg-amber-500 text-white text-sm text-center py-2 px-4">
+          {t("connection.offline") || "You are offline"}
+          {pendingCount > 0 && (
+            <button
+              onClick={() => setShowPendingModal(true)}
+              className="ml-2 bg-white text-amber-600 text-xs font-bold px-2 py-0.5 rounded-full hover:bg-amber-50 cursor-pointer"
+            >
+              {pendingCount} {t("connection.pending") || "pending"}
+            </button>
+          )}
+        </div>
+        <PendingItemsModal
+          isOpen={showPendingModal}
+          onClose={() => setShowPendingModal(false)}
+        />
+      </>
     );
   }
 
   // Online with pending items
   if (pendingCount > 0) {
     return (
-      <div className="bg-amber-100 text-amber-800 text-sm text-center py-2 px-4">
-        {pendingCount} {t("connection.pending") || "pending"} {t("connection.items_will_sync") || "item(s) will sync shortly"}
-      </div>
+      <>
+        <div className="bg-amber-100 text-amber-800 text-sm text-center py-2 px-4">
+          <button
+            onClick={() => setShowPendingModal(true)}
+            className="hover:underline cursor-pointer"
+          >
+            {pendingCount} {t("connection.pending") || "pending"} {t("connection.items_will_sync") || "item(s) will sync shortly"}
+          </button>
+        </div>
+        <PendingItemsModal
+          isOpen={showPendingModal}
+          onClose={() => setShowPendingModal(false)}
+        />
+      </>
     );
   }
 

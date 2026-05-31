@@ -1,4 +1,4 @@
-const CACHE_NAME = "listahub-v3";
+const CACHE_NAME = "listahub-v4";
 const SHELL_ASSETS = ["/", "/index.html", "/listahub_logo.png"];
 
 // Install: precache app shell + all build chunks from Vite manifest
@@ -12,6 +12,8 @@ self.addEventListener("install", (event) => {
       try {
         const manifestRes = await fetch("/chunk-manifest.json");
         if (manifestRes.ok) {
+          // Cache the manifest itself for future use
+          await cache.put("/chunk-manifest.json", manifestRes.clone());
           const manifest = await manifestRes.json();
           const chunkPaths = [];
 
@@ -22,36 +24,99 @@ self.addEventListener("install", (event) => {
             }
           }
 
-          // Precache all chunks (ignore failures for individual files)
-          await Promise.allSettled(
-            chunkPaths.map((path) =>
+          // Deduplicate
+          const unique = [...new Set(chunkPaths)];
+
+          // Precache all chunks with explicit Content-Type headers
+          const results = await Promise.allSettled(
+            unique.map((path) =>
               fetch(path).then((res) => {
-                if (res.ok) return cache.put(path, res);
+                if (res.ok) {
+                  const url = new URL(path, self.location.origin);
+                  const ext = url.pathname.split(".").pop();
+                  let contentType = "";
+                  if (ext === "js") contentType = "application/javascript";
+                  else if (ext === "css") contentType = "text/css";
+                  else if (ext === "html") contentType = "text/html";
+
+                  if (contentType) {
+                    const headers = new Headers(res.headers);
+                    headers.set("Content-Type", contentType);
+                    const typedRes = new Response(res.body, {
+                      status: res.status,
+                      statusText: res.statusText,
+                      headers,
+                    });
+                    return cache.put(path, typedRes);
+                  }
+                  return cache.put(path, res);
+                }
+                throw new Error(`Failed to fetch ${path}: ${res.status}`);
               })
             )
           );
+
+          const failed = results.filter((r) => r.status === "rejected");
+          if (failed.length > 0) {
+            console.warn(`[SW] ${failed.length}/${unique.length} chunks failed to precache`);
+          }
+        } else {
+          console.warn("[SW] chunk-manifest.json fetch failed:", manifestRes.status);
+          // Manifest fetch failed — try to copy chunks from old cache
+          await salvageOldCache(cache);
         }
-      } catch {
-        // Manifest fetch failed — shell assets still cached
+      } catch (err) {
+        console.warn("[SW] Manifest precache error:", err);
+        await salvageOldCache(cache);
       }
     })
   );
   self.skipWaiting();
 });
 
-// Activate: clean old caches
+// Copy assets from the previous cache version to the new one
+// This prevents losing precached chunks when the SW updates while offline
+async function salvageOldCache(newCache) {
+  try {
+    const keys = await caches.keys();
+    for (const key of keys) {
+      if (key === CACHE_NAME || !key.startsWith("listahub-")) continue;
+      const oldCache = await caches.open(key);
+      const requests = await oldCache.keys();
+      for (const req of requests) {
+        const response = await oldCache.match(req);
+        if (response) {
+          await newCache.put(req, response);
+        }
+      }
+    }
+  } catch {
+    // Salvage failed — shell assets still available
+  }
+}
+
+// Activate: clean old caches ONLY if new cache has content
 self.addEventListener("activate", (event) => {
   event.waitUntil(
-    caches.keys().then((keys) =>
-      Promise.all(
+    caches.open(CACHE_NAME).then(async (cache) => {
+      // Verify new cache has at least the shell
+      const hasShell = await cache.match("/index.html");
+      if (!hasShell) {
+        // New cache is empty — don't delete old caches
+        return;
+      }
+
+      // New cache is good — safe to delete old ones
+      const keys = await caches.keys();
+      await Promise.all(
         keys.filter((k) => k !== CACHE_NAME).map((k) => caches.delete(k))
-      )
-    )
+      );
+    })
   );
   self.clients.claim();
 });
 
-// Fetch: cache all same-origin GET requests
+// Fetch: stale-while-revalidate for cached, network-first for uncached
 self.addEventListener("fetch", (event) => {
   const { request } = event;
 
@@ -66,8 +131,21 @@ self.addEventListener("fetch", (event) => {
 
   event.respondWith(
     caches.match(request).then((cached) => {
-      // Fetch in background to update cache (stale-while-revalidate)
-      const fetchPromise = fetch(request)
+      if (cached) {
+        // Return cached immediately, update in background (stale-while-revalidate)
+        fetch(request)
+          .then((response) => {
+            if (response.ok && request.url.startsWith(self.location.origin)) {
+              const clone = response.clone();
+              caches.open(CACHE_NAME).then((cache) => cache.put(request, clone));
+            }
+          })
+          .catch(() => {}); // Background update failed, that's fine
+        return cached;
+      }
+
+      // Not in cache — try network
+      return fetch(request)
         .then((response) => {
           if (response.ok && request.url.startsWith(self.location.origin)) {
             const clone = response.clone();
@@ -76,18 +154,15 @@ self.addEventListener("fetch", (event) => {
           return response;
         })
         .catch(() => {
-          // Network failed — return cached or fallback
-          return caches.match(request).then((fallback) => {
-            if (fallback) return fallback;
-            if (request.mode === "navigate") {
-              return caches.match("/index.html");
-            }
-            return new Response("Offline", { status: 503 });
-          });
+          // Network failed and not in cache
+          if (request.mode === "navigate") {
+            // Navigation requests get the app shell
+            return caches.match("/index.html");
+          }
+          // For JS/CSS module requests: return a real network error
+          // This prevents the browser from seeing a text/html MIME response
+          return Response.error();
         });
-
-      // Return cached immediately if available, otherwise wait for fetch
-      return cached || fetchPromise;
     })
   );
 });

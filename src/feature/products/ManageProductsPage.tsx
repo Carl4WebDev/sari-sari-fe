@@ -80,7 +80,7 @@ const confirmArchive = async () => {
 {!isOnline && (
   <div className="rounded-lg bg-blue-50 border border-blue-200 px-3 py-2 text-xs text-blue-700 flex items-center gap-2">
     <span>📡</span>
-    <span>Offline — viewing cached products. Editing is available when online.</span>
+    <span>Offline — viewing cached products. Adding, editing, and archiving require an internet connection.</span>
   </div>
 )}
 
@@ -222,12 +222,14 @@ onClick={(e) => {
               {t("products.no_products_hint")}
             </p>
 
-            <button
-              onClick={handleOpenAdd}
-              className="mt-5 rounded-xl bg-[#1E3A8A] px-5 py-3 text-sm font-semibold text-white"
-            >
-              + {t("products.add_product")}
-            </button>
+            {isOnline && (
+              <button
+                onClick={handleOpenAdd}
+                className="mt-5 rounded-xl bg-[#1E3A8A] px-5 py-3 text-sm font-semibold text-white"
+              >
+                + {t("products.add_product")}
+              </button>
+            )}
           </div>
         )}
       </div>
