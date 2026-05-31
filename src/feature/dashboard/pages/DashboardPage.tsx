@@ -18,7 +18,8 @@ import ReminderNotificationModal from "../modals/ReminderNotificationModal";
 
 import { useDashboard } from "../../context/dashboard/useDashboard";
 import { useCollectionReminder } from "../../context/collection-reminders/useCollectionReminder";
-import { remindAgainApi, sendReminderSmsApi } from "../../context/collection-reminders/collectionReminderApi";
+import { remindAgainApi } from "../../context/collection-reminders/collectionReminderApi";
+import { sendCollectionReminderEmail } from "../../../shared/utils/sendEmail";
 import GlobalModal from "../../../shared/components/GlobalModal";
 import { useTranslation } from "../../../shared/i18n/useTranslation";
 import OnboardingWizard from "../../../shared/components/OnboardingWizard";
@@ -151,9 +152,33 @@ useEffect(() => {
     await fetchDashboardReminders();
     setOverdueDismissed(false);
   }}
-  onSendSMS={async (reminderId) => {
-    await sendReminderSmsApi(reminderId);
-    await fetchDashboardReminders();
+  onSendEmail={async (reminderId) => {
+    const allReminders = [
+      ...(dashboardReminders.todays_collections || []),
+      ...(dashboardReminders.overdue || []),
+      ...(dashboardReminders.upcoming || []),
+    ];
+    const reminder = allReminders.find((r: any) => r.reminder_id === reminderId);
+
+    if (!reminder?.email) {
+      setGlobalModal({ isOpen: true, title: "No Email", message: "This borrower has no email address on file.", type: "warning" });
+      return;
+    }
+
+    const borrowerName = `${reminder.first_name} ${reminder.last_name}`;
+    const ok = await sendCollectionReminderEmail({
+      borrowerEmail: reminder.email,
+      borrowerName,
+      amount: reminder.amount_expected,
+      dueDate: reminder.due_date,
+      storeName: "Listahub",
+    });
+
+    if (ok) {
+      setGlobalModal({ isOpen: true, title: "Email Sent", message: `Reminder email sent to ${borrowerName}.`, type: "info" });
+    } else {
+      setGlobalModal({ isOpen: true, title: "Failed", message: "Could not send email. Please try again.", type: "warning" });
+    }
   }}
 />
 

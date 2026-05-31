@@ -450,6 +450,8 @@ const handleDeleteNote = (noteId: number) => {
   borrowerId={borrower.borrower_id}
   currentBalance={totalBalance}
   contactNumber={borrower.contact_number}
+  borrowerEmail={borrower.email}
+  borrowerName={`${borrower.first_name} ${borrower.last_name}`}
   onCreateReminder={async (payload) => {
     const res = await createReminder(payload);
 
@@ -609,8 +611,14 @@ const handleDeleteNote = (noteId: number) => {
           </h1>
 
           <p className="mt-1 text-center text-sm text-gray-500">
-            📞 {borrower.contact_number}
+            📞 {borrower.contact_number || t("borrowers.no_contact")}
           </p>
+
+          {borrower.email && (
+            <p className="text-center text-sm text-gray-500">
+              ✉️ {borrower.email}
+            </p>
+          )}
 
           <p className="text-center text-sm text-gray-500">
             {t("details.age")} {calculateAge(borrower.dob)}

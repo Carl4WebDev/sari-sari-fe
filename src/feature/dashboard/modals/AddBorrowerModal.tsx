@@ -23,6 +23,7 @@ export default function AddBorrowerModal({
     lName: "",
     date: "",
     contact: "",
+    email: "",
   });
 
   const [loading, setLoading] = useState(false);
@@ -73,6 +74,7 @@ const handleSubmit = async () => {
     last_name: form.lName,
     dob: form.date,
     contact_number: form.contact,
+    email: form.email,
   };
 
   const res = await createBorrower(payload);
@@ -104,6 +106,7 @@ const handleSubmit = async () => {
     lName: "",
     date: "",
     contact: "",
+    email: "",
   });
 
   setLoading(false);
@@ -193,6 +196,15 @@ const handleSubmit = async () => {
     name="contact"
     placeholder="Contact Number"
     value={form.contact}
+    onChange={handleChange}
+    className="w-full rounded-lg border border-gray-300 bg-white px-3 py-3 text-sm outline-none focus:border-[#1E3A8A] focus:ring-1 focus:ring-[#1E3A8A]"
+  />
+
+  <input
+    name="email"
+    type="email"
+    placeholder="Email Address"
+    value={form.email}
     onChange={handleChange}
     className="w-full rounded-lg border border-gray-300 bg-white px-3 py-3 text-sm outline-none focus:border-[#1E3A8A] focus:ring-1 focus:ring-[#1E3A8A]"
   />

@@ -35,6 +35,7 @@ export default function EditBorrowerModal({
   const [lName, setLName] = useState("");
   const [dob, setDob] = useState("");
   const [contact, setContact] = useState("");
+  const [email, setEmail] = useState("");
 
   const [selectedImage, setSelectedImage] = useState<File | null>(null);
   const [imagePreview, setImagePreview] = useState<string | null>(null);
@@ -54,6 +55,7 @@ export default function EditBorrowerModal({
       setLName(borrower.last_name || "");
       setDob(borrower.dob ? borrower.dob.split("T")[0] : "");
       setContact(borrower.contact_number || "");
+      setEmail(borrower.email || "");
       setSelectedImage(null);
       setImagePreview(null);
     }
@@ -106,6 +108,7 @@ export default function EditBorrowerModal({
       last_name: lName.trim(),
       dob: dob || null,
       contact_number: contact.trim() || null,
+      email: email.trim() || null,
     });
 
     if (!res?.ok) return;
@@ -252,6 +255,19 @@ export default function EditBorrowerModal({
                   value={contact}
                   onChange={(e) => setContact(e.target.value)}
                   placeholder="09xxxxxxxxx"
+                  className="mt-1 w-full rounded-xl border border-gray-300 px-4 py-3 text-sm focus:border-[#1E3A8A] focus:ring-1 focus:ring-[#1E3A8A] outline-none"
+                />
+              </div>
+
+              <div>
+                <label className="text-sm font-medium text-gray-700">
+                  {t("borrower_modal.email")}
+                </label>
+                <input
+                  type="email"
+                  value={email}
+                  onChange={(e) => setEmail(e.target.value)}
+                  placeholder="email@example.com"
                   className="mt-1 w-full rounded-xl border border-gray-300 px-4 py-3 text-sm focus:border-[#1E3A8A] focus:ring-1 focus:ring-[#1E3A8A] outline-none"
                 />
               </div>

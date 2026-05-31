@@ -1,6 +1,7 @@
 import { useEffect, useState } from "react";
 
 import GlobalModal from "../../../shared/components/GlobalModal";
+import { sendCollectionReminderEmail } from "../../../shared/utils/sendEmail";
 
 interface Props {
   isOpen: boolean;
@@ -8,6 +9,8 @@ interface Props {
   borrowerId: number;
   currentBalance: number;
   contactNumber?: string | null;
+  borrowerEmail?: string | null;
+  borrowerName?: string;
   onCreateReminder: (payload: any) => Promise<any>;
 }
 
@@ -17,11 +20,13 @@ export default function AddReminderModal({
   borrowerId,
   currentBalance,
   contactNumber,
+  borrowerEmail,
+  borrowerName,
   onCreateReminder,
 }: Props) {
   const [animate, setAnimate] = useState(false);
   const [loading, setLoading] = useState(false);
-  const [sendSms, setSendSms] = useState(false);
+  const [sendEmail, setSendEmail] = useState(false);
 
 
   const [globalModal, setGlobalModal] = useState({
@@ -78,7 +83,7 @@ if (amount > currentBalance) {
       amount_expected: amount,
       due_date: form.due_date,
       note: form.note,
-      send_sms: sendSms,
+      send_email: sendEmail,
     });
 
     if (!res?.ok) {
@@ -93,6 +98,16 @@ if (amount > currentBalance) {
     }
 
     if (res?.ok) {
+      if (sendEmail && borrowerEmail) {
+        await sendCollectionReminderEmail({
+          borrowerEmail,
+          borrowerName: borrowerName || "Customer",
+          amount: Number(form.amount_expected || 0),
+          dueDate: form.due_date,
+          storeName: "Listahub",
+        });
+      }
+
       setForm({
         amount_expected: "",
         due_date: "",
@@ -174,15 +189,15 @@ if (amount > currentBalance) {
             className="min-h-28 w-full rounded-lg border border-gray-300 px-3 py-3 text-sm outline-none focus:border-[#1E3A8A]"
           />
 
-          {contactNumber && (
+          {borrowerEmail && (
             <label className="flex items-center gap-2 text-sm text-gray-600">
               <input
                 type="checkbox"
-                checked={sendSms}
-                onChange={(e) => setSendSms(e.target.checked)}
+                checked={sendEmail}
+                onChange={(e) => setSendEmail(e.target.checked)}
                 className="h-4 w-4 rounded border-gray-300 text-[#1E3A8A] focus:ring-[#1E3A8A]"
               />
-              Also send SMS to borrower
+              Also send email to borrower
             </label>
           )}
 
