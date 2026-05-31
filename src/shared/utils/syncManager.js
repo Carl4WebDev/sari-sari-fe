@@ -58,8 +58,8 @@ async function syncQueue() {
 }
 
 function handleOnline() {
-  // Small delay to let connection stabilize
-  setTimeout(syncQueue, 1000);
+  // Give connection time to stabilize and Render server time to wake up
+  setTimeout(syncQueue, 5000);
 }
 
 export function initSyncManager(callbacks = {}) {
@@ -69,9 +69,9 @@ export function initSyncManager(callbacks = {}) {
 
   window.addEventListener("online", handleOnline);
 
-  // If already online and queue has items, sync now
+  // If already online and queue has items, sync now (wait for Render to wake up)
   if (navigator.onLine && getQueueSize() > 0) {
-    setTimeout(syncQueue, 2000);
+    setTimeout(syncQueue, 5000);
   }
 }
 
