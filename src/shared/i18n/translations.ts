@@ -363,6 +363,16 @@ export const translations = {
     "stats.trend_title": "Daily Collection Trend",
     "stats.trend_subtitle": "Payments received over the last 30 days",
     "stats.hero_text": "Collected \u20B1{amount} this {period}",
+
+    // Connection
+    "connection.offline": "You are offline",
+    "connection.pending": "pending",
+    "connection.syncing": "Syncing",
+    "connection.synced": "Synced successfully!",
+    "connection.sync_error": "Sync failed",
+    "connection.items": "item(s)",
+    "connection.items_will_sync": "item(s) will sync shortly",
+    "connection.remaining": "remaining",
   },
 
   fil: {
@@ -717,6 +727,16 @@ export const translations = {
     "stats.trend_title": "Araw-araw na Trend ng Koleksyon",
     "stats.trend_subtitle": "Mga natanggap na bayad sa nakaraang 30 araw",
     "stats.hero_text": "Nakolekta ang \u20B1{amount} ngayong {period}",
+
+    // Connection
+    "connection.offline": "Wala kang internet",
+    "connection.pending": "naka-pending",
+    "connection.syncing": "Nag-si-sync",
+    "connection.synced": "Na-sync na!",
+    "connection.sync_error": "Hindi na-sync",
+    "connection.items": "item(s)",
+    "connection.items_will_sync": "item(s) ay ma-si-sync mamaya",
+    "connection.remaining": "natitira",
   },
 } as const;
 

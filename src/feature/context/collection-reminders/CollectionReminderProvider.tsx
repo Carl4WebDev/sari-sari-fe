@@ -1,4 +1,4 @@
-import { useState, useCallback, useMemo } from "react";
+import { useState, useCallback, useMemo, useEffect } from "react";
 import { CollectionReminderContext } from "./CollectionReminderContext";
 import {
   createReminderApi,
@@ -59,6 +59,13 @@ export const CollectionReminderProvider = ({ children }) => {
 
     setLoading(false);
     return res;
+  }, []);
+
+  // Fetch dashboard reminders on mount so they're cached for offline use
+  useEffect(() => {
+    if (localStorage.getItem("user_token")) {
+      fetchDashboardReminders();
+    }
   }, []);
 
   const fetchBorrowerReminders = useCallback(async (borrowerId) => {

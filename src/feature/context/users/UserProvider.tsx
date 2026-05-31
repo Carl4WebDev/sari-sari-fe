@@ -8,6 +8,7 @@ import {
   changePassword as changePasswordApi,
   logoutUser,
 } from "./userApi.js";
+import { clearAllCache } from "../../../shared/utils/offlineCache";
 
 export const UserProvider = ({ children }) => {
   const [loading, setLoading] = useState(false);
@@ -34,6 +35,9 @@ export const UserProvider = ({ children }) => {
     // store token + user info
     localStorage.setItem("user_token", res.data.token);
     localStorage.setItem("user", JSON.stringify(res.data.user));
+
+    // Clear stale cache from previous account
+    clearAllCache();
 
     setLoading(false);
     return res;
@@ -64,6 +68,7 @@ export const UserProvider = ({ children }) => {
   const clearUser = useCallback(() => {
     localStorage.removeItem("user_token");
     localStorage.removeItem("user");
+    clearAllCache();
     setProfile(null);
     // Best-effort server-side logout (don't await)
     logoutUser().catch(() => {});

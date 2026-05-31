@@ -90,12 +90,17 @@ const handleSubmit = async () => {
     return;
   }
 
-  const borrower = res.data;
+  // When queued offline, res.data is null — use form data as temp borrower
+  const borrower = res.data || {
+    ...payload,
+    borrower_id: res.queuedItem?.id || Date.now(),
+    _pending: true,
+  };
 
   // store borrower id for loan flow
   localStorage.setItem(
     "active_borrower_id",
-    borrower.borrower_id
+    String(borrower.borrower_id)
   );
 
   onBorrowerCreated(borrower);

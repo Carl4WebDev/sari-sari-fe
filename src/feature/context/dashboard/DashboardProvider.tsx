@@ -1,4 +1,4 @@
-import { useState, useCallback, useMemo } from "react";
+import { useState, useCallback, useMemo, useEffect } from "react";
 import { DashboardContext } from "./DashboardContext";
 import {
   getDashboardApi,
@@ -33,6 +33,13 @@ export const DashboardProvider = ({ children }) => {
     setDashboard(res.data);
     setLoading(false);
     return res;
+  }, []);
+
+  // Fetch dashboard on mount so it's cached for offline use
+  useEffect(() => {
+    if (localStorage.getItem("user_token")) {
+      fetchDashboard();
+    }
   }, []);
 
   const fetchCalendarData = useCallback(async (year, month) => {

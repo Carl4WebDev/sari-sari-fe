@@ -1,4 +1,4 @@
-import { useState, useCallback, useMemo } from "react";
+import { useState, useCallback, useMemo, useEffect } from "react";
 import { BorrowerContext } from "./BorrowerContext";
 
 import {
@@ -196,6 +196,13 @@ const reactivateBorrower = useCallback(async (borrowerId) => {
     return res;
   }, []);
 
+  // Fetch borrowers on mount so they're cached for offline use
+  useEffect(() => {
+    if (localStorage.getItem("user_token")) {
+      fetchBorrowers();
+    }
+  }, []);
+
   // -------------------------
   // CREATE BORROWER
   // -------------------------
@@ -211,7 +218,18 @@ const reactivateBorrower = useCallback(async (borrowerId) => {
       return res;
     }
 
-    await fetchBorrowers();
+    // If queued for offline sync, add optimistic temp borrower
+    if (res.queued) {
+      const tempBorrower = {
+        ...payload,
+        borrower_id: Date.now(),
+        _pending: true,
+        created_at: new Date().toISOString(),
+      };
+      setBorrowers((prev) => [tempBorrower, ...prev]);
+    } else {
+      await fetchBorrowers();
+    }
 
     setLoading(false);
     return res;

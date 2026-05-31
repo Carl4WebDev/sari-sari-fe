@@ -1,4 +1,4 @@
-import { useState, useCallback, useMemo } from "react";
+import { useState, useCallback, useMemo, useEffect } from "react";
 import { ProductContext } from "./ProductContext";
 
 import {
@@ -35,6 +35,13 @@ export const ProductProvider = ({ children }) => {
     setProducts(res.data || []);
     setLoading(false);
     return res;
+  }, []);
+
+  // Fetch products on mount so they're cached for offline use
+  useEffect(() => {
+    if (localStorage.getItem("user_token")) {
+      fetchProducts();
+    }
   }, []);
 
   const fetchArchivedProducts = useCallback(async () => {
@@ -104,7 +111,19 @@ export const ProductProvider = ({ children }) => {
       return res;
     }
 
-    await fetchProducts();
+    // If queued for offline sync, add optimistic temp product
+    if (res.queued) {
+      const tempProduct = {
+        ...payload,
+        product_id: Date.now(),
+        _pending: true,
+        created_at: new Date().toISOString(),
+      };
+      setProducts((prev) => [tempProduct, ...prev]);
+    } else {
+      await fetchProducts();
+    }
+
     setActionLoading(false);
     return res;
   }, [fetchProducts]);
