@@ -86,7 +86,14 @@ export async function apiRequest(url, options = {}) {
     // Write requests: queue for later sync
     if (method !== "GET") {
       const description = buildDescription(method, url, options.body);
-      const queuedItem = enqueue(url, method, options.body, description);
+      const queuedItem = enqueue(
+        url,
+        method,
+        options.body,
+        description,
+        options.dependsOn,       // queue item ID this depends on
+        options.dependencyField, // field name to update (e.g., "borrower_id")
+      );
       return {
         ok: true,
         data: null,

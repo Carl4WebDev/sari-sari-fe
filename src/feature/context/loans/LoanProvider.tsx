@@ -8,11 +8,11 @@ export const LoanProvider = ({ children }) => {
 
   const clearError = useCallback(() => setError(null), []);
 
-  const createLoan = useCallback(async (payload) => {
+  const createLoan = useCallback(async (payload, options = {}) => {
     setLoading(true);
     setError(null);
 
-    const res = await createLoanApi(payload);
+    const res = await createLoanApi(payload, options);
 
     if (!res?.ok) {
       setError(res?.message || "Failed to create loan");

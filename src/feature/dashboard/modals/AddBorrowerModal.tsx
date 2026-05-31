@@ -93,8 +93,9 @@ const handleSubmit = async () => {
   // When queued offline, res.data is null — use form data as temp borrower
   const borrower = res.data || {
     ...payload,
-    borrower_id: res.queuedItem?.id || Date.now(),
+    borrower_id: Date.now(),
     _pending: true,
+    _queuedItemId: res.queuedItem?.id,
   };
 
   // store borrower id for loan flow

@@ -224,6 +224,17 @@ const resetLoanForm = () => {
       return;
     }
 
+    // Block loan creation for borrowers that haven't synced yet
+    if (selectedBorrower._pending) {
+      setGlobalModal({
+        isOpen: true,
+        title: "Please wait",
+        message: "This borrower is still syncing. Please wait for the sync to complete before creating a loan.",
+        type: "warning",
+      });
+      return;
+    }
+
     const payload = {
       borrower_id: selectedBorrower.borrower_id,
       items: items.map((i) => ({
@@ -234,7 +245,12 @@ const resetLoanForm = () => {
       })),
     };
 
-    const res = await createLoan(payload);
+    // Pass dependency info so queue can resolve real borrower_id after sync
+    const loanOptions = selectedBorrower._queuedItemId
+      ? { dependsOn: selectedBorrower._queuedItemId, dependencyField: "borrower_id" }
+      : {};
+
+    const res = await createLoan(payload, loanOptions);
 
 if (!res?.ok) {
   setGlobalModal({

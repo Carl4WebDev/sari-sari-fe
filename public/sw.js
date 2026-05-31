@@ -1,10 +1,40 @@
-const CACHE_NAME = "listahub-v2";
+const CACHE_NAME = "listahub-v3";
 const SHELL_ASSETS = ["/", "/index.html", "/listahub_logo.png"];
 
-// Install: precache app shell
+// Install: precache app shell + all build chunks from Vite manifest
 self.addEventListener("install", (event) => {
   event.waitUntil(
-    caches.open(CACHE_NAME).then((cache) => cache.addAll(SHELL_ASSETS))
+    caches.open(CACHE_NAME).then(async (cache) => {
+      // Precache shell assets
+      await cache.addAll(SHELL_ASSETS);
+
+      // Fetch Vite manifest to precache all JS/CSS chunks
+      try {
+        const manifestRes = await fetch("/chunk-manifest.json");
+        if (manifestRes.ok) {
+          const manifest = await manifestRes.json();
+          const chunkPaths = [];
+
+          for (const entry of Object.values(manifest)) {
+            if (entry.file) chunkPaths.push("/" + entry.file);
+            if (entry.css) {
+              entry.css.forEach((c) => chunkPaths.push("/" + c));
+            }
+          }
+
+          // Precache all chunks (ignore failures for individual files)
+          await Promise.allSettled(
+            chunkPaths.map((path) =>
+              fetch(path).then((res) => {
+                if (res.ok) return cache.put(path, res);
+              })
+            )
+          );
+        }
+      } catch {
+        // Manifest fetch failed — shell assets still cached
+      }
+    })
   );
   self.skipWaiting();
 });
@@ -35,26 +65,30 @@ self.addEventListener("fetch", (event) => {
   if (!request.url.startsWith("http")) return;
 
   event.respondWith(
-    fetch(request)
-      .then((response) => {
-        // Cache successful same-origin responses
-        if (response.ok && request.url.startsWith(self.location.origin)) {
-          const clone = response.clone();
-          caches.open(CACHE_NAME).then((cache) => cache.put(request, clone));
-        }
-        return response;
-      })
-      .catch(() => {
-        // Network failed, try cache
-        return caches.match(request).then((cached) => {
-          if (cached) return cached;
-          // For navigation requests, return cached index.html
-          if (request.mode === "navigate") {
-            return caches.match("/index.html");
+    caches.match(request).then((cached) => {
+      // Fetch in background to update cache (stale-while-revalidate)
+      const fetchPromise = fetch(request)
+        .then((response) => {
+          if (response.ok && request.url.startsWith(self.location.origin)) {
+            const clone = response.clone();
+            caches.open(CACHE_NAME).then((cache) => cache.put(request, clone));
           }
-          return new Response("Offline", { status: 503 });
+          return response;
+        })
+        .catch(() => {
+          // Network failed — return cached or fallback
+          return caches.match(request).then((fallback) => {
+            if (fallback) return fallback;
+            if (request.mode === "navigate") {
+              return caches.match("/index.html");
+            }
+            return new Response("Offline", { status: 503 });
+          });
         });
-      })
+
+      // Return cached immediately if available, otherwise wait for fetch
+      return cached || fetchPromise;
+    })
   );
 });
 

@@ -231,6 +231,7 @@ const reactivateBorrower = useCallback(async (borrowerId) => {
         ...payload,
         borrower_id: Date.now(),
         _pending: true,
+        _queuedItemId: res.queuedItem?.id,
         created_at: new Date().toISOString(),
       };
       setBorrowers((prev) => [tempBorrower, ...prev]);

@@ -19,6 +19,10 @@ function getAllQueue() {
   }
 }
 
+function saveQueue(queue) {
+  localStorage.setItem(QUEUE_KEY, JSON.stringify(queue));
+}
+
 // Only return items belonging to the current user
 export function getQueue() {
   const userId = getCurrentUserId();
@@ -26,7 +30,7 @@ export function getQueue() {
   return getAllQueue().filter((item) => item.userId === userId);
 }
 
-export function enqueue(url, method, body, description) {
+export function enqueue(url, method, body, description, dependsOn, dependencyField) {
   const queue = getAllQueue();
   const userId = getCurrentUserId();
   const item = {
@@ -38,14 +42,21 @@ export function enqueue(url, method, body, description) {
     userId,
     timestamp: Date.now(),
   };
+
+  // Dependency tracking: this item depends on another queued item
+  if (dependsOn && dependencyField) {
+    item.dependsOn = dependsOn;        // queue item ID
+    item.dependencyField = dependencyField; // field name in body to update (e.g., "borrower_id")
+  }
+
   queue.push(item);
-  localStorage.setItem(QUEUE_KEY, JSON.stringify(queue));
+  saveQueue(queue);
   return item;
 }
 
 export function dequeue(id) {
   const queue = getAllQueue().filter((item) => item.id !== id);
-  localStorage.setItem(QUEUE_KEY, JSON.stringify(queue));
+  saveQueue(queue);
 }
 
 export function clearQueue() {
@@ -59,12 +70,23 @@ export function getQueueSize() {
 export async function replayQueue(sendFn) {
   const queue = getQueue();
   const results = [];
+  const resolvedIds = {}; // queue item ID → real server ID
 
   for (let i = 0; i < queue.length; i++) {
     const item = queue[i];
 
     // Delay between requests to let slow servers process
     if (i > 0) await new Promise((r) => setTimeout(r, DELAY_BETWEEN));
+
+    // Resolve dependencies: replace temp IDs with real IDs from previous replays
+    if (item.dependsOn && item.dependencyField) {
+      const realId = resolvedIds[item.dependsOn];
+      if (realId !== undefined) {
+        const body = typeof item.body === "string" ? JSON.parse(item.body) : { ...item.body };
+        body[item.dependencyField] = realId;
+        item.body = typeof item.body === "string" ? JSON.stringify(body) : body;
+      }
+    }
 
     let success = false;
 
@@ -73,8 +95,22 @@ export async function replayQueue(sendFn) {
         const res = await sendFn(item.url, item.method, item.body);
 
         if (res?.ok || res?.status === 409) {
+          // Extract real ID from response for dependency resolution
+          const realId = res?.data?.id || res?.data?.borrower_id || res?.data?.loan_id;
+          if (realId !== undefined) {
+            resolvedIds[item.id] = realId;
+          }
+
+          // Also resolve any dependency in the response body
+          if (res?.data && item.dependencyField) {
+            const resolvedValue = res.data[item.dependencyField];
+            if (resolvedValue !== undefined) {
+              resolvedIds[item.id] = resolvedValue;
+            }
+          }
+
           dequeue(item.id);
-          results.push({ item, success: true });
+          results.push({ item, success: true, data: res?.data });
           success = true;
           break;
         }
