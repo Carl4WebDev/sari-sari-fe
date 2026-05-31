@@ -88,6 +88,18 @@ export async function replayQueue(sendFn) {
       }
     }
 
+    // Skip items with IDs that overflow PostgreSQL integer (stale temp IDs from old builds)
+    try {
+      const body = typeof item.body === "string" ? JSON.parse(item.body) : item.body;
+      if (body?.borrower_id && (body.borrower_id > 2147483647 || body.borrower_id < 0)) {
+        dequeue(item.id);
+        results.push({ item, success: false, error: "Skipped: invalid temp borrower ID" });
+        continue;
+      }
+    } catch {
+      // body parse failed, let it proceed to server validation
+    }
+
     let success = false;
 
     for (let attempt = 0; attempt < MAX_RETRIES; attempt++) {
