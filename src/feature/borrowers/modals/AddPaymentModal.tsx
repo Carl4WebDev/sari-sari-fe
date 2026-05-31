@@ -258,8 +258,8 @@ if (!res?.ok) {
             <option value="">Select Payment Type</option>
             <option value="CASH">Cash</option>
             <option value="GCASH">GCash</option>
-            <option value="CREDIT CARD">Credit Card</option>
-            <option value="DEBIT CARD">Debit Card</option>
+            <option value="CREDIT_CARD">Credit Card</option>
+            <option value="DEBIT_CARD">Debit Card</option>
           </select>
 
           {/* Note */}

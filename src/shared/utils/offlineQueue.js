@@ -51,6 +51,12 @@ export function enqueue(url, method, body, description, dependsOn, dependencyFie
 
   queue.push(item);
   saveQueue(queue);
+
+  // Notify that a new item was queued (for sync manager to pick up)
+  try {
+    window.dispatchEvent(new CustomEvent("sw-queue-updated"));
+  } catch {}
+
   return item;
 }
 

@@ -100,12 +100,21 @@ function handleOnline() {
   setTimeout(syncQueue, 2000);
 }
 
+function handleQueueUpdated() {
+  // When a new item is queued while online, trigger sync after a delay
+  // This handles the case where the server is sleeping (Render cold start)
+  if (navigator.onLine && !_isSyncing) {
+    setTimeout(syncQueue, 5000);
+  }
+}
+
 export function initSyncManager(callbacks = {}) {
   _onSyncStart = callbacks.onSyncStart || null;
   _onSyncComplete = callbacks.onSyncComplete || null;
   _onSyncError = callbacks.onSyncError || null;
 
   window.addEventListener("online", handleOnline);
+  window.addEventListener("sw-queue-updated", handleQueueUpdated);
 
   // If already online and queue has items, sync now
   if (navigator.onLine && getQueueSize() > 0) {
@@ -115,6 +124,7 @@ export function initSyncManager(callbacks = {}) {
 
 export function destroySyncManager() {
   window.removeEventListener("online", handleOnline);
+  window.removeEventListener("sw-queue-updated", handleQueueUpdated);
   _onSyncStart = null;
   _onSyncComplete = null;
   _onSyncError = null;
