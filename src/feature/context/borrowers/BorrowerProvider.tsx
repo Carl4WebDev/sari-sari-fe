@@ -190,7 +190,14 @@ const reactivateBorrower = useCallback(async (borrowerId) => {
       return res;
     }
 
-    setBorrowers(res.data || []);
+    // Preserve pending (queued offline) items that aren't in the fresh data yet
+    setBorrowers((prev) => {
+      const fresh = res.data || [];
+      const pending = prev.filter((b) => b._pending);
+      const freshIds = new Set(fresh.map((b) => b.borrower_id));
+      const remaining = pending.filter((b) => !freshIds.has(b.borrower_id));
+      return [...remaining, ...fresh];
+    });
     setLoading(false);
 
     return res;

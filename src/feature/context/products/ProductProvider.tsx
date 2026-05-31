@@ -32,7 +32,14 @@ export const ProductProvider = ({ children }) => {
       return res;
     }
 
-    setProducts(res.data || []);
+    // Preserve pending (queued offline) items that aren't in the fresh data yet
+    setProducts((prev) => {
+      const fresh = res.data || [];
+      const pending = prev.filter((p) => p._pending);
+      const freshIds = new Set(fresh.map((p) => p.product_id));
+      const remaining = pending.filter((p) => !freshIds.has(p.product_id));
+      return [...remaining, ...fresh];
+    });
     setLoading(false);
     return res;
   }, []);
