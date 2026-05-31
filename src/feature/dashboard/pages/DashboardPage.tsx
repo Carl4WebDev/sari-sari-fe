@@ -27,6 +27,9 @@ import TutorialGuide from "../../../shared/components/TutorialGuide";
 import { useTutorial } from "../../../shared/hooks/useTutorial";
 import { generateDashboardPDF } from "../../../shared/utils/exportToPDF";
 import { requestPushPermission } from "../../../shared/utils/pushSubscribe";
+import CollectionStats from "../components/CollectionStats";
+import CollectionCalendar from "../components/CollectionCalendar";
+import CalendarDayPanel from "../components/CalendarDayPanel";
 
 
 export default function DashboardPage() {
@@ -37,6 +40,12 @@ export default function DashboardPage() {
     fetchDashboard,
     error: dashboardError,
     clearError: clearDashboardError,
+    calendarData,
+    collectionStats,
+    collectionTrend,
+    fetchCalendarData,
+    fetchCollectionStats,
+    fetchCollectionTrend,
   } = useDashboard();
 
 const {
@@ -49,6 +58,12 @@ const {
 
   const [isBorrowerOpen, setIsBorrowerOpen] = useState(false);
   const [isLoanOpen, setIsLoanOpen] = useState(false);
+  const [activeTab, setActiveTab] = useState<"overview" | "collections">("overview");
+  const [calendarYear, setCalendarYear] = useState(new Date().getFullYear());
+  const [calendarMonth, setCalendarMonth] = useState(new Date().getMonth() + 1);
+  const [statsPeriod, setStatsPeriod] = useState<"week" | "month">("week");
+  const [selectedDay, setSelectedDay] = useState<string | null>(null);
+  const [selectedDayReminders, setSelectedDayReminders] = useState<any[]>([]);
   const [recentBorrower, setRecentBorrower] = useState<any>(null);
   const [isQuickPaymentOpen, setIsQuickPaymentOpen] =
     useState(false);
@@ -79,6 +94,14 @@ useEffect(() => {
     setGlobalModal({ isOpen: true, title: "Error", message: reminderError, type: "error" });
   }
 }, [reminderError]);
+
+useEffect(() => {
+  if (activeTab === "collections") {
+    fetchCalendarData(calendarYear, calendarMonth);
+    fetchCollectionStats(statsPeriod);
+    fetchCollectionTrend();
+  }
+}, [activeTab, calendarYear, calendarMonth, statsPeriod]);
 
   const chartData = useMemo(() => [
     {
@@ -299,7 +322,32 @@ useEffect(() => {
         </button>
       </div>
 
+      {/* Tab Bar */}
+      <div className="flex gap-1 rounded-xl bg-gray-100 p-1">
+        <button
+          onClick={() => setActiveTab("overview")}
+          className={`flex-1 rounded-lg py-2 text-sm font-medium transition-colors ${
+            activeTab === "overview"
+              ? "bg-[#1E3A8A] text-white"
+              : "text-gray-600 hover:bg-gray-200"
+          }`}
+        >
+          {t("dashboard.tab_overview")}
+        </button>
+        <button
+          onClick={() => setActiveTab("collections")}
+          className={`flex-1 rounded-lg py-2 text-sm font-medium transition-colors ${
+            activeTab === "collections"
+              ? "bg-[#1E3A8A] text-white"
+              : "text-gray-600 hover:bg-gray-200"
+          }`}
+        >
+          {t("dashboard.tab_collections")}
+        </button>
+      </div>
 
+      {/* Overview Tab */}
+      {activeTab === "overview" && (<>
       {/* Summary */}
       <div className="grid grid-cols-2 lg:grid-cols-4 gap-3">
         <SummaryCard
@@ -573,6 +621,67 @@ useEffect(() => {
     )}
   </div>
 </div>
+      </>)}
+
+      {/* Collections Tab */}
+      {activeTab === "collections" && (
+        <div className="space-y-6">
+          <CollectionStats
+            stats={collectionStats}
+            trend={collectionTrend}
+            period={statsPeriod}
+            onPeriodChange={setStatsPeriod}
+          />
+          <CollectionCalendar
+            calendarData={calendarData}
+            year={calendarYear}
+            month={calendarMonth}
+            onPrevMonth={() => {
+              if (calendarMonth === 1) {
+                setCalendarYear(calendarYear - 1);
+                setCalendarMonth(12);
+              } else {
+                setCalendarMonth(calendarMonth - 1);
+              }
+            }}
+            onNextMonth={() => {
+              if (calendarMonth === 12) {
+                setCalendarYear(calendarYear + 1);
+                setCalendarMonth(1);
+              } else {
+                setCalendarMonth(calendarMonth + 1);
+              }
+            }}
+            onDayClick={(date, reminders) => {
+              setSelectedDay(date);
+              setSelectedDayReminders(reminders);
+            }}
+          />
+        </div>
+      )}
+
+      {/* Calendar Day Panel */}
+      <CalendarDayPanel
+        isOpen={selectedDay !== null}
+        date={selectedDay || ""}
+        reminders={selectedDayReminders}
+        onClose={() => {
+          setSelectedDay(null);
+          setSelectedDayReminders([]);
+        }}
+        onMarkDone={async (reminderId) => {
+          await updateReminderStatus(reminderId, "DONE");
+          await fetchDashboardReminders();
+          // Refresh calendar data
+          fetchCalendarData(calendarYear, calendarMonth);
+          fetchCollectionStats(statsPeriod);
+          setSelectedDayReminders((prev) =>
+            prev.map((r) =>
+              r.reminder_id === reminderId ? { ...r, status: "DONE" } : r,
+            ),
+          );
+        }}
+      />
 
       {/* Loading */}
       {loading && (

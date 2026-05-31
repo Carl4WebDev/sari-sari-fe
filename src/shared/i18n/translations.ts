@@ -329,6 +329,40 @@ export const translations = {
     "reminder.collection_date": "Collection date",
     "reminder.skip_reminder": "No thanks",
     "reminder.reminder_created": "Collection reminder set!",
+
+    // Dashboard Tabs
+    "dashboard.tab_overview": "Overview",
+    "dashboard.tab_collections": "Collections",
+
+    // Collection Calendar
+    "calendar.title": "Collection Calendar",
+    "calendar.subtitle": "See which borrowers are due each day",
+    "calendar.no_reminders": "No collections",
+    "calendar.reminders_count": "{count} borrower{s} due",
+    "calendar.overdue": "Overdue",
+    "calendar.pending": "Pending",
+    "calendar.done": "Done",
+    "calendar.sun": "Sun",
+    "calendar.mon": "Mon",
+    "calendar.tue": "Tue",
+    "calendar.wed": "Wed",
+    "calendar.thu": "Thu",
+    "calendar.fri": "Fri",
+    "calendar.sat": "Sat",
+
+    // Collection Stats
+    "stats.title": "Collection Performance",
+    "stats.subtitle": "Track your collection efficiency",
+    "stats.this_week": "This Week",
+    "stats.this_month": "This Month",
+    "stats.collected": "Collected",
+    "stats.expected": "Expected",
+    "stats.on_time_rate": "On-Time Rate",
+    "stats.collections_done": "Done",
+    "stats.no_data": "No collection data yet",
+    "stats.trend_title": "Daily Collection Trend",
+    "stats.trend_subtitle": "Payments received over the last 30 days",
+    "stats.hero_text": "Collected \u20B1{amount} this {period}",
   },
 
   fil: {
@@ -649,6 +683,40 @@ export const translations = {
     "reminder.collection_date": "Araw ng koleksyon",
     "reminder.skip_reminder": "Salamat na lang",
     "reminder.reminder_created": "Naitakda na ang paalala sa koleksyon!",
+
+    // Dashboard Tabs
+    "dashboard.tab_overview": "Buod",
+    "dashboard.tab_collections": "Mga Koleksyon",
+
+    // Collection Calendar
+    "calendar.title": "Kalendaryo ng Koleksyon",
+    "calendar.subtitle": "Tingnan kung sino ang may nakatakdang bayad bawat araw",
+    "calendar.no_reminders": "Walang koleksyon",
+    "calendar.reminders_count": "{count} mangungutang ang may bayad",
+    "calendar.overdue": "Overdue",
+    "calendar.pending": "Nakabinbin",
+    "calendar.done": "Tapos na",
+    "calendar.sun": "Lin",
+    "calendar.mon": "Lun",
+    "calendar.tue": "Mar",
+    "calendar.wed": "Miy",
+    "calendar.thu": "Huw",
+    "calendar.fri": "Biy",
+    "calendar.sat": "Sab",
+
+    // Collection Stats
+    "stats.title": "Performance ng Koleksyon",
+    "stats.subtitle": "Subaybayan ang iyong kahusayan sa pagkolekta",
+    "stats.this_week": "Ngayong Linggo",
+    "stats.this_month": "Ngayong Buwan",
+    "stats.collected": "Nakolekta",
+    "stats.expected": "Inaasahan",
+    "stats.on_time_rate": "Rate sa Oras",
+    "stats.collections_done": "Natapos",
+    "stats.no_data": "Wala pang datos ng koleksyon",
+    "stats.trend_title": "Araw-araw na Trend ng Koleksyon",
+    "stats.trend_subtitle": "Mga natanggap na bayad sa nakaraang 30 araw",
+    "stats.hero_text": "Nakolekta ang \u20B1{amount} ngayong {period}",
   },
 } as const;
 
