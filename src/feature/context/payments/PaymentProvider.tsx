@@ -8,11 +8,11 @@ export const PaymentProvider = ({ children }) => {
 
   const clearError = useCallback(() => setError(null), []);
 
-  const createPayment = useCallback(async (payload) => {
+  const createPayment = useCallback(async (payload, options = {}) => {
     setLoading(true);
     setError(null);
 
-    const res = await createPaymentApi(payload);
+    const res = await createPaymentApi(payload, options);
 
     if (!res?.ok) {
       setError(res?.message || "Failed to create payment");

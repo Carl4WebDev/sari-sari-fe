@@ -145,15 +145,24 @@ const handleQuickPay = (amount: number) => {
       setConfirmModal(prev => ({ ...prev, isOpen: false }));
       setQuickPayLoading(amount);
 
+      const payOptions = isPending && borrower?._queuedItemId
+        ? { dependsOn: borrower._queuedItemId, dependencyField: "borrower_id" }
+        : {};
+
       const res = await createPayment({
         borrower_id: Number(id),
         amount,
         payment_type: "CASH",
         note: "",
-      });
+      }, payOptions);
 
       if (res?.ok) {
-        await refreshBorrowerDetails();
+        // Refresh is best-effort — don't crash if offline
+        try {
+          await refreshBorrowerDetails();
+        } catch (e) {
+          console.warn("[QuickPay] Refresh failed (likely offline):", e);
+        }
         setSuccessToast({
           isOpen: true,
           amount,
@@ -232,6 +241,10 @@ const handleQuickPay = (amount: number) => {
 useEffect(() => {
   if (!id) return;
 
+  // Skip API calls for temp/pending borrowers (offline-created, not yet synced)
+  const isTempBorrower = Number(id) > 2147483647;
+  if (isTempBorrower) return;
+
   clearBorrowerError();
   clearReminderError();
   fetchBorrowerTransactions(id);
@@ -257,6 +270,9 @@ const paginatedTransactions = useMemo(() => ledgerTransactions.slice(
 if (!borrower) {
   return <div className="p-6 text-gray-500">{t("details.loading")}</div>;
 }
+
+// Check if this is a temp/pending borrower (created offline, not synced yet)
+const isPending = borrower._pending || Number(borrower.borrower_id) > 2147483647;
 
   const borrowerAdapter = {
     id: borrower.borrower_id,
@@ -385,13 +401,30 @@ const handleDeleteNote = (noteId: number) => {
   const refreshBorrowerDetails = async () => {
   if (!id) return;
 
-  await fetchBorrowerTransactions(id);
+  // Skip API calls for temp/pending borrowers
+  if (Number(id) > 2147483647) {
+    await fetchBorrowers();
+    return;
+  }
+
+  try {
+    await fetchBorrowerTransactions(id);
+    await fetchBorrowerNotes(id);
+    await fetchBorrowerReminders(id);
+  } catch (e) {
+    console.warn("[BorrowerDetails] Refresh failed:", e);
+  }
   await fetchBorrowers();
-  await fetchBorrowerReminders(id);
 };
 
   return (
     <div className="space-y-6 pb-32">
+
+{isPending && (
+  <div className="rounded-lg bg-amber-50 border border-amber-200 p-3 text-sm text-amber-800">
+    This borrower is being synced. Transaction history will appear once the sync completes.
+  </div>
+)}
 
 <EditBorrowerModal
   isOpen={isEditBorrowerOpen}

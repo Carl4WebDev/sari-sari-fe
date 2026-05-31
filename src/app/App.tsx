@@ -2,6 +2,7 @@ import { BrowserRouter } from "react-router-dom";
 import { useEffect } from "react";
 import AppRoutes from "./routes";
 import { initSyncManager, destroySyncManager } from "../shared/utils/syncManager";
+import ErrorBoundary from "../shared/components/ErrorBoundary";
 
 export default function App() {
   useEffect(() => {
@@ -28,7 +29,9 @@ export default function App() {
 
   return (
     <BrowserRouter>
-      <AppRoutes />
+      <ErrorBoundary>
+        <AppRoutes />
+      </ErrorBoundary>
     </BrowserRouter>
   );
 }

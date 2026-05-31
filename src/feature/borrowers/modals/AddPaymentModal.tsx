@@ -98,7 +98,14 @@ const {
       note: form.note,
     };
 
-    const res = await createPayment(payload);
+    // Pass dependency info for offline borrowers so queue resolves real ID after sync
+    const isPending = (borrower as any)._pending;
+    const queuedItemId = (borrower as any)._queuedItemId;
+    const payOptions = isPending && queuedItemId
+      ? { dependsOn: queuedItemId, dependencyField: "borrower_id" }
+      : {};
+
+    const res = await createPayment(payload, payOptions);
 
 if (!res?.ok) {
   setGlobalModal({
@@ -126,15 +133,16 @@ if (!res?.ok) {
     return;
   }
 
-  await fetchBorrowerTransactions(borrower.id);
+  // Refresh data — wrapped in try-catch so offline failures don't crash the page
+  try {
+    await fetchBorrowerTransactions(borrower.id);
 
-  if (form.note.trim()) {
-    await createBorrowerNote(
-      borrower.id,
-      form.note
-    );
-
-    await fetchBorrowerNotes(borrower.id);
+    if (form.note.trim()) {
+      await createBorrowerNote(borrower.id, form.note);
+      await fetchBorrowerNotes(borrower.id);
+    }
+  } catch (e) {
+    console.warn("[AddPayment] Failed to refresh after payment:", e);
   }
 
   const paidAmount = Number(form.amount);
