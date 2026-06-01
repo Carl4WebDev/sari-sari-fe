@@ -31,6 +31,8 @@ import CollectionStats from "../components/CollectionStats";
 import { useOnlineStatus } from "../../../shared/hooks/useOnlineStatus";
 import CollectionCalendar from "../components/CollectionCalendar";
 import CalendarDayPanel from "../components/CalendarDayPanel";
+import IncomeTab from "../components/IncomeTab";
+import AddExpenseModal from "../modals/AddExpenseModal";
 
 
 export default function DashboardPage() {
@@ -48,6 +50,13 @@ export default function DashboardPage() {
     fetchCalendarData,
     fetchCollectionStats,
     fetchCollectionTrend,
+    incomeSummary,
+    expenses,
+    fetchIncomeSummary,
+    fetchExpenses,
+    createExpense,
+    updateExpense,
+    deleteExpense,
   } = useDashboard();
 
 const {
@@ -60,7 +69,10 @@ const {
 
   const [isBorrowerOpen, setIsBorrowerOpen] = useState(false);
   const [isLoanOpen, setIsLoanOpen] = useState(false);
-  const [activeTab, setActiveTab] = useState<"overview" | "collections">("overview");
+  const [activeTab, setActiveTab] = useState<"overview" | "collections" | "income">("overview");
+  const [incomePeriod, setIncomePeriod] = useState<"week" | "month">("month");
+  const [isExpenseModalOpen, setIsExpenseModalOpen] = useState(false);
+  const [editingExpense, setEditingExpense] = useState<any>(null);
   const [calendarYear, setCalendarYear] = useState(new Date().getFullYear());
   const [calendarMonth, setCalendarMonth] = useState(new Date().getMonth() + 1);
   const [statsPeriod, setStatsPeriod] = useState<"week" | "month">("week");
@@ -104,6 +116,14 @@ useEffect(() => {
     fetchCollectionTrend();
   }
 }, [activeTab, calendarYear, calendarMonth, statsPeriod]);
+
+useEffect(() => {
+  if (activeTab === "income") {
+    fetchIncomeSummary(incomePeriod);
+    const now = new Date();
+    fetchExpenses(now.getMonth() + 1, now.getFullYear());
+  }
+}, [activeTab, incomePeriod]);
 
   const chartData = useMemo(() => [
     {
@@ -204,6 +224,23 @@ useEffect(() => {
     } else {
       setGlobalModal({ isOpen: true, title: "Failed", message: "Could not send email. Please try again.", type: "warning" });
     }
+  }}
+/>
+
+<AddExpenseModal
+  isOpen={isExpenseModalOpen}
+  isClose={() => {
+    setIsExpenseModalOpen(false);
+    setEditingExpense(null);
+  }}
+  editExpense={editingExpense}
+  onSubmit={async (payload) => {
+    if (editingExpense) {
+      await updateExpense(editingExpense.expense_id, payload);
+    } else {
+      await createExpense(payload);
+    }
+    fetchIncomeSummary(incomePeriod);
   }}
 />
 
@@ -348,6 +385,16 @@ useEffect(() => {
           }`}
         >
           {t("dashboard.tab_collections")}
+        </button>
+        <button
+          onClick={() => setActiveTab("income")}
+          className={`flex-1 rounded-lg py-2 text-sm font-medium transition-colors ${
+            activeTab === "income"
+              ? "bg-[#1E3A8A] text-white"
+              : "text-gray-600 hover:bg-gray-200"
+          }`}
+        >
+          {t("dashboard.tab_income")}
         </button>
       </div>
 
@@ -663,6 +710,28 @@ useEffect(() => {
             }}
           />
         </div>
+      )}
+
+      {/* Income Tab */}
+      {activeTab === "income" && (
+        <IncomeTab
+          summary={incomeSummary}
+          expenses={expenses}
+          period={incomePeriod}
+          onPeriodChange={setIncomePeriod}
+          onAddExpense={() => {
+            setEditingExpense(null);
+            setIsExpenseModalOpen(true);
+          }}
+          onEditExpense={(expense) => {
+            setEditingExpense(expense);
+            setIsExpenseModalOpen(true);
+          }}
+          onDeleteExpense={async (id) => {
+            await deleteExpense(id);
+            fetchIncomeSummary(incomePeriod);
+          }}
+        />
       )}
 
       {/* Calendar Day Panel */}

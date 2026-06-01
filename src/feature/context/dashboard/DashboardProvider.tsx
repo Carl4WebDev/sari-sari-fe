@@ -5,7 +5,14 @@ import {
   getCalendarDataApi,
   getCollectionStatsApi,
   getCollectionTrendApi,
+  getIncomeSummaryApi,
 } from "./dashboardApi";
+import {
+  createExpenseApi,
+  getExpensesApi,
+  updateExpenseApi,
+  deleteExpenseApi,
+} from "./expenseApi";
 
 export const DashboardProvider = ({ children }) => {
   const [dashboard, setDashboard] = useState(null);
@@ -15,6 +22,9 @@ export const DashboardProvider = ({ children }) => {
   const [calendarData, setCalendarData] = useState([]);
   const [collectionStats, setCollectionStats] = useState(null);
   const [collectionTrend, setCollectionTrend] = useState([]);
+
+  const [incomeSummary, setIncomeSummary] = useState(null);
+  const [expenses, setExpenses] = useState([]);
 
   const clearError = useCallback(() => setError(null), []);
 
@@ -74,6 +84,48 @@ export const DashboardProvider = ({ children }) => {
     return res;
   }, []);
 
+  const fetchIncomeSummary = useCallback(async (period = "month") => {
+    const res = await getIncomeSummaryApi(period);
+    if (res?.ok) {
+      setIncomeSummary(res.data);
+    }
+    return res;
+  }, []);
+
+  const fetchExpenses = useCallback(async (month, year) => {
+    const res = await getExpensesApi(month, year);
+    if (res?.ok) {
+      setExpenses(res.data || []);
+    }
+    return res;
+  }, []);
+
+  const createExpense = useCallback(async (payload) => {
+    const res = await createExpenseApi(payload);
+    if (res?.ok) {
+      setExpenses((prev) => [res.data, ...prev]);
+    }
+    return res;
+  }, []);
+
+  const updateExpense = useCallback(async (id, payload) => {
+    const res = await updateExpenseApi(id, payload);
+    if (res?.ok) {
+      setExpenses((prev) =>
+        prev.map((e) => (e.expense_id === id ? res.data : e)),
+      );
+    }
+    return res;
+  }, []);
+
+  const deleteExpense = useCallback(async (id) => {
+    const res = await deleteExpenseApi(id);
+    if (res?.ok) {
+      setExpenses((prev) => prev.filter((e) => e.expense_id !== id));
+    }
+    return res;
+  }, []);
+
   const value = useMemo(
     () => ({
       dashboard,
@@ -87,6 +139,13 @@ export const DashboardProvider = ({ children }) => {
       fetchCalendarData,
       fetchCollectionStats,
       fetchCollectionTrend,
+      incomeSummary,
+      expenses,
+      fetchIncomeSummary,
+      fetchExpenses,
+      createExpense,
+      updateExpense,
+      deleteExpense,
     }),
     [
       dashboard,
@@ -100,6 +159,13 @@ export const DashboardProvider = ({ children }) => {
       fetchCalendarData,
       fetchCollectionStats,
       fetchCollectionTrend,
+      incomeSummary,
+      expenses,
+      fetchIncomeSummary,
+      fetchExpenses,
+      createExpense,
+      updateExpense,
+      deleteExpense,
     ],
   );
 

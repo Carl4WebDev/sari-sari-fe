@@ -334,6 +334,26 @@ export const translations = {
     // Dashboard Tabs
     "dashboard.tab_overview": "Overview",
     "dashboard.tab_collections": "Collections",
+    "dashboard.tab_income": "Income",
+
+    // Income & Expenses
+    "income.title": "Income & Expenses",
+    "income.subtitle": "Track your store profitability",
+    "income.profit": "Net Profit",
+    "income.total_income": "Total Income",
+    "income.total_expenses": "Total Expenses",
+    "income.add_expense": "Add Expense",
+    "income.no_expenses": "No expenses recorded yet",
+    "income.by_method": "Income by Payment Method",
+    "income.by_category": "Expenses by Category",
+    "income.recent_expenses": "Recent Expenses",
+    "income.categories.RESTOCK": "Restock",
+    "income.categories.UTILITIES": "Utilities",
+    "income.categories.RENT": "Rent",
+    "income.categories.SALARY": "Salary",
+    "income.categories.TRANSPORT": "Transport",
+    "income.categories.SUPPLIES": "Supplies",
+    "income.categories.OTHER": "Other",
 
     // Collection Calendar
     "calendar.title": "Collection Calendar",
@@ -714,6 +734,26 @@ export const translations = {
     // Dashboard Tabs
     "dashboard.tab_overview": "Buod",
     "dashboard.tab_collections": "Mga Koleksyon",
+    "dashboard.tab_income": "Kita",
+
+    // Income & Expenses
+    "income.title": "Kita at Gastos",
+    "income.subtitle": "Subaybayan ang kita ng iyong tindahan",
+    "income.profit": "Tubong Kita",
+    "income.total_income": "Kabuuang Kita",
+    "income.total_expenses": "Kabuuang Gastos",
+    "income.add_expense": "Magdagdag ng Gastos",
+    "income.no_expenses": "Wala pang naitalang gastos",
+    "income.by_method": "Ayon sa Paraan ng Pagbabayad",
+    "income.by_category": "Ayon sa Kategorya",
+    "income.recent_expenses": "Mga Kamakailang Gastos",
+    "income.categories.RESTOCK": "Pagrestock",
+    "income.categories.UTILITIES": "Utilities",
+    "income.categories.RENT": "Upa",
+    "income.categories.SALARY": "Sahod",
+    "income.categories.TRANSPORT": "Pamasahe",
+    "income.categories.SUPPLIES": "Mga Kagamitan",
+    "income.categories.OTHER": "Iba pa",
 
     // Collection Calendar
     "calendar.title": "Kalendaryo ng Koleksyon",

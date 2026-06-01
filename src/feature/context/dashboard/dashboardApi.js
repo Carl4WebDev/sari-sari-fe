@@ -19,3 +19,8 @@ export const getCollectionTrendApi = () =>
   apiRequest("/api/dashboard/trend", {
     method: "GET",
   });
+
+export const getIncomeSummaryApi = (period = "month") =>
+  apiRequest(`/api/dashboard/income?period=${period}`, {
+    method: "GET",
+  });
