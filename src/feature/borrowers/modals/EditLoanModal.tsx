@@ -121,7 +121,7 @@ export default function EditLoanModal({
                       )
                     }
                     placeholder="Product"
-                    className="flex-1 rounded-lg border border-gray-300 px-3 py-3 text-sm focus:border-[#1E3A8A] focus:ring-1 focus:ring-[#1E3A8A] outline-none"
+                    className="flex-1 rounded-lg border border-gray-300 px-3 py-3 text-base focus:border-[#1E3A8A] focus:ring-1 focus:ring-[#1E3A8A] outline-none"
                   />
 
                   <button
@@ -145,7 +145,7 @@ export default function EditLoanModal({
                       )
                     }
                     placeholder="Qty"
-                    className="w-1/2 rounded-lg border border-gray-300 px-3 py-3 text-sm focus:border-[#1E3A8A] focus:ring-1 focus:ring-[#1E3A8A] outline-none"
+                    className="w-1/2 rounded-lg border border-gray-300 px-3 py-3 text-base focus:border-[#1E3A8A] focus:ring-1 focus:ring-[#1E3A8A] outline-none"
                   />
 
                   <input
@@ -159,7 +159,7 @@ export default function EditLoanModal({
                       )
                     }
                     placeholder="Price"
-                    className="w-1/2 rounded-lg border border-gray-300 px-3 py-3 text-sm focus:border-[#1E3A8A] focus:ring-1 focus:ring-[#1E3A8A] outline-none"
+                    className="w-1/2 rounded-lg border border-gray-300 px-3 py-3 text-base focus:border-[#1E3A8A] focus:ring-1 focus:ring-[#1E3A8A] outline-none"
                   />
                 </div>
 
@@ -167,7 +167,7 @@ export default function EditLoanModal({
                   <button
                     type="button"
                     onClick={() => removeItem(index)}
-                    className="text-xs text-red-500"
+                    className="rounded-lg px-2 py-1 text-xs font-medium text-red-500"
                   >
                     Remove
                   </button>

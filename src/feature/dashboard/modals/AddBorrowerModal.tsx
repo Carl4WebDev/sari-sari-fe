@@ -160,7 +160,7 @@ const handleSubmit = async () => {
               required
               value={form.fName}
               onChange={handleChange}
-              className="w-full rounded-lg border border-gray-300 px-3 py-3 text-sm focus:border-[#1E3A8A] focus:ring-1 focus:ring-[#1E3A8A] outline-none"
+              className="w-full rounded-lg border border-gray-300 px-3 py-3 text-base focus:border-[#1E3A8A] focus:ring-1 focus:ring-[#1E3A8A] outline-none"
             />
 
 
@@ -170,7 +170,7 @@ const handleSubmit = async () => {
               required
               value={form.lName}
               onChange={handleChange}
-              className="w-full rounded-lg border border-gray-300 px-3 py-3 text-sm focus:border-[#1E3A8A] focus:ring-1 focus:ring-[#1E3A8A] outline-none"
+              className="w-full rounded-lg border border-gray-300 px-3 py-3 text-base focus:border-[#1E3A8A] focus:ring-1 focus:ring-[#1E3A8A] outline-none"
             />
 
             {/* Optional Fields */}
@@ -197,7 +197,7 @@ const handleSubmit = async () => {
     placeholder="Middle Name"
     value={form.mName}
     onChange={handleChange}
-    className="w-full rounded-lg border border-gray-300 bg-white px-3 py-3 text-sm outline-none focus:border-[#1E3A8A] focus:ring-1 focus:ring-[#1E3A8A]"
+    className="w-full rounded-lg border border-gray-300 bg-white px-3 py-3 text-base outline-none focus:border-[#1E3A8A] focus:ring-1 focus:ring-[#1E3A8A]"
   />
 
   <input
@@ -205,15 +205,16 @@ const handleSubmit = async () => {
     type="date"
     value={form.date}
     onChange={handleChange}
-    className="w-full rounded-lg border border-gray-300 bg-white px-3 py-3 text-sm outline-none focus:border-[#1E3A8A] focus:ring-1 focus:ring-[#1E3A8A]"
+    className="w-full rounded-lg border border-gray-300 bg-white px-3 py-3 text-base outline-none focus:border-[#1E3A8A] focus:ring-1 focus:ring-[#1E3A8A]"
   />
 
   <input
     name="contact"
+    type="tel"
     placeholder="Contact Number"
     value={form.contact}
     onChange={handleChange}
-    className="w-full rounded-lg border border-gray-300 bg-white px-3 py-3 text-sm outline-none focus:border-[#1E3A8A] focus:ring-1 focus:ring-[#1E3A8A]"
+    className="w-full rounded-lg border border-gray-300 bg-white px-3 py-3 text-base outline-none focus:border-[#1E3A8A] focus:ring-1 focus:ring-[#1E3A8A]"
   />
 
   <input
@@ -222,7 +223,7 @@ const handleSubmit = async () => {
     placeholder="Email Address"
     value={form.email}
     onChange={handleChange}
-    className="w-full rounded-lg border border-gray-300 bg-white px-3 py-3 text-sm outline-none focus:border-[#1E3A8A] focus:ring-1 focus:ring-[#1E3A8A]"
+    className="w-full rounded-lg border border-gray-300 bg-white px-3 py-3 text-base outline-none focus:border-[#1E3A8A] focus:ring-1 focus:ring-[#1E3A8A]"
   />
   </div>
 </div>

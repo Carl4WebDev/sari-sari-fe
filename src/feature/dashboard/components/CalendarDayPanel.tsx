@@ -65,7 +65,7 @@ export default function CalendarDayPanel({
           </div>
           <button
             onClick={onClose}
-            className="rounded-lg p-2 text-gray-400 hover:bg-gray-100 hover:text-gray-600"
+            className="rounded-lg p-2.5 text-gray-400 hover:bg-gray-100 hover:text-gray-600"
           >
             &#10005;
           </button>
@@ -104,7 +104,7 @@ export default function CalendarDayPanel({
                 {reminder.status !== "DONE" && (
                   <button
                     onClick={() => onMarkDone(reminder.reminder_id)}
-                    className="rounded-lg bg-green-500 px-2.5 py-1 text-xs font-medium text-white hover:bg-green-600"
+                    className="rounded-lg bg-green-500 px-3 py-1.5 text-xs font-medium text-white hover:bg-green-600"
                   >
                     {t("reminder.mark_done")}
                   </button>

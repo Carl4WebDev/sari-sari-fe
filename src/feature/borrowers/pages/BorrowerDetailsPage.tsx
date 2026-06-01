@@ -4,7 +4,7 @@ import { useMemo, useState, useEffect, useRef } from "react";
 import { useBorrower } from "../../context/borrowers/useBorrower";
 import { calculateAge } from "../../components/utility/calculateAge";
 import { resolveImageUrl } from "../../../shared/utils/resolveImageUrl";
-import { generateTransactionsPDF } from "../../../shared/utils/exportToPDF";
+import { sendNativeSMS, buildReminderSMS, canSendSMS } from "../../../shared/utils/sendSMS";
 
 import AddPaymentModal from "../modals/AddPaymentModal";
 import AddLoanModalBorrowerDetails from "../modals/AddLoanModalBorrowerDetails";
@@ -390,8 +390,9 @@ const handleDeleteNote = (noteId: number) => {
     URL.revokeObjectURL(url);
   };
 
-  const handleExportPDF = () => {
+  const handleExportPDF = async () => {
     const user = JSON.parse(localStorage.getItem("user") || "{}");
+    const { generateTransactionsPDF } = await import("../../../shared/utils/exportToPDF");
     generateTransactionsPDF(
       `${borrower.first_name} ${borrower.last_name}`,
       ledgerTransactions,
@@ -494,6 +495,7 @@ const handleDeleteNote = (noteId: number) => {
   contactNumber={borrower.contact_number}
   borrowerEmail={borrower.email}
   borrowerName={`${borrower.first_name} ${borrower.last_name}`}
+  storeName={JSON.parse(localStorage.getItem("user") || "{}").store_name}
   onCreateReminder={async (payload) => {
     const res = await createReminder(payload);
 
@@ -701,14 +703,14 @@ const handleDeleteNote = (noteId: number) => {
           type="date"
           value={dateFilter}
           onChange={(e) => setDateFilter(e.target.value)}
-          className="rounded-lg border border-gray-300 px-3 py-3 text-sm"
+          className="rounded-lg border border-gray-300 px-3 py-3 text-base"
         />
 
         <input
           placeholder={t("details.filter_product")}
           value={productFilter}
           onChange={(e) => setProductFilter(e.target.value)}
-          className="flex-1 rounded-lg border border-gray-300 px-3 py-3 text-sm"
+          className="flex-1 rounded-lg border border-gray-300 px-3 py-3 text-base"
         />
 
         <button
@@ -773,7 +775,7 @@ const handleDeleteNote = (noteId: number) => {
                       },
                     });
                   }}
-                  className="rounded-lg border border-red-300 px-2 py-1 text-[11px] font-medium text-red-600 hover:bg-red-50"
+                  className="rounded-lg border border-red-300 px-3 py-1.5 text-xs font-medium text-red-600 hover:bg-red-50"
                 >
                   {t("details.void")}
                 </button>
@@ -916,6 +918,25 @@ const handleDeleteNote = (noteId: number) => {
             {reminder.note}
           </p>
         )}
+
+        {canSendSMS() && borrower.contact_number && isOnline && (
+          <div className="mt-3 flex gap-2">
+            <button
+              onClick={() => {
+                const msg = buildReminderSMS({
+                  firstName: borrower.first_name,
+                  storeName: JSON.parse(localStorage.getItem("user") || "{}").store_name || "Store",
+                  amount: reminder.amount_expected || 0,
+                  dueDate: new Date(reminder.due_date).toLocaleDateString(),
+                });
+                sendNativeSMS(borrower.contact_number, msg);
+              }}
+              className="rounded-lg border border-[#16A34A] px-3 py-1.5 text-xs font-medium text-[#16A34A]"
+            >
+              {t("sms.send")}
+            </button>
+          </div>
+        )}
       </div>
     ))}
   </div>
@@ -945,7 +966,7 @@ const handleDeleteNote = (noteId: number) => {
           <textarea
             value={editingNoteText}
             onChange={(e) => setEditingNoteText(e.target.value)}
-            className="w-full rounded-lg border border-gray-300 px-3 py-2 text-sm outline-none"
+            className="w-full rounded-lg border border-gray-300 px-3 py-2 text-base outline-none"
           />
         ) : (
           <p>{note.note_text}</p>
@@ -979,14 +1000,14 @@ const handleDeleteNote = (noteId: number) => {
                   setEditingNoteId(note.borrower_note_id);
                   setEditingNoteText(note.note_text);
                 }}
-                className="text-xs text-[#1E3A8A] underline"
+                className="rounded-lg px-2 py-1 text-xs font-medium text-[#1E3A8A] underline"
               >
                 {t("details.edit")}
               </button>
 
               <button
                 onClick={() => handleDeleteNote(note.borrower_note_id)}
-                className="text-xs text-red-500 underline"
+                className="rounded-lg px-2 py-1 text-xs font-medium text-red-500 underline"
               >
                 {t("details.delete")}
               </button>
@@ -1004,7 +1025,7 @@ const handleDeleteNote = (noteId: number) => {
       value={noteInput}
       onChange={(e) => setNoteInput(e.target.value)}
       placeholder={t("details.add_note_placeholder")}
-      className="flex-1 rounded-lg border border-gray-300 px-5 py-5 text-sm"
+      className="flex-1 rounded-lg border border-gray-300 px-5 py-5 text-base"
     />
 
     <button
@@ -1143,7 +1164,7 @@ const handleDeleteNote = (noteId: number) => {
           value={voidReasonInput}
           onChange={(e) => { setVoidReasonInput(e.target.value); voidReasonRef.current = e.target.value; }}
           placeholder={t("details.void_reason_placeholder")}
-          className="mt-3 w-full rounded-lg border border-gray-300 px-3 py-2 text-sm text-gray-700 resize-none"
+          className="mt-3 w-full rounded-lg border border-gray-300 px-3 py-2 text-base text-gray-700 resize-none"
           rows={2}
         />
       )}

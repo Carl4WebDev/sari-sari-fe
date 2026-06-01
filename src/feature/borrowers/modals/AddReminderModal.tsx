@@ -2,6 +2,8 @@ import { useEffect, useState } from "react";
 
 import GlobalModal from "../../../shared/components/GlobalModal";
 import { sendCollectionReminderEmail } from "../../../shared/utils/sendEmail";
+import { sendNativeSMS, buildReminderSMS, canSendSMS } from "../../../shared/utils/sendSMS";
+import { useTranslation } from "../../../shared/i18n/useTranslation";
 
 interface Props {
   isOpen: boolean;
@@ -11,6 +13,7 @@ interface Props {
   contactNumber?: string | null;
   borrowerEmail?: string | null;
   borrowerName?: string;
+  storeName?: string;
   onCreateReminder: (payload: any) => Promise<any>;
 }
 
@@ -22,11 +25,14 @@ export default function AddReminderModal({
   contactNumber,
   borrowerEmail,
   borrowerName,
+  storeName,
   onCreateReminder,
 }: Props) {
+  const { t } = useTranslation();
   const [animate, setAnimate] = useState(false);
   const [loading, setLoading] = useState(false);
   const [sendEmail, setSendEmail] = useState(false);
+  const [sendSMS, setSendSMS] = useState(false);
 
 
   const [globalModal, setGlobalModal] = useState({
@@ -104,8 +110,18 @@ if (amount > currentBalance) {
           borrowerName: borrowerName || "Customer",
           amount: Number(form.amount_expected || 0),
           dueDate: form.due_date,
-          storeName: "Listahub",
+          storeName: storeName || "Listahub",
         });
+      }
+
+      if (sendSMS && contactNumber) {
+        const message = buildReminderSMS({
+          firstName: borrowerName || "Customer",
+          storeName: storeName || "Store",
+          amount: Number(form.amount_expected || 0),
+          dueDate: form.due_date,
+        });
+        sendNativeSMS(contactNumber, message);
       }
 
       setForm({
@@ -198,6 +214,18 @@ if (amount > currentBalance) {
                 className="h-4 w-4 rounded border-gray-300 text-[#1E3A8A] focus:ring-[#1E3A8A]"
               />
               Also send email to borrower
+            </label>
+          )}
+
+          {canSendSMS() && contactNumber && (
+            <label className="flex items-center gap-2 text-sm text-gray-600">
+              <input
+                type="checkbox"
+                checked={sendSMS}
+                onChange={(e) => setSendSMS(e.target.checked)}
+                className="h-4 w-4 rounded border-gray-300 text-emerald-600 focus:ring-emerald-600"
+              />
+              {t("sms.auto_send")}
             </label>
           )}
 

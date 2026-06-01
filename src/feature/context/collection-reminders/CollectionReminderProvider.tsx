@@ -62,9 +62,11 @@ export const CollectionReminderProvider = ({ children }) => {
   }, []);
 
   // Fetch dashboard reminders on mount so they're cached for offline use
+  // Staggered by 2s so borrowers/products/dashboard load first on cold Render
   useEffect(() => {
     if (localStorage.getItem("user_token")) {
-      fetchDashboardReminders();
+      const timer = setTimeout(() => fetchDashboardReminders(), 2000);
+      return () => clearTimeout(timer);
     }
   }, []);
 

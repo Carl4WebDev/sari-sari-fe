@@ -1,10 +1,15 @@
 import { apiRequest } from "../../auth/api/httpClient/httpClient";
 
-// GET products
-export const getProductsApi = () =>
-  apiRequest("/api/products", {
+// GET products (with optional pagination)
+export const getProductsApi = ({ page, limit } = {}) => {
+  const params = new URLSearchParams();
+  if (page) params.set("page", String(page));
+  if (limit) params.set("limit", String(limit));
+  const qs = params.toString();
+  return apiRequest(`/api/products${qs ? `?${qs}` : ""}`, {
     method: "GET",
   });
+};
 
 // CREATE product
 export const createProductApi = (payload) =>

@@ -3,7 +3,7 @@ import { useProduct } from "../context/products/useProduct";
 import ProductModal from "./modals/ProductModal";
 import ArchivedProductsModal from "./modals/ArchivedProductsModal";
 import { useTranslation } from "../../shared/i18n/useTranslation";
-import { generateProductsPDF } from "../../shared/utils/exportToPDF";
+
 import { useOnlineStatus } from "../../shared/hooks/useOnlineStatus";
 
 interface Product {
@@ -265,8 +265,9 @@ onClick={(e) => {
 
     {/* Export PDF */}
     <button
-      onClick={() => {
+      onClick={async () => {
         const user = JSON.parse(localStorage.getItem("user") || "{}");
+        const { generateProductsPDF } = await import("../../shared/utils/exportToPDF");
         generateProductsPDF(filteredProducts, user.store_name || "");
       }}
       className="flex flex-col items-center justify-center rounded-xl bg-[#DC2626] py-2 text-white shadow-sm transition hover:bg-[#B91C1C]"

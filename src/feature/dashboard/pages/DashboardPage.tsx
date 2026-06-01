@@ -25,8 +25,8 @@ import { useTranslation } from "../../../shared/i18n/useTranslation";
 import OnboardingWizard from "../../../shared/components/OnboardingWizard";
 import TutorialGuide from "../../../shared/components/TutorialGuide";
 import { useTutorial } from "../../../shared/hooks/useTutorial";
-import { generateDashboardPDF } from "../../../shared/utils/exportToPDF";
 import { requestPushPermission } from "../../../shared/utils/pushSubscribe";
+
 import CollectionStats from "../components/CollectionStats";
 import { useOnlineStatus } from "../../../shared/hooks/useOnlineStatus";
 import CollectionCalendar from "../components/CollectionCalendar";
@@ -245,9 +245,10 @@ useEffect(() => {
 
   <div className="flex items-center gap-2">
     <button
-      onClick={() => {
+      onClick={async () => {
         if (!dashboard) return;
         const user = JSON.parse(localStorage.getItem("user") || "{}");
+        const { generateDashboardPDF } = await import("../../../shared/utils/exportToPDF");
         generateDashboardPDF(dashboard, user.store_name || "");
       }}
       className="rounded-xl border border-[#1E3A8A] bg-white px-3 py-3 text-sm text-[#1E3A8A] shadow-sm"

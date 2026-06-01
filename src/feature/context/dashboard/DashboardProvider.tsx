@@ -36,9 +36,11 @@ export const DashboardProvider = ({ children }) => {
   }, []);
 
   // Fetch dashboard on mount so it's cached for offline use
+  // Staggered by 1.5s so borrowers/products load first on cold Render
   useEffect(() => {
     if (localStorage.getItem("user_token")) {
-      fetchDashboard();
+      const timer = setTimeout(() => fetchDashboard(), 1500);
+      return () => clearTimeout(timer);
     }
   }, []);
 

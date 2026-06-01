@@ -3,6 +3,9 @@ import { enqueue } from "../../../../shared/utils/offlineQueue";
 
 const API_BASE = import.meta.env.VITE_API_BASE;
 
+// In-flight request deduplication — same GET URL shares one promise
+const inflightRequests = new Map();
+
 const getAuthToken = () => localStorage.getItem("user_token");
 
 function buildDescription(method, url, body) {
@@ -27,10 +30,27 @@ function buildDescription(method, url, body) {
 }
 
 export async function apiRequest(url, options = {}) {
+  const method = (options.method || "GET").toUpperCase();
+
+  // Deduplicate concurrent GET requests to the same URL
+  if (method === "GET" && inflightRequests.has(url)) {
+    return inflightRequests.get(url);
+  }
+
+  const promise = _doRequest(url, options, method);
+
+  if (method === "GET") {
+    inflightRequests.set(url, promise);
+    promise.finally(() => inflightRequests.delete(url));
+  }
+
+  return promise;
+}
+
+async function _doRequest(url, options, method) {
   try {
     const token = getAuthToken();
     const isFormData = options.body instanceof FormData;
-    const method = (options.method || "GET").toUpperCase();
 
     const res = await fetch(`${API_BASE}${url}`, {
       ...options,
@@ -66,8 +86,6 @@ export async function apiRequest(url, options = {}) {
 
     return result;
   } catch {
-    const method = (options.method || "GET").toUpperCase();
-
     // GET requests: try cache fallback
     if (method === "GET") {
       const cached = getCachedData(url);
@@ -91,8 +109,8 @@ export async function apiRequest(url, options = {}) {
         method,
         options.body,
         description,
-        options.dependsOn,       // queue item ID this depends on
-        options.dependencyField, // field name to update (e.g., "borrower_id")
+        options.dependsOn,
+        options.dependencyField,
       );
       return {
         ok: true,

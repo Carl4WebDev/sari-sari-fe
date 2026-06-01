@@ -9,7 +9,6 @@ import ArchivedBorrowersModal from "../modals/ArchivedBorrowersModal";
 import GlobalModal from "../../../shared/components/GlobalModal";
 import AddBorrowerModal from "../../dashboard/modals/AddBorrowerModal";
 import { useTranslation } from "../../../shared/i18n/useTranslation";
-import { generateBorrowersPDF } from "../../../shared/utils/exportToPDF";
 import { useOnlineStatus } from "../../../shared/hooks/useOnlineStatus";
 
 export default function BorrowersPage() {
@@ -127,7 +126,7 @@ const handleExportCSV = () => {
   URL.revokeObjectURL(url);
 };
 
-const handleExportPDF = () => {
+const handleExportPDF = async () => {
   if (!filteredBorrowers.length) {
     setGlobalModal({
       isOpen: true,
@@ -139,6 +138,7 @@ const handleExportPDF = () => {
   }
 
   const user = JSON.parse(localStorage.getItem("user") || "{}");
+  const { generateBorrowersPDF } = await import("../../../shared/utils/exportToPDF");
   generateBorrowersPDF(filteredBorrowers, user.store_name || "");
 };
 

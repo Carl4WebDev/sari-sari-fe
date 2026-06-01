@@ -319,7 +319,7 @@ if (!res?.ok) {
                   type="date"
                   value={reminderDate}
                   onChange={(e) => setReminderDate(e.target.value)}
-                  className="w-full rounded-lg border border-gray-300 px-3 py-3 text-sm focus:border-[#1E3A8A] focus:ring-1 focus:ring-[#1E3A8A] outline-none"
+                  className="w-full rounded-lg border border-gray-300 px-3 py-3 text-base focus:border-[#1E3A8A] focus:ring-1 focus:ring-[#1E3A8A] outline-none"
                 />
               </div>
             </div>
@@ -356,7 +356,7 @@ if (!res?.ok) {
                 placeholder="Search borrower..."
                 value={search}
                 onChange={(e) => setSearch(e.target.value)}
-                className="flex-1 rounded-lg border border-gray-300 px-3 py-3 text-sm focus:border-[#1E3A8A] focus:ring-1 focus:ring-[#1E3A8A] outline-none"
+                className="flex-1 rounded-lg border border-gray-300 px-3 py-3 text-base focus:border-[#1E3A8A] focus:ring-1 focus:ring-[#1E3A8A] outline-none"
               />
               <button
                 onClick={handleVoiceSearch}
@@ -393,7 +393,7 @@ if (!res?.ok) {
                     setSelectedBorrower(null);
                     setSearch("");
                   }}
-                  className="text-xs text-red-500"
+                  className="rounded-lg px-2 py-1 text-xs font-medium text-red-500"
                 >
                   Change
                 </button>
@@ -430,7 +430,7 @@ if (!res?.ok) {
 
     setItems(updated);
   }}
-  className="flex-1 rounded-lg border border-gray-300 px-3 py-3 text-sm"
+  className="flex-1 rounded-lg border border-gray-300 px-3 py-3 text-base"
 >
   <option value="">Select product</option>
 
@@ -482,7 +482,7 @@ if (!res?.ok) {
                     onChange={(e) =>
                       handleItemChange(index, "quantity", e.target.value)
                     }
-                    className="w-1/2 rounded-lg border border-gray-300 px-3 py-3 text-sm"
+                    className="w-1/2 rounded-lg border border-gray-300 px-3 py-3 text-base"
                   />
 
 <input
@@ -491,7 +491,7 @@ if (!res?.ok) {
   placeholder="Price"
   value={item.price}
   readOnly
-  className="w-1/2 rounded-lg border border-gray-300 bg-gray-100 px-3 py-3 text-sm"
+  className="w-1/2 rounded-lg border border-gray-300 bg-gray-100 px-3 py-3 text-base"
 />
                 </div>
 
@@ -499,7 +499,7 @@ if (!res?.ok) {
                   <button
                     type="button"
                     onClick={() => removeItem(index)}
-                    className="text-xs text-red-500"
+                    className="rounded-lg px-2 py-1 text-xs font-medium text-red-500"
                   >
                     Remove
                   </button>

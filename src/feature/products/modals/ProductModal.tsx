@@ -527,7 +527,7 @@ export default function ProductModal({
                   )
                 }
                 placeholder="Search or type product..."
-                className="w-full rounded-lg border border-gray-300 px-3 py-3 text-sm outline-none focus:border-[#1E3A8A] focus:ring-1 focus:ring-[#1E3A8A]"
+                className="w-full rounded-lg border border-gray-300 px-3 py-3 text-base outline-none focus:border-[#1E3A8A] focus:ring-1 focus:ring-[#1E3A8A]"
               />
 
               {/* Suggestions */}
@@ -571,7 +571,7 @@ export default function ProductModal({
                   handleChange("price", e.target.value)
                 }
                 placeholder="Example: 25"
-                className="w-full rounded-lg border border-gray-300 px-3 py-3 text-sm outline-none focus:border-[#1E3A8A] focus:ring-1 focus:ring-[#1E3A8A]"
+                className="w-full rounded-lg border border-gray-300 px-3 py-3 text-base outline-none focus:border-[#1E3A8A] focus:ring-1 focus:ring-[#1E3A8A]"
               />
             </div>
           </div>

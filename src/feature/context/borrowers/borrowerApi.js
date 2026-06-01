@@ -1,10 +1,15 @@
 import { apiRequest } from "../../auth/api/httpClient/httpClient";
 
-// GET borrowers of logged user
-export const getBorrowersApi = () =>
-  apiRequest("/api/borrowers", {
+// GET borrowers of logged user (with optional pagination)
+export const getBorrowersApi = ({ page, limit } = {}) => {
+  const params = new URLSearchParams();
+  if (page) params.set("page", String(page));
+  if (limit) params.set("limit", String(limit));
+  const qs = params.toString();
+  return apiRequest(`/api/borrowers${qs ? `?${qs}` : ""}`, {
     method: "GET",
   });
+};
 
 // CREATE borrower
 export const createBorrowerApi = (payload) =>

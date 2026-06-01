@@ -152,7 +152,7 @@ export default function EditBorrowerModal({
               </h2>
               <button
                 onClick={isClose}
-                className="text-gray-400 hover:text-gray-600"
+                className="rounded-lg p-2 text-gray-400 hover:text-gray-600"
               >
                 ✕
               </button>
@@ -206,7 +206,7 @@ export default function EditBorrowerModal({
                   type="text"
                   value={fName}
                   onChange={(e) => setFName(e.target.value)}
-                  className="mt-1 w-full rounded-xl border border-gray-300 px-4 py-3 text-sm focus:border-[#1E3A8A] focus:ring-1 focus:ring-[#1E3A8A] outline-none"
+                  className="mt-1 w-full rounded-xl border border-gray-300 px-4 py-3 text-base focus:border-[#1E3A8A] focus:ring-1 focus:ring-[#1E3A8A] outline-none"
                 />
               </div>
 
@@ -218,7 +218,7 @@ export default function EditBorrowerModal({
                   type="text"
                   value={mName}
                   onChange={(e) => setMName(e.target.value)}
-                  className="mt-1 w-full rounded-xl border border-gray-300 px-4 py-3 text-sm focus:border-[#1E3A8A] focus:ring-1 focus:ring-[#1E3A8A] outline-none"
+                  className="mt-1 w-full rounded-xl border border-gray-300 px-4 py-3 text-base focus:border-[#1E3A8A] focus:ring-1 focus:ring-[#1E3A8A] outline-none"
                 />
               </div>
 
@@ -230,7 +230,7 @@ export default function EditBorrowerModal({
                   type="text"
                   value={lName}
                   onChange={(e) => setLName(e.target.value)}
-                  className="mt-1 w-full rounded-xl border border-gray-300 px-4 py-3 text-sm focus:border-[#1E3A8A] focus:ring-1 focus:ring-[#1E3A8A] outline-none"
+                  className="mt-1 w-full rounded-xl border border-gray-300 px-4 py-3 text-base focus:border-[#1E3A8A] focus:ring-1 focus:ring-[#1E3A8A] outline-none"
                 />
               </div>
 
@@ -242,7 +242,7 @@ export default function EditBorrowerModal({
                   type="date"
                   value={dob}
                   onChange={(e) => setDob(e.target.value)}
-                  className="mt-1 w-full rounded-xl border border-gray-300 px-4 py-3 text-sm focus:border-[#1E3A8A] focus:ring-1 focus:ring-[#1E3A8A] outline-none"
+                  className="mt-1 w-full rounded-xl border border-gray-300 px-4 py-3 text-base focus:border-[#1E3A8A] focus:ring-1 focus:ring-[#1E3A8A] outline-none"
                 />
               </div>
 
@@ -251,11 +251,11 @@ export default function EditBorrowerModal({
                   {t("borrower_modal.contact")}
                 </label>
                 <input
-                  type="text"
+                  type="tel"
                   value={contact}
                   onChange={(e) => setContact(e.target.value)}
                   placeholder="09xxxxxxxxx"
-                  className="mt-1 w-full rounded-xl border border-gray-300 px-4 py-3 text-sm focus:border-[#1E3A8A] focus:ring-1 focus:ring-[#1E3A8A] outline-none"
+                  className="mt-1 w-full rounded-xl border border-gray-300 px-4 py-3 text-base focus:border-[#1E3A8A] focus:ring-1 focus:ring-[#1E3A8A] outline-none"
                 />
               </div>
 
@@ -268,7 +268,7 @@ export default function EditBorrowerModal({
                   value={email}
                   onChange={(e) => setEmail(e.target.value)}
                   placeholder="email@example.com"
-                  className="mt-1 w-full rounded-xl border border-gray-300 px-4 py-3 text-sm focus:border-[#1E3A8A] focus:ring-1 focus:ring-[#1E3A8A] outline-none"
+                  className="mt-1 w-full rounded-xl border border-gray-300 px-4 py-3 text-base focus:border-[#1E3A8A] focus:ring-1 focus:ring-[#1E3A8A] outline-none"
                 />
               </div>
             </div>

@@ -3,7 +3,7 @@ import { useEffect, useMemo } from "react";
 import { usePublicStatus } from "../../public/context/usePublicStatus";
 import { useTranslation } from "../../../shared/i18n/useTranslation";
 import { resolveImageUrl } from "../../../shared/utils/resolveImageUrl";
-import { generateTransactionsPDF } from "../../../shared/utils/exportToPDF";
+
 
 interface LoanItem {
   product: string;
@@ -70,8 +70,9 @@ export default function PublicStatusPage() {
     .filter((txn) => txn.type === "PAYMENT" && !txn.voided)
     .slice(-1)[0];
 
-  const exportToPDF = () => {
+  const exportToPDF = async () => {
     const activeTxns = transactions.filter((txn) => !txn.voided);
+    const { generateTransactionsPDF } = await import("../../../shared/utils/exportToPDF");
     generateTransactionsPDF(
       borrower?.name || "",
       activeTxns.map((txn, i, arr) => {

@@ -245,7 +245,7 @@ if (!res?.ok) {
             placeholder="Payment Amount"
             value={form.amount}
             onChange={handleChange}
-            className="w-full rounded-lg border border-gray-300 px-3 py-3 text-sm focus:border-[#1E3A8A] focus:ring-1 focus:ring-[#1E3A8A] outline-none"
+            className="w-full rounded-lg border border-gray-300 px-3 py-3 text-base focus:border-[#1E3A8A] focus:ring-1 focus:ring-[#1E3A8A] outline-none"
           />
 
           {/* Payment Type */}
@@ -253,7 +253,7 @@ if (!res?.ok) {
             name="paymentType"
             value={form.paymentType}
             onChange={handleChange}
-            className="w-full rounded-lg border border-gray-300 px-3 py-3 text-sm focus:border-[#1E3A8A] focus:ring-1 focus:ring-[#1E3A8A] outline-none"
+            className="w-full rounded-lg border border-gray-300 px-3 py-3 text-base focus:border-[#1E3A8A] focus:ring-1 focus:ring-[#1E3A8A] outline-none"
           >
             <option value="">Select Payment Type</option>
             <option value="CASH">Cash</option>
@@ -269,7 +269,7 @@ if (!res?.ok) {
             value={form.note}
             onChange={handleChange}
             rows={3}
-            className="w-full rounded-lg border border-gray-300 px-3 py-3 text-sm focus:border-[#1E3A8A] focus:ring-1 focus:ring-[#1E3A8A] outline-none resize-none"
+            className="w-full rounded-lg border border-gray-300 px-3 py-3 text-base focus:border-[#1E3A8A] focus:ring-1 focus:ring-[#1E3A8A] outline-none resize-none"
           />
 
           {/* Buttons */}

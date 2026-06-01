@@ -40,7 +40,7 @@ export default function SuccessToast({
         </div>
         <button
           onClick={onClose}
-          className="ml-2 shrink-0 rounded-lg p-1 text-green-100 hover:text-white"
+          className="ml-2 shrink-0 rounded-lg p-2 text-green-100 hover:text-white"
         >
           ✕
         </button>

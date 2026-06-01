@@ -1,6 +1,7 @@
 import { useEffect, useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { useTranslation } from "../../../shared/i18n/useTranslation";
+import { sendNativeSMS, buildReminderSMS, canSendSMS } from "../../../shared/utils/sendSMS";
 
 interface Props {
   isOpen: boolean;
@@ -10,6 +11,7 @@ interface Props {
     overdue?: any[];
     upcoming?: any[];
   };
+  storeName?: string;
   onMarkDone: (reminderId: number) => Promise<void>;
   onRemindAgain?: (reminderId: number) => Promise<void>;
   onSendEmail?: (reminderId: number) => Promise<void>;
@@ -19,6 +21,7 @@ export default function ReminderNotificationModal({
   isOpen,
   isClose,
   reminders,
+  storeName,
   onMarkDone,
   onRemindAgain,
   onSendEmail,
@@ -79,6 +82,7 @@ export default function ReminderNotificationModal({
   items={todays}
   emptyText="No collections for today."
   badgeClass="bg-[#1E3A8A] text-white"
+  storeName={storeName}
   onMarkDone={onMarkDone}
   onSendEmail={onSendEmail}
 />
@@ -88,6 +92,7 @@ export default function ReminderNotificationModal({
   items={overdue}
   emptyText="No overdue reminders."
   badgeClass="bg-red-500 text-white"
+  storeName={storeName}
   onMarkDone={onMarkDone}
   onRemindAgain={onRemindAgain}
   onSendEmail={onSendEmail}
@@ -98,6 +103,7 @@ export default function ReminderNotificationModal({
   items={upcoming}
   emptyText="No upcoming reminders."
   badgeClass="bg-[#16A34A] text-white"
+  storeName={storeName}
   onMarkDone={onMarkDone}
   onSendEmail={onSendEmail}
 />
@@ -112,6 +118,7 @@ function ReminderSection({
   items,
   emptyText,
   badgeClass,
+  storeName,
   onMarkDone,
   onRemindAgain,
   onSendEmail,
@@ -120,11 +127,12 @@ function ReminderSection({
   items: any[];
   emptyText: string;
   badgeClass: string;
+  storeName?: string;
   onMarkDone: (reminderId: number) => Promise<void>;
   onRemindAgain?: (reminderId: number) => Promise<void>;
   onSendEmail?: (reminderId: number) => Promise<void>;
 }) {
-
+  const { t } = useTranslation();
   const navigate = useNavigate();
   return (
     <div className="space-y-3">
@@ -212,6 +220,22 @@ function ReminderSection({
       className="rounded-lg bg-blue-500 px-3 py-2 text-xs font-semibold text-white"
     >
       Send Email
+    </button>
+  )}
+  {canSendSMS() && item.contact_number && (
+    <button
+      onClick={() => {
+        const msg = buildReminderSMS({
+          firstName: item.first_name,
+          storeName: storeName || "Store",
+          amount: item.amount_expected || 0,
+          dueDate: new Date(item.due_date).toLocaleDateString(),
+        });
+        sendNativeSMS(item.contact_number, msg);
+      }}
+      className="rounded-lg bg-emerald-600 px-3 py-2 text-xs font-semibold text-white"
+    >
+      {t("sms.send")}
     </button>
   )}
 </div>
