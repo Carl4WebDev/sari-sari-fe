@@ -2,6 +2,7 @@ import { setCachedData, getCachedData } from "../../../../shared/utils/offlineCa
 import { enqueue } from "../../../../shared/utils/offlineQueue";
 
 const API_BASE = import.meta.env.VITE_API_BASE;
+const FETCH_TIMEOUT_MS = 30000;
 
 // In-flight request deduplication — same GET URL shares one promise
 const inflightRequests = new Map();
@@ -52,16 +53,56 @@ async function _doRequest(url, options, method) {
     const token = getAuthToken();
     const isFormData = options.body instanceof FormData;
 
-    const res = await fetch(`${API_BASE}${url}`, {
-      ...options,
-      headers: {
-        ...(isFormData ? {} : { "Content-Type": "application/json" }),
-        ...(token && { Authorization: `Bearer ${token}` }),
-        ...options.headers,
-      },
-    });
+    // Build headers — don't override signal if caller provided one
+    const headers = {
+      ...(isFormData ? {} : { "Content-Type": "application/json" }),
+      ...(token && { Authorization: `Bearer ${token}` }),
+      ...options.headers,
+    };
 
-    const body = await res.json();
+    // Use caller's signal or create a timeout signal
+    let timeoutId;
+    let signal = options.signal;
+    if (!signal) {
+      const controller = new AbortController();
+      timeoutId = setTimeout(() => controller.abort(), FETCH_TIMEOUT_MS);
+      signal = controller.signal;
+    }
+
+    let res;
+    try {
+      res = await fetch(`${API_BASE}${url}`, {
+        ...options,
+        headers,
+        signal,
+      });
+    } finally {
+      if (timeoutId) clearTimeout(timeoutId);
+    }
+
+    // Handle non-JSON responses (e.g., 502 HTML from Render)
+    const contentType = res.headers.get("content-type") || "";
+    let body;
+    if (contentType.includes("application/json")) {
+      body = await res.json();
+    } else {
+      const text = await res.text();
+      if (!res.ok) {
+        return {
+          ok: false,
+          status: res.status,
+          message: `Server error (${res.status})`,
+          code: "NON_JSON_RESPONSE",
+          details: null,
+        };
+      }
+      // Successful non-JSON — return raw text
+      return {
+        ok: true,
+        data: text,
+        message: null,
+      };
+    }
 
     if (!res.ok) {
       return {
@@ -85,7 +126,22 @@ async function _doRequest(url, options, method) {
     }
 
     return result;
-  } catch {
+  } catch (err) {
+    // Timeout — distinguish from network error
+    if (err.name === "AbortError") {
+      // Check if it was a caller-initiated abort (navigation) vs timeout
+      // Caller-initiated aborts should not show error UI — just return silently
+      if (options.signal?.aborted) {
+        return { ok: false, status: 0, message: "Aborted", code: "ABORTED" };
+      }
+      return {
+        ok: false,
+        status: 0,
+        message: "Request timed out. Server may be waking up — try again.",
+        code: "TIMEOUT",
+      };
+    }
+
     // GET requests: try cache fallback
     if (method === "GET") {
       const cached = getCachedData(url);

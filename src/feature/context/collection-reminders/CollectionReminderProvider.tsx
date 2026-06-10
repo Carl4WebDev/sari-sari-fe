@@ -1,4 +1,4 @@
-import { useState, useCallback, useMemo, useEffect } from "react";
+import { useState, useCallback, useMemo, useEffect, useRef } from "react";
 import { CollectionReminderContext } from "./CollectionReminderContext";
 import {
   createReminderApi,
@@ -19,105 +19,119 @@ export const CollectionReminderProvider = ({ children }) => {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
 
+  const loadingCount = useRef(0);
+
+  const startLoading = useCallback(() => {
+    loadingCount.current++;
+    setLoading(true);
+  }, []);
+
+  const stopLoading = useCallback(() => {
+    loadingCount.current--;
+    if (loadingCount.current <= 0) {
+      loadingCount.current = 0;
+      setLoading(false);
+    }
+  }, []);
+
   const clearError = useCallback(() => setError(null), []);
 
   const createReminder = useCallback(async (payload) => {
-    setLoading(true);
+    startLoading();
     setError(null);
 
     const res = await createReminderApi(payload);
 
     if (!res?.ok) {
       setError(res?.message || "Failed to create reminder");
-      setLoading(false);
+      stopLoading();
       return res;
     }
 
-    setLoading(false);
+    stopLoading();
     return res;
-  }, []);
+  }, [startLoading, stopLoading]);
 
-  const fetchDashboardReminders = useCallback(async () => {
-    setLoading(true);
+  const fetchDashboardReminders = useCallback(async (signal) => {
+    startLoading();
     setError(null);
 
-    const res = await getDashboardRemindersApi();
+    const res = await getDashboardRemindersApi({ signal });
 
+    if (signal?.aborted) return res;
     if (!res?.ok) {
       setError(res?.message || "Failed to fetch reminders");
-      setLoading(false);
+      stopLoading();
       return res;
     }
 
     setDashboardReminders(
-      res.data || {
-        todays_collections: [],
-        overdue: [],
-        upcoming: [],
-      }
+      res.data || { todays_collections: [], overdue: [], upcoming: [] }
     );
-
-    setLoading(false);
+    stopLoading();
     return res;
-  }, []);
+  }, [startLoading, stopLoading]);
 
-  // Fetch dashboard reminders on mount so they're cached for offline use
+  // Fetch dashboard reminders on mount with AbortController
   // Staggered by 2s so borrowers/products/dashboard load first on cold Render
   useEffect(() => {
-    if (localStorage.getItem("user_token")) {
-      const timer = setTimeout(() => fetchDashboardReminders(), 2000);
-      return () => clearTimeout(timer);
-    }
+    if (!localStorage.getItem("user_token")) return;
+    const controller = new AbortController();
+    const timer = setTimeout(() => fetchDashboardReminders(controller.signal), 2000);
+    return () => {
+      clearTimeout(timer);
+      controller.abort();
+    };
   }, []);
 
   const fetchBorrowerReminders = useCallback(async (borrowerId) => {
-    setLoading(true);
+    startLoading();
     setError(null);
 
     const res = await getBorrowerRemindersApi(borrowerId);
 
     if (!res?.ok) {
       setError(res?.message || "Failed to fetch borrower reminders");
-      setLoading(false);
+      stopLoading();
       return res;
     }
 
     setBorrowerReminders(res.data || []);
-    setLoading(false);
+    stopLoading();
     return res;
-  }, []);
+  }, [startLoading, stopLoading]);
 
   const updateReminderStatus = useCallback(async (reminderId, status) => {
-    setLoading(true);
+    startLoading();
     setError(null);
 
     const res = await updateReminderStatusApi(reminderId, status);
 
     if (!res?.ok) {
       setError(res?.message || "Failed to update reminder");
-      setLoading(false);
+      stopLoading();
       return res;
     }
 
-    setLoading(false);
+    stopLoading();
     return res;
-  }, []);
+  }, [startLoading, stopLoading]);
 
   const deleteReminder = useCallback(async (reminderId) => {
-    setLoading(true);
+    startLoading();
     setError(null);
 
     const res = await deleteReminderApi(reminderId);
 
     if (!res?.ok) {
       setError(res?.message || "Failed to delete reminder");
-      setLoading(false);
+      stopLoading();
       return res;
     }
 
-    setLoading(false);
+    stopLoading();
     return res;
-  }, []);
+  }, [startLoading, stopLoading]);
 
   const value = useMemo(() => ({
     dashboardReminders,

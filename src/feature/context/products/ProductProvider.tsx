@@ -1,4 +1,4 @@
-import { useState, useCallback, useMemo, useEffect } from "react";
+import { useState, useCallback, useMemo, useEffect, useRef } from "react";
 import { ProductContext } from "./ProductContext";
 
 import {
@@ -18,155 +18,195 @@ export const ProductProvider = ({ children }) => {
   const [error, setError] = useState(null);
   const [archivedProducts, setArchivedProducts] = useState([]);
 
-  const clearError = useCallback(() => setError(null), []);
+  const loadingCount = useRef(0);
 
-  const fetchProducts = useCallback(async () => {
+  const startLoading = useCallback(() => {
+    loadingCount.current++;
     setLoading(true);
-    setError(null);
-
-    const res = await getProductsApi();
-
-    if (!res?.ok) {
-      setError(res?.message || "Failed to fetch products");
-      setLoading(false);
-      return res;
-    }
-
-    // Preserve pending (queued offline) items that aren't in the fresh data yet
-    setProducts((prev) => {
-      const fresh = res.data || [];
-      const pending = prev.filter((p) => p._pending);
-      const freshIds = new Set(fresh.map((p) => p.product_id));
-      const remaining = pending.filter((p) => !freshIds.has(p.product_id));
-      return [...remaining, ...fresh];
-    });
-    setLoading(false);
-    return res;
   }, []);
 
-  // Fetch products on mount so they're cached for offline use
-  useEffect(() => {
-    if (localStorage.getItem("user_token")) {
-      fetchProducts();
+  const stopLoading = useCallback(() => {
+    loadingCount.current--;
+    if (loadingCount.current <= 0) {
+      loadingCount.current = 0;
+      setLoading(false);
     }
+  }, []);
+
+  const clearError = useCallback(() => setError(null), []);
+
+  const fetchProducts = useCallback(async (signal) => {
+    startLoading();
+    setError(null);
+    try {
+      const res = await getProductsApi({ signal });
+
+      if (signal?.aborted) return res;
+      if (!res?.ok) {
+        setError(res?.message || "Failed to fetch products");
+        return res;
+      }
+
+      setProducts((prev) => {
+        const fresh = Array.isArray(res.data) ? res.data : [];
+        const pending = prev.filter((p) => p._pending);
+        const freshIds = new Set(fresh.map((p) => p.product_id));
+        const remaining = pending.filter((p) => !freshIds.has(p.product_id));
+        return [...remaining, ...fresh];
+      });
+      return res;
+    } catch (err) {
+      setError(err instanceof Error ? err.message : "An unexpected error occurred");
+      return { ok: false, message: "Unexpected error" };
+    } finally {
+      stopLoading();
+    }
+  }, [startLoading, stopLoading]);
+
+  // Fetch products on mount with AbortController
+  useEffect(() => {
+    if (!localStorage.getItem("user_token")) return;
+    const controller = new AbortController();
+    fetchProducts(controller.signal);
+    return () => controller.abort();
   }, []);
 
   const fetchArchivedProducts = useCallback(async () => {
-    setLoading(true);
+    startLoading();
     setError(null);
+    try {
+      const res = await getArchivedProductsApi();
 
-    const res = await getArchivedProductsApi();
+      if (!res?.ok) {
+        setError(res?.message || "Failed to fetch archived products");
+        return res;
+      }
 
-    if (!res?.ok) {
-      setError(res?.message || "Failed to fetch archived products");
-      setLoading(false);
+      setArchivedProducts(Array.isArray(res.data) ? res.data : []);
       return res;
+    } catch (err) {
+      setError(err instanceof Error ? err.message : "An unexpected error occurred");
+      return { ok: false, message: "Unexpected error" };
+    } finally {
+      stopLoading();
     }
-
-    setArchivedProducts(res.data);
-    setLoading(false);
-    return res;
-  }, []);
+  }, [startLoading, stopLoading]);
 
   const archiveProduct = useCallback(async (productId) => {
-    setLoading(true);
+    startLoading();
     setError(null);
+    try {
+      const res = await archiveProductApi(productId);
 
-    const res = await archiveProductApi(productId);
+      if (!res?.ok) {
+        setError(res?.message || "Failed to archive product");
+        return res;
+      }
 
-    if (!res?.ok) {
-      setError(res?.message || "Failed to archive product");
-      setLoading(false);
+      await fetchProducts();
+      await fetchArchivedProducts();
       return res;
+    } catch (err) {
+      setError(err instanceof Error ? err.message : "An unexpected error occurred");
+      return { ok: false, message: "Unexpected error" };
+    } finally {
+      stopLoading();
     }
-
-    await fetchProducts();
-    await fetchArchivedProducts();
-
-    setLoading(false);
-    return res;
-  }, [fetchProducts, fetchArchivedProducts]);
+  }, [startLoading, stopLoading, fetchProducts, fetchArchivedProducts]);
 
   const reactivateProduct = useCallback(async (productId) => {
-    setLoading(true);
+    startLoading();
     setError(null);
+    try {
+      const res = await reactivateProductApi(productId);
 
-    const res = await reactivateProductApi(productId);
+      if (!res?.ok) {
+        setError(res?.message || "Failed to reactivate product");
+        return res;
+      }
 
-    if (!res?.ok) {
-      setError(res?.message || "Failed to reactivate product");
-      setLoading(false);
+      await fetchProducts();
+      await fetchArchivedProducts();
       return res;
+    } catch (err) {
+      setError(err instanceof Error ? err.message : "An unexpected error occurred");
+      return { ok: false, message: "Unexpected error" };
+    } finally {
+      stopLoading();
     }
-
-    await fetchProducts();
-    await fetchArchivedProducts();
-
-    setLoading(false);
-    return res;
-  }, [fetchProducts, fetchArchivedProducts]);
+  }, [startLoading, stopLoading, fetchProducts, fetchArchivedProducts]);
 
   const createProduct = useCallback(async (payload) => {
     setActionLoading(true);
     setError(null);
+    try {
+      const res = await createProductApi(payload);
 
-    const res = await createProductApi(payload);
+      if (!res?.ok) {
+        setError(res?.message || "Failed to create product");
+        return res;
+      }
 
-    if (!res?.ok) {
-      setError(res?.message || "Failed to create product");
-      setActionLoading(false);
+      if (res.queued) {
+        const tempProduct = {
+          ...payload,
+          product_id: Date.now(),
+          _pending: true,
+          created_at: new Date().toISOString(),
+        };
+        setProducts((prev) => [tempProduct, ...prev]);
+      } else {
+        await fetchProducts();
+      }
       return res;
+    } catch (err) {
+      setError(err instanceof Error ? err.message : "An unexpected error occurred");
+      return { ok: false, message: "Unexpected error" };
+    } finally {
+      setActionLoading(false);
     }
-
-    // If queued for offline sync, add optimistic temp product
-    if (res.queued) {
-      const tempProduct = {
-        ...payload,
-        product_id: Date.now(),
-        _pending: true,
-        created_at: new Date().toISOString(),
-      };
-      setProducts((prev) => [tempProduct, ...prev]);
-    } else {
-      await fetchProducts();
-    }
-
-    setActionLoading(false);
-    return res;
   }, [fetchProducts]);
 
   const updateProduct = useCallback(async (productId, payload) => {
     setActionLoading(true);
     setError(null);
+    try {
+      const res = await updateProductApi(productId, payload);
 
-    const res = await updateProductApi(productId, payload);
+      if (!res?.ok) {
+        setError(res?.message || "Failed to update product");
+        return res;
+      }
 
-    if (!res?.ok) {
-      setError(res?.message || "Failed to update product");
-      setActionLoading(false);
+      await fetchProducts();
       return res;
+    } catch (err) {
+      setError(err instanceof Error ? err.message : "An unexpected error occurred");
+      return { ok: false, message: "Unexpected error" };
+    } finally {
+      setActionLoading(false);
     }
-
-    await fetchProducts();
-    setActionLoading(false);
-    return res;
   }, [fetchProducts]);
 
   const deleteProduct = useCallback(async (productId) => {
     setActionLoading(true);
     setError(null);
+    try {
+      const res = await deleteProductApi(productId);
 
-    const res = await deleteProductApi(productId);
+      if (!res?.ok) {
+        setError(res?.message || "Failed to delete product");
+        return res;
+      }
 
-    if (!res?.ok) {
-      setError(res?.message || "Failed to delete product");
-      setActionLoading(false);
+      await fetchProducts();
       return res;
+    } catch (err) {
+      setError(err instanceof Error ? err.message : "An unexpected error occurred");
+      return { ok: false, message: "Unexpected error" };
+    } finally {
+      setActionLoading(false);
     }
-
-    await fetchProducts();
-    setActionLoading(false);
-    return res;
   }, [fetchProducts]);
 
   const value = useMemo(() => ({

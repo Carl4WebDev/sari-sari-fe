@@ -1,4 +1,4 @@
-import { useState, useCallback, useMemo } from "react";
+import { useState, useCallback, useMemo, useRef } from "react";
 import { UserContext } from "./UserContext.js";
 import {
   loginUser,
@@ -15,125 +15,123 @@ export const UserProvider = ({ children }) => {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
   const [profile, setProfile] = useState(null);
+  const loadingCount = useRef(0);
+
+  const startLoading = useCallback(() => {
+    loadingCount.current++;
+    setLoading(true);
+  }, []);
+
+  const stopLoading = useCallback(() => {
+    loadingCount.current--;
+    if (loadingCount.current <= 0) {
+      loadingCount.current = 0;
+      setLoading(false);
+    }
+  }, []);
 
   const clearError = useCallback(() => setError(null), []);
 
-  // -------------------------
-  // LOGIN
-  // -------------------------
   const login = useCallback(async (email, password) => {
-    setLoading(true);
+    startLoading();
     setError(null);
 
     const res = await loginUser(email, password);
 
     if (!res?.ok) {
       setError(res?.message || "Login failed");
-      setLoading(false);
+      stopLoading();
       return res;
     }
 
-    // store token + user info
     localStorage.setItem("user_token", res.data.token);
     localStorage.setItem("user", JSON.stringify(res.data.user));
 
-    // Clear stale cache and queue from previous account
     clearAllCache();
     clearQueue();
 
-    setLoading(false);
+    stopLoading();
     return res;
-  }, []);
+  }, [startLoading, stopLoading]);
 
-  // -------------------------
-  // REGISTER
-  // -------------------------
   const register = useCallback(async (payload) => {
-    setLoading(true);
+    startLoading();
     setError(null);
 
     const res = await registerUser(payload);
 
     if (!res?.ok) {
       setError(res?.message || "Registration failed");
-      setLoading(false);
+      stopLoading();
       return res;
     }
 
-    setLoading(false);
+    stopLoading();
     return res;
-  }, []);
+  }, [startLoading, stopLoading]);
 
-  // -------------------------
-  // LOGOUT
-  // -------------------------
   const clearUser = useCallback(() => {
     localStorage.removeItem("user_token");
     localStorage.removeItem("user");
     clearAllCache();
     clearQueue();
     setProfile(null);
-    // Best-effort server-side logout (don't await)
     logoutUser().catch(() => {});
   }, []);
 
-  // -------------------------
-  // PROFILE
-  // -------------------------
   const fetchProfile = useCallback(async () => {
-    setLoading(true);
+    startLoading();
     setError(null);
 
     const res = await getProfile();
 
     if (!res?.ok) {
       setError(res?.message || "Failed to fetch profile");
-      setLoading(false);
+      stopLoading();
       return res;
     }
 
     setProfile(res.data);
-    setLoading(false);
+    stopLoading();
     return res;
-  }, []);
+  }, [startLoading, stopLoading]);
 
   const updateStoreName = useCallback(async (storeName) => {
-    setLoading(true);
+    startLoading();
     setError(null);
 
     const res = await updateStoreNameApi(storeName);
 
     if (!res?.ok) {
       setError(res?.message || "Failed to update store name");
-      setLoading(false);
+      stopLoading();
       return res;
     }
 
-    // Update localStorage user object
     const stored = JSON.parse(localStorage.getItem("user") || "{}");
     stored.store_name = res.data.store_name;
     localStorage.setItem("user", JSON.stringify(stored));
 
     setProfile((prev) => (prev ? { ...prev, store_name: res.data.store_name } : prev));
-    setLoading(false);
+    stopLoading();
     return res;
-  }, []);
+  }, [startLoading, stopLoading]);
 
   const changePassword = useCallback(async (currentPassword, newPassword) => {
-    setLoading(true);
+    startLoading();
     setError(null);
 
     const res = await changePasswordApi(currentPassword, newPassword);
 
     if (!res?.ok) {
       setError(res?.message || "Failed to change password");
-      setLoading(false);
+      stopLoading();
       return res;
     }
 
-    setLoading(false);
+    stopLoading();
     return res;
-  }, []);
+  }, [startLoading, stopLoading]);
 
   const value = useMemo(() => ({
     loading,

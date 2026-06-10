@@ -1,4 +1,4 @@
-import { useState, useCallback, useMemo, useEffect } from "react";
+import { useState, useCallback, useMemo, useEffect, useRef } from "react";
 import { DashboardContext } from "./DashboardContext";
 import {
   getDashboardApi,
@@ -26,85 +26,86 @@ export const DashboardProvider = ({ children }) => {
   const [incomeSummary, setIncomeSummary] = useState(null);
   const [expenses, setExpenses] = useState([]);
 
+  const loadingCount = useRef(0);
+
+  const startLoading = useCallback(() => {
+    loadingCount.current++;
+    setLoading(true);
+  }, []);
+
+  const stopLoading = useCallback(() => {
+    loadingCount.current--;
+    if (loadingCount.current <= 0) {
+      loadingCount.current = 0;
+      setLoading(false);
+    }
+  }, []);
+
   const clearError = useCallback(() => setError(null), []);
 
-  const fetchDashboard = useCallback(async () => {
-    setLoading(true);
+  const fetchDashboard = useCallback(async (signal) => {
+    startLoading();
     setError(null);
 
-    const res = await getDashboardApi();
+    const res = await getDashboardApi({ signal });
 
+    if (signal?.aborted) return res;
     if (!res?.ok) {
       setError(res?.message || "Failed to fetch dashboard");
-      setLoading(false);
+      stopLoading();
       return res;
     }
 
     setDashboard(res.data);
-    setLoading(false);
+    stopLoading();
     return res;
-  }, []);
+  }, [startLoading, stopLoading]);
 
-  // Fetch dashboard on mount so it's cached for offline use
+  // Fetch dashboard on mount with AbortController
   // Staggered by 1.5s so borrowers/products load first on cold Render
   useEffect(() => {
-    if (localStorage.getItem("user_token")) {
-      const timer = setTimeout(() => fetchDashboard(), 1500);
-      return () => clearTimeout(timer);
-    }
+    if (!localStorage.getItem("user_token")) return;
+    const controller = new AbortController();
+    const timer = setTimeout(() => fetchDashboard(controller.signal), 1500);
+    return () => {
+      clearTimeout(timer);
+      controller.abort();
+    };
   }, []);
 
   const fetchCalendarData = useCallback(async (year, month) => {
     const res = await getCalendarDataApi(year, month);
-
-    if (res?.ok) {
-      setCalendarData(res.data);
-    }
-
+    if (res?.ok) setCalendarData(res.data);
     return res;
   }, []);
 
   const fetchCollectionStats = useCallback(async (period = "week") => {
     const res = await getCollectionStatsApi(period);
-
-    if (res?.ok) {
-      setCollectionStats(res.data);
-    }
-
+    if (res?.ok) setCollectionStats(res.data);
     return res;
   }, []);
 
   const fetchCollectionTrend = useCallback(async () => {
     const res = await getCollectionTrendApi();
-
-    if (res?.ok) {
-      setCollectionTrend(res.data);
-    }
-
+    if (res?.ok) setCollectionTrend(res.data);
     return res;
   }, []);
 
   const fetchIncomeSummary = useCallback(async (period = "month") => {
     const res = await getIncomeSummaryApi(period);
-    if (res?.ok) {
-      setIncomeSummary(res.data);
-    }
+    if (res?.ok) setIncomeSummary(res.data);
     return res;
   }, []);
 
   const fetchExpenses = useCallback(async (month, year) => {
     const res = await getExpensesApi(month, year);
-    if (res?.ok) {
-      setExpenses(res.data || []);
-    }
+    if (res?.ok) setExpenses(res.data || []);
     return res;
   }, []);
 
   const createExpense = useCallback(async (payload) => {
     const res = await createExpenseApi(payload);
-    if (res?.ok) {
-      setExpenses((prev) => [res.data, ...prev]);
-    }
+    if (res?.ok) setExpenses((prev) => [res.data, ...prev]);
     return res;
   }, []);
 
@@ -120,9 +121,7 @@ export const DashboardProvider = ({ children }) => {
 
   const deleteExpense = useCallback(async (id) => {
     const res = await deleteExpenseApi(id);
-    if (res?.ok) {
-      setExpenses((prev) => prev.filter((e) => e.expense_id !== id));
-    }
+    if (res?.ok) setExpenses((prev) => prev.filter((e) => e.expense_id !== id));
     return res;
   }, []);
 
@@ -148,24 +147,11 @@ export const DashboardProvider = ({ children }) => {
       deleteExpense,
     }),
     [
-      dashboard,
-      loading,
-      error,
-      clearError,
-      fetchDashboard,
-      calendarData,
-      collectionStats,
-      collectionTrend,
-      fetchCalendarData,
-      fetchCollectionStats,
-      fetchCollectionTrend,
-      incomeSummary,
-      expenses,
-      fetchIncomeSummary,
-      fetchExpenses,
-      createExpense,
-      updateExpense,
-      deleteExpense,
+      dashboard, loading, error, clearError, fetchDashboard,
+      calendarData, collectionStats, collectionTrend,
+      fetchCalendarData, fetchCollectionStats, fetchCollectionTrend,
+      incomeSummary, expenses, fetchIncomeSummary, fetchExpenses,
+      createExpense, updateExpense, deleteExpense,
     ],
   );
 
