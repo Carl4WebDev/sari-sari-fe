@@ -33,6 +33,7 @@ import CollectionCalendar from "../components/CollectionCalendar";
 import CalendarDayPanel from "../components/CalendarDayPanel";
 import IncomeTab from "../components/IncomeTab";
 import AddExpenseModal from "../modals/AddExpenseModal";
+import TodayTab from "../components/TodayTab";
 
 
 export default function DashboardPage() {
@@ -57,6 +58,8 @@ export default function DashboardPage() {
     createExpense,
     updateExpense,
     deleteExpense,
+    todayData,
+    fetchToday,
   } = useDashboard();
 
 const {
@@ -69,7 +72,7 @@ const {
 
   const [isBorrowerOpen, setIsBorrowerOpen] = useState(false);
   const [isLoanOpen, setIsLoanOpen] = useState(false);
-  const [activeTab, setActiveTab] = useState<"overview" | "collections" | "income">("overview");
+  const [activeTab, setActiveTab] = useState<"today" | "overview" | "collections" | "income">("overview");
   const [incomePeriod, setIncomePeriod] = useState<"week" | "month">("month");
   const [isExpenseModalOpen, setIsExpenseModalOpen] = useState(false);
   const [editingExpense, setEditingExpense] = useState<any>(null);
@@ -78,7 +81,6 @@ const {
   const [statsPeriod, setStatsPeriod] = useState<"week" | "month">("week");
   const [selectedDay, setSelectedDay] = useState<string | null>(null);
   const [selectedDayReminders, setSelectedDayReminders] = useState<any[]>([]);
-  const [recentBorrower, setRecentBorrower] = useState<any>(null);
   const [isQuickPaymentOpen, setIsQuickPaymentOpen] =
     useState(false);
 
@@ -93,6 +95,7 @@ useEffect(() => {
   clearDashboardError();
   clearReminderError();
   fetchDashboard();
+  fetchToday();
   fetchDashboardReminders();
   requestPushPermission();
 }, []);
@@ -154,8 +157,7 @@ useEffect(() => {
 <AddBorrowerModal
   isOpen={isBorrowerOpen}
   isClose={() => setIsBorrowerOpen(false)}
-  onBorrowerCreated={async (borrower) => {
-    setRecentBorrower(borrower);
+  onBorrowerCreated={async () => {
     await refreshDashboard();
     tutorial.nextStep(); // step 1 → 2
     setIsLoanOpen(true);
@@ -165,7 +167,6 @@ useEffect(() => {
 <AddLoanModal
   isOpen={isLoanOpen}
   isClose={() => setIsLoanOpen(false)}
-  borrower={recentBorrower}
   onLoanCreated={async () => {
     await refreshDashboard();
     tutorial.completeTutorial();
@@ -176,6 +177,7 @@ useEffect(() => {
       tutorial.nextStep(); // step 2 → 3
     }
   }}
+  mode={tutorial.isActive ? "full" : "quick"}
 />
 
 <QuickAddPaymentModal
@@ -367,6 +369,16 @@ useEffect(() => {
       {/* Tab Bar */}
       <div className="flex gap-1 rounded-xl bg-gray-100 p-1">
         <button
+          onClick={() => setActiveTab("today")}
+          className={`flex-1 rounded-lg py-2 text-sm font-medium transition-colors ${
+            activeTab === "today"
+              ? "bg-[#1E3A8A] text-white"
+              : "text-gray-600 hover:bg-gray-200"
+          }`}
+        >
+          {t("dashboard.tab_today")}
+        </button>
+        <button
           onClick={() => setActiveTab("overview")}
           className={`flex-1 rounded-lg py-2 text-sm font-medium transition-colors ${
             activeTab === "overview"
@@ -397,6 +409,14 @@ useEffect(() => {
           {t("dashboard.tab_income")}
         </button>
       </div>
+
+      {/* Today Tab */}
+      {activeTab === "today" && (
+        <TodayTab
+          summary={todayData?.summary || null}
+          transactions={todayData?.transactions || []}
+        />
+      )}
 
       {/* Overview Tab */}
       {activeTab === "overview" && (<>

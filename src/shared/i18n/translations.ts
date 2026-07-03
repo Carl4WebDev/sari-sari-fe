@@ -198,8 +198,6 @@ export const translations = {
     "details.confirm_payment": "Confirm Payment",
     "details.quick_pay_message": "Record ₱{amount} cash payment from {name}?\n\nCurrent Balance: ₱{currentBalance}\nNew Balance: ₱{newBalance}",
     "details.no_profile_uploaded": "No profile image uploaded",
-    "details.edit_profile": "Edit Profile",
-    "details.change_image": "Change Image",
     "details.profile_updated": "Profile updated successfully",
     "details.custom_amount": "Custom Amount",
     "details.copy_status_link": "Copy Loan Status Link",
@@ -226,6 +224,7 @@ export const translations = {
     "loan.remove": "Remove",
     "loan.cancel": "Cancel",
     "loan.save_loan": "Save Loan",
+    "loan.save": "Save",
     "loan.required": "Required",
     "loan.select_borrower_error": "Please select a borrower.",
     "loan.set_reminder": "Set a collection reminder?",
@@ -320,10 +319,6 @@ export const translations = {
     "sms.failed": "Failed to send SMS",
     "sms.mobile_only": "SMS can only be sent from a mobile device. Please open this app on your phone.",
     "sms.auto_send": "Also send SMS to borrower",
-    "sms.send": "Send SMS",
-    "sms.sent": "SMS Sent",
-    "sms.no_phone": "No phone number",
-    "sms.rate_limit": "Too many SMS. Try again later.",
     "sms.checkbox": "Also send SMS to borrower",
     "reminder.set_collection_date": "Set a collection date?",
     "reminder.remind_label": "Remind me in 7 days",
@@ -332,9 +327,31 @@ export const translations = {
     "reminder.reminder_created": "Collection reminder set!",
 
     // Dashboard Tabs
+    "dashboard.tab_today": "Today",
     "dashboard.tab_overview": "Overview",
     "dashboard.tab_collections": "Collections",
     "dashboard.tab_income": "Income",
+
+    // Today Tab
+    "dashboard.today.lent": "Lent Today",
+    "dashboard.today.collected": "Collected",
+    "dashboard.today.net": "Net",
+    "dashboard.today.empty": "No transactions yet today",
+    "dashboard.today.cash_loan": "Cash loan",
+
+    // FAB
+    "fab.quick_loan": "Quick Loan",
+    "fab.quick_payment": "Quick Payment",
+
+    // Quick Loan
+    "loan.quick_title": "Quick Utang",
+    "loan.cash_mode": "Cash",
+    "loan.product_mode": "Product",
+
+    // Quick Payment
+    "payment.quick_title": "Quick Payment",
+    "payment.select_borrower": "Select borrower",
+    "payment.confirm": "Confirm",
 
     // Income & Expenses
     "income.title": "Income & Expenses",
@@ -598,8 +615,6 @@ export const translations = {
     "details.confirm_payment": "Kumpirmahin ang Bayad",
     "details.quick_pay_message": "I-record ang ₱{amount} na cash payment mula kay {name}?\n\nKasalukuyang Balance: ₱{currentBalance}\nBagong Balance: ₱{newBalance}",
     "details.no_profile_uploaded": "Walang na-upload na profile image",
-    "details.edit_profile": "I-edit ang Profile",
-    "details.change_image": "Palitan ang Larawan",
     "details.profile_updated": "Matagumpay na na-update ang profile",
     "details.custom_amount": "Custom na Halaga",
     "details.copy_status_link": "Kopyahin ang Status Link",
@@ -626,6 +641,7 @@ export const translations = {
     "loan.remove": "Alisin",
     "loan.cancel": "Kanselahin",
     "loan.save_loan": "I-save ang Utang",
+    "loan.save": "I-save",
     "loan.required": "Kinakailangan",
     "loan.select_borrower_error": "Pumili ng mangungutang.",
     "loan.set_reminder": "Magtakda ng paalala sa koleksyon?",
@@ -720,10 +736,6 @@ export const translations = {
     "sms.failed": "Hindi naipadala ang SMS",
     "sms.mobile_only": "SMS ay maaari lamang ipadala mula sa mobile device. Buksan ang app na ito sa iyong phone.",
     "sms.auto_send": "Magpadala rin ng SMS sa mangungutang",
-    "sms.send": "Magpadala ng SMS",
-    "sms.sent": "Naipadala na",
-    "sms.no_phone": "Walang numero ng telepono",
-    "sms.rate_limit": "Masyadong maraming SMS. Subukan muli mamaya.",
     "sms.checkbox": "Magpadala din ng SMS sa mangungutang",
     "reminder.set_collection_date": "Magtakda ng araw ng koleksyon?",
     "reminder.remind_label": "Paalalahanan ako sa loob ng 7 araw",
@@ -732,9 +744,31 @@ export const translations = {
     "reminder.reminder_created": "Naitakda na ang paalala sa koleksyon!",
 
     // Dashboard Tabs
+    "dashboard.tab_today": "Ngayon",
     "dashboard.tab_overview": "Buod",
     "dashboard.tab_collections": "Mga Koleksyon",
     "dashboard.tab_income": "Kita",
+
+    // Today Tab
+    "dashboard.today.lent": "Utang Ngayon",
+    "dashboard.today.collected": "Nasingil",
+    "dashboard.today.net": "Neto",
+    "dashboard.today.empty": "Wala pang transaksyon ngayong araw",
+    "dashboard.today.cash_loan": "Utang na cash",
+
+    // FAB
+    "fab.quick_loan": "Mabilis na Utang",
+    "fab.quick_payment": "Mabilis na Bayad",
+
+    // Quick Loan
+    "loan.quick_title": "Mabilis na Utang",
+    "loan.cash_mode": "Cash",
+    "loan.product_mode": "Produkto",
+
+    // Quick Payment
+    "payment.quick_title": "Mabilis na Bayad",
+    "payment.select_borrower": "Pumili ng nangutang",
+    "payment.confirm": "Kumpirmahin",
 
     // Income & Expenses
     "income.title": "Kita at Gastos",

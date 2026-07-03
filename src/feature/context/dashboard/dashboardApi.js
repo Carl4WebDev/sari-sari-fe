@@ -24,3 +24,8 @@ export const getIncomeSummaryApi = (period = "month") =>
   apiRequest(`/api/dashboard/income?period=${period}`, {
     method: "GET",
   });
+
+export const getTodayApi = () =>
+  apiRequest("/api/dashboard/today", {
+    method: "GET",
+  });

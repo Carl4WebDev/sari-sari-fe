@@ -6,6 +6,7 @@ import {
   getCollectionStatsApi,
   getCollectionTrendApi,
   getIncomeSummaryApi,
+  getTodayApi,
 } from "./dashboardApi";
 import {
   createExpenseApi,
@@ -25,6 +26,7 @@ export const DashboardProvider = ({ children }) => {
 
   const [incomeSummary, setIncomeSummary] = useState(null);
   const [expenses, setExpenses] = useState([]);
+  const [todayData, setTodayData] = useState(null);
 
   const clearError = useCallback(() => setError(null), []);
 
@@ -42,6 +44,14 @@ export const DashboardProvider = ({ children }) => {
 
     setDashboard(res.data);
     setLoading(false);
+    return res;
+  }, []);
+
+  const fetchToday = useCallback(async () => {
+    const res = await getTodayApi();
+    if (res?.ok) {
+      setTodayData(res.data);
+    }
     return res;
   }, []);
 
@@ -146,6 +156,8 @@ export const DashboardProvider = ({ children }) => {
       createExpense,
       updateExpense,
       deleteExpense,
+      todayData,
+      fetchToday,
     }),
     [
       dashboard,
@@ -166,6 +178,8 @@ export const DashboardProvider = ({ children }) => {
       createExpense,
       updateExpense,
       deleteExpense,
+      todayData,
+      fetchToday,
     ],
   );
 
