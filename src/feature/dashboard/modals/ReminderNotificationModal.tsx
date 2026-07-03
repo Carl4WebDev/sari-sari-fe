@@ -222,21 +222,27 @@ function ReminderSection({
       Send Email
     </button>
   )}
-  {canSendSMS() && item.contact_number && (
-    <button
-      onClick={() => {
-        const msg = buildReminderSMS({
-          firstName: item.first_name,
-          storeName: storeName || "Store",
-          amount: item.amount_expected || 0,
-          dueDate: new Date(item.due_date).toLocaleDateString(),
-        });
-        sendNativeSMS(item.contact_number, msg);
-      }}
-      className="rounded-lg bg-emerald-600 px-3 py-2 text-xs font-semibold text-white"
-    >
-      {t("sms.send")}
-    </button>
+  {item.contact_number && (
+    canSendSMS() ? (
+      <button
+        onClick={() => {
+          const msg = buildReminderSMS({
+            firstName: item.first_name,
+            storeName: storeName || "Store",
+            amount: item.amount_expected || 0,
+            dueDate: new Date(item.due_date).toLocaleDateString(),
+          });
+          sendNativeSMS(item.contact_number, msg);
+        }}
+        className="rounded-lg bg-emerald-600 px-3 py-2 text-xs font-semibold text-white"
+      >
+        {t("sms.send")}
+      </button>
+    ) : (
+      <span className="rounded-lg bg-gray-100 px-3 py-2 text-xs text-gray-500">
+        {t("sms.mobile_only")}
+      </span>
+    )
   )}
 </div>
                 </div>

@@ -1,6 +1,8 @@
 import { useState, useCallback, useMemo, useEffect } from "react";
 import { ProductContext } from "./ProductContext";
 
+import { removeCachedData } from "../../../shared/utils/offlineCache";
+
 import {
   getProductsApi,
   createProductApi,
@@ -80,6 +82,11 @@ export const ProductProvider = ({ children }) => {
       return res;
     }
 
+    // Bust local cache so a later refetch can't restore the archived row
+    removeCachedData("/api/products");
+    removeCachedData("/api/products/archived");
+    removeCachedData(`/api/products/${productId}`);
+
     await fetchProducts();
     await fetchArchivedProducts();
 
@@ -98,6 +105,10 @@ export const ProductProvider = ({ children }) => {
       setLoading(false);
       return res;
     }
+
+    removeCachedData("/api/products");
+    removeCachedData("/api/products/archived");
+    removeCachedData(`/api/products/${productId}`);
 
     await fetchProducts();
     await fetchArchivedProducts();
@@ -128,6 +139,8 @@ export const ProductProvider = ({ children }) => {
       };
       setProducts((prev) => [tempProduct, ...prev]);
     } else {
+      removeCachedData("/api/products");
+      removeCachedData("/api/products/archived");
       await fetchProducts();
     }
 
@@ -147,6 +160,10 @@ export const ProductProvider = ({ children }) => {
       return res;
     }
 
+    removeCachedData("/api/products");
+    removeCachedData("/api/products/archived");
+    removeCachedData(`/api/products/${productId}`);
+
     await fetchProducts();
     setActionLoading(false);
     return res;
@@ -163,6 +180,10 @@ export const ProductProvider = ({ children }) => {
       setActionLoading(false);
       return res;
     }
+
+    removeCachedData("/api/products");
+    removeCachedData("/api/products/archived");
+    removeCachedData(`/api/products/${productId}`);
 
     await fetchProducts();
     setActionLoading(false);

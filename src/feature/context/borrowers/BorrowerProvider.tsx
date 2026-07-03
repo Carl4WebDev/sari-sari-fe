@@ -1,6 +1,8 @@
 import { useState, useCallback, useMemo, useEffect } from "react";
 import { BorrowerContext } from "./BorrowerContext";
 
+import { removeCachedData } from "../../../shared/utils/offlineCache";
+
 import {
   getBorrowersApi,
   createBorrowerApi,
@@ -120,6 +122,32 @@ const createBorrowerNote = useCallback(async (borrowerId, noteText) => {
   return res;
 }, []);
 
+  // FETCH BORROWERS — must be declared before functions that reference it
+  const fetchBorrowers = useCallback(async () => {
+    setLoading(true);
+    setError(null);
+
+    const res = await getBorrowersApi();
+
+    if (!res?.ok) {
+      setError(res?.message || "Failed to fetch borrowers");
+      setLoading(false);
+      return res;
+    }
+
+    // Preserve pending (queued offline) items that aren't in the fresh data yet
+    setBorrowers((prev) => {
+      const fresh = res.data || [];
+      const pending = prev.filter((b) => b._pending);
+      const freshIds = new Set(fresh.map((b) => b.borrower_id));
+      const remaining = pending.filter((b) => !freshIds.has(b.borrower_id));
+      return [...remaining, ...fresh];
+    });
+    setLoading(false);
+
+    return res;
+  }, []);
+
 const fetchArchivedBorrowers = useCallback(async () => {
   setLoading(true);
   setError(null);
@@ -150,12 +178,16 @@ const reactivateBorrower = useCallback(async (borrowerId) => {
     return res;
   }
 
+  removeCachedData("/api/borrowers");
+  removeCachedData("/api/borrowers/archived");
+  removeCachedData(`/api/borrowers/${borrowerId}`);
+
   await fetchBorrowers();
   await fetchArchivedBorrowers();
 
   setLoading(false);
   return res;
-}, []);
+}, [fetchBorrowers, fetchArchivedBorrowers]);
 
   const archiveBorrower = useCallback(async (borrowerId) => {
   setLoading(true);
@@ -169,39 +201,17 @@ const reactivateBorrower = useCallback(async (borrowerId) => {
     return res;
   }
 
+  // Bust local cache so a later refetch can't restore the archived row
+  removeCachedData("/api/borrowers");
+  removeCachedData("/api/borrowers/archived");
+  removeCachedData(`/api/borrowers/${borrowerId}`);
+
   await fetchBorrowers();
+  await fetchArchivedBorrowers();
 
   setLoading(false);
   return res;
-}, []);
-
-  // -------------------------
-  // FETCH BORROWERS
-  // -------------------------
-  const fetchBorrowers = useCallback(async () => {
-    setLoading(true);
-    setError(null);
-
-    const res = await getBorrowersApi();
-
-    if (!res?.ok) {
-      setError(res?.message || "Failed to fetch borrowers");
-      setLoading(false);
-      return res;
-    }
-
-    // Preserve pending (queued offline) items that aren't in the fresh data yet
-    setBorrowers((prev) => {
-      const fresh = res.data || [];
-      const pending = prev.filter((b) => b._pending);
-      const freshIds = new Set(fresh.map((b) => b.borrower_id));
-      const remaining = pending.filter((b) => !freshIds.has(b.borrower_id));
-      return [...remaining, ...fresh];
-    });
-    setLoading(false);
-
-    return res;
-  }, []);
+}, [fetchBorrowers, fetchArchivedBorrowers]);
 
   // Fetch borrowers on mount so they're cached for offline use
   useEffect(() => {
@@ -236,6 +246,7 @@ const reactivateBorrower = useCallback(async (borrowerId) => {
       };
       setBorrowers((prev) => [tempBorrower, ...prev]);
     } else {
+      removeCachedData("/api/borrowers");
       await fetchBorrowers();
     }
 
@@ -257,6 +268,9 @@ const reactivateBorrower = useCallback(async (borrowerId) => {
       setLoading(false);
       return res;
     }
+
+    removeCachedData("/api/borrowers");
+    removeCachedData(`/api/borrowers/${borrowerId}`);
 
     await fetchBorrowers();
 
@@ -326,6 +340,9 @@ const uploadBorrowerProfileImage = useCallback(async (borrowerId, file) => {
 
   const updatedBorrower = res.data.borrower || res.data;
 
+  removeCachedData("/api/borrowers");
+  removeCachedData(`/api/borrowers/${borrowerId}`);
+
   setBorrowers((prev) =>
     prev.map((borrower) =>
       borrower.borrower_id === updatedBorrower.borrower_id
@@ -382,6 +399,9 @@ const updatePublicLoanAccess = useCallback(async (
     return res;
   }
 
+  removeCachedData("/api/borrowers");
+  removeCachedData(`/api/borrowers/${borrowerId}`);
+
   await fetchBorrowers();
 
   setLoading(false);
@@ -400,6 +420,11 @@ const voidTransaction = useCallback(async (borrowerId, transactionId, reason) =>
     setLoading(false);
     return res;
   }
+
+  // Voiding changes the borrower's balance — bust the borrower list cache
+  removeCachedData("/api/borrowers");
+  removeCachedData("/api/borrowers/archived");
+  removeCachedData(`/api/borrowers/${borrowerId}`);
 
   await fetchBorrowerTransactions(borrowerId);
 

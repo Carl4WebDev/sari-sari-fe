@@ -919,22 +919,28 @@ const handleDeleteNote = (noteId: number) => {
           </p>
         )}
 
-        {canSendSMS() && borrower.contact_number && isOnline && (
+        {borrower.contact_number && isOnline && (
           <div className="mt-3 flex gap-2">
-            <button
-              onClick={() => {
-                const msg = buildReminderSMS({
-                  firstName: borrower.first_name,
-                  storeName: JSON.parse(localStorage.getItem("user") || "{}").store_name || "Store",
-                  amount: reminder.amount_expected || 0,
-                  dueDate: new Date(reminder.due_date).toLocaleDateString(),
-                });
-                sendNativeSMS(borrower.contact_number, msg);
-              }}
-              className="rounded-lg border border-[#16A34A] px-3 py-1.5 text-xs font-medium text-[#16A34A]"
-            >
-              {t("sms.send")}
-            </button>
+            {canSendSMS() ? (
+              <button
+                onClick={() => {
+                  const msg = buildReminderSMS({
+                    firstName: borrower.first_name,
+                    storeName: JSON.parse(localStorage.getItem("user") || "{}").store_name || "Store",
+                    amount: reminder.amount_expected || 0,
+                    dueDate: new Date(reminder.due_date).toLocaleDateString(),
+                  });
+                  sendNativeSMS(borrower.contact_number, msg);
+                }}
+                className="rounded-lg border border-[#16A34A] px-3 py-1.5 text-xs font-medium text-[#16A34A]"
+              >
+                {t("sms.send")}
+              </button>
+            ) : (
+              <span className="inline-flex items-center gap-1.5 rounded-lg bg-gray-100 px-3 py-1.5 text-xs text-gray-500">
+                {t("sms.mobile_only")}
+              </span>
+            )}
           </div>
         )}
       </div>

@@ -47,6 +47,14 @@ export function getCachedData(url) {
   }
 }
 
+export function removeCachedData(url) {
+  try {
+    localStorage.removeItem(buildKey(url));
+  } catch {
+    // ignore quota / privacy errors
+  }
+}
+
 export function clearAllCache() {
   const keys = [];
   for (let i = 0; i < localStorage.length; i++) {

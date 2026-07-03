@@ -217,16 +217,22 @@ if (amount > currentBalance) {
             </label>
           )}
 
-          {canSendSMS() && contactNumber && (
-            <label className="flex items-center gap-2 text-sm text-gray-600">
-              <input
-                type="checkbox"
-                checked={sendSMS}
-                onChange={(e) => setSendSMS(e.target.checked)}
-                className="h-4 w-4 rounded border-gray-300 text-emerald-600 focus:ring-emerald-600"
-              />
-              {t("sms.auto_send")}
-            </label>
+          {contactNumber && (
+            canSendSMS() ? (
+              <label className="flex items-center gap-2 text-sm text-gray-600">
+                <input
+                  type="checkbox"
+                  checked={sendSMS}
+                  onChange={(e) => setSendSMS(e.target.checked)}
+                  className="h-4 w-4 rounded border-gray-300 text-emerald-600 focus:ring-emerald-600"
+                />
+                {t("sms.auto_send")}
+              </label>
+            ) : (
+              <div className="flex items-center gap-2 rounded-lg border border-amber-200 bg-amber-50 px-3 py-2 text-xs text-amber-700">
+                <span>{t("sms.mobile_only")}</span>
+              </div>
+            )
           )}
 
           <div className="flex gap-3">

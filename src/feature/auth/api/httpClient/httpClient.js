@@ -54,6 +54,7 @@ async function _doRequest(url, options, method) {
 
     const res = await fetch(`${API_BASE}${url}`, {
       ...options,
+      cache: "no-store",
       headers: {
         ...(isFormData ? {} : { "Content-Type": "application/json" }),
         ...(token && { Authorization: `Bearer ${token}` }),
