@@ -1,5 +1,3 @@
-import { useEffect, useState } from "react";
-
 interface Props {
   isOpen: boolean;
   title?: string;
@@ -17,16 +15,6 @@ export default function GlobalModal({
   confirmText = "OK",
   onClose,
 }: Props) {
-  const [animate, setAnimate] = useState(false);
-
-  useEffect(() => {
-    if (isOpen) {
-      setTimeout(() => setAnimate(true), 10);
-    } else {
-      setAnimate(false);
-    }
-  }, [isOpen]);
-
   if (!isOpen) return null;
 
   const colorStyles = {
@@ -39,16 +27,11 @@ export default function GlobalModal({
   return (
     <div
       onClick={onClose}
-      className="fixed inset-0 z-[200] bg-slate-950/70 backdrop-blur-md flex items-center justify-center p-4 transition-opacity duration-300"
+      className="fixed inset-0 z-[200] bg-slate-950/70 backdrop-blur-md flex items-center justify-center p-4 animate-backdrop-fade"
     >
       <div
         onClick={(e) => e.stopPropagation()}
-        className={`
-          w-full max-w-sm
-          rounded-3xl bg-white shadow-2xl border border-slate-200/90 overflow-hidden
-          transition-all duration-300
-          ${animate ? "scale-100 opacity-100" : "scale-95 opacity-0"}
-        `}
+        className="w-full max-w-sm rounded-3xl bg-white shadow-2xl border border-slate-200/90 overflow-hidden animate-modal-pop"
       >
         <div className={`h-1.5 w-full ${colorStyles[type]}`} />
 

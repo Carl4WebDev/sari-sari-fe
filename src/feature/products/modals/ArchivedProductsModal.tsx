@@ -76,8 +76,8 @@ export default function ArchivedProductsModal({
         <div className="p-6 overflow-y-auto space-y-4 flex-1">
           {/* Search */}
           <div className="relative">
-            <span className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400">
-              <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+            <span className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400 pointer-events-none">
+              <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2.5" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
               </svg>
             </span>
@@ -86,29 +86,31 @@ export default function ArchivedProductsModal({
               value={search}
               onChange={(e) => setSearch(e.target.value)}
               placeholder="Search archived products..."
-              className="w-full rounded-2xl border border-slate-200/90 bg-slate-50/60 py-3 pl-11 pr-4 text-xs font-bold text-slate-900 placeholder:text-slate-400 focus:border-blue-600 focus:bg-white focus:ring-4 focus:ring-blue-600/10 outline-none transition"
+              className="w-full rounded-2xl border border-slate-200/90 bg-slate-50/60 py-3.5 pl-11 pr-4 text-xs sm:text-sm font-bold text-slate-900 placeholder:text-slate-400 focus:border-blue-600 focus:bg-white focus:ring-4 focus:ring-blue-600/10 outline-none transition shadow-2xs"
             />
           </div>
 
           {loading && (
-            <div className="rounded-2xl border border-slate-200/90 bg-white p-6 text-xs font-semibold text-slate-500 text-center">
+            <div className="rounded-2xl border border-slate-200/90 bg-white p-8 text-xs sm:text-sm font-bold text-slate-500 text-center">
               Loading archived products...
             </div>
           )}
 
           {!loading && filteredProducts.length === 0 && (
-            <div className="rounded-3xl border border-slate-200/90 bg-slate-50/50 p-8 text-center space-y-2">
-              <div className="mx-auto h-12 w-12 rounded-2xl bg-slate-100 text-slate-400 flex items-center justify-center">
-                <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M20 7l-8-4-8 4m16 0l-8 4m8-4v10l-8 4m0-10L4 7m8 4v10M4 7v10l8 4" />
+            <div className="rounded-3xl border border-slate-200/90 bg-slate-50/50 p-8 sm:p-10 text-center space-y-3">
+              <div className="mx-auto h-14 w-14 rounded-2xl bg-amber-50 text-amber-500 flex items-center justify-center border border-amber-100/80 shadow-2xs">
+                <svg className="w-7 h-7" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M5 8h14M5 8a2 2 0 012-2h10a2 2 0 012 2m-14 0v10a2 2 0 002 2h10a2 2 0 002-2V8m-9 4h4" />
                 </svg>
               </div>
-              <p className="text-xs font-black text-slate-900">
-                No archived products
-              </p>
-              <p className="text-[11px] font-semibold text-slate-400">
-                Archived products will appear here.
-              </p>
+              <div>
+                <p className="text-sm font-black text-slate-900">
+                  No archived products
+                </p>
+                <p className="text-xs font-semibold text-slate-400 mt-1 max-w-xs mx-auto">
+                  All items are currently active in your catalog. Archived products will show up here.
+                </p>
+              </div>
             </div>
           )}
 
@@ -116,44 +118,49 @@ export default function ArchivedProductsModal({
             filteredProducts.map((p: any) => (
               <div
                 key={p.product_id}
-                className="rounded-3xl border border-slate-200/90 bg-white p-4 shadow-xs space-y-3"
+                className="rounded-3xl border border-slate-200/90 bg-white p-4 sm:p-5 shadow-2xs space-y-3 hover:border-slate-300 transition"
               >
-                <div>
-                  <p className="text-xs font-black text-slate-950">
-                    {p.product_name}
-                  </p>
-
-                  <p className="text-[11px] font-semibold text-slate-400 mt-0.5">
-                    Product ID: {p.product_id}
-                  </p>
-                </div>
-
-                <div className="flex items-center justify-between rounded-2xl bg-slate-50 border border-slate-100 p-3">
-                  <div>
-                    <p className="text-[11px] font-semibold text-slate-400">Price</p>
-                    <p className="text-xs font-black text-blue-900 mt-0.5">
-                      ₱{Number(p.product_price || 0).toLocaleString()}
+                <div className="flex items-start justify-between gap-3">
+                  <div className="min-w-0 flex-1">
+                    <p className="text-sm font-black text-slate-950 truncate">
+                      {p.product_name}
+                    </p>
+                    <p className="text-xs font-semibold text-slate-400 mt-0.5">
+                      Product ID: #{p.product_id}
                     </p>
                   </div>
 
-                  <span className="rounded-xl bg-slate-200/80 px-2.5 py-1 text-[11px] font-black text-slate-700">
+                  <span className="rounded-xl bg-slate-100 px-2.5 py-1 text-[11px] font-black text-slate-600 shrink-0">
                     Archived
                   </span>
                 </div>
 
+                <div className="flex items-center justify-between rounded-2xl bg-slate-50/80 border border-slate-100 p-3">
+                  <div>
+                    <p className="text-[11px] font-semibold text-slate-400">Retail Price</p>
+                    <p className="text-sm font-black text-blue-950 mt-0.5">
+                      ₱{Number(p.product_price || 0).toLocaleString()}
+                    </p>
+                  </div>
+                </div>
+
                 <button
+                  type="button"
                   onClick={async () => {
                     const confirmed = window.confirm(
-                      "Reactivate this product?"
+                      `Reactivate "${p.product_name}"?`
                     );
 
                     if (!confirmed) return;
 
                     await onReactivate(p.product_id);
                   }}
-                  className="w-full rounded-2xl bg-emerald-600 hover:bg-emerald-700 py-3 text-xs font-black text-white shadow-xs transition active:scale-[0.98] cursor-pointer"
+                  className="w-full rounded-2xl bg-emerald-700 hover:bg-emerald-800 py-3 text-xs sm:text-sm font-black text-white shadow-xs transition active:scale-[0.98] cursor-pointer flex items-center justify-center gap-2"
                 >
-                  Reactivate Product
+                  <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2.5" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
+                  </svg>
+                  <span>Reactivate Product</span>
                 </button>
               </div>
             ))}

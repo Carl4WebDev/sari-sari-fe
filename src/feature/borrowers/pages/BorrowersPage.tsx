@@ -199,7 +199,7 @@ export default function BorrowersPage() {
             {isOnline && (
               <button
                 onClick={() => setIsAddBorrowerOpen(true)}
-                className="flex items-center gap-2 rounded-2xl bg-gradient-to-r from-emerald-600 to-teal-600 hover:from-emerald-500 hover:to-teal-500 py-2.5 px-4 text-white shadow-md transition cursor-pointer font-black text-xs sm:text-sm active:scale-95"
+                className="flex items-center gap-2 rounded-2xl bg-slate-900 hover:bg-slate-800 py-2.5 px-4 text-white shadow-xs transition cursor-pointer font-black text-xs sm:text-sm active:scale-95"
               >
                 <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2.5" d="M12 4v16m8-8H4" />
@@ -304,74 +304,89 @@ export default function BorrowersPage() {
         )}
 
         {!loading &&
-          paginatedBorrowers.map((b: any) => (
-            <Link
-              key={b.borrower_id}
-              to={`/borrowers/${b.borrower_id}`}
-              className="block group"
-            >
-              <article className="rounded-3xl border border-slate-200/90 bg-white p-4 shadow-2xs transition hover:border-blue-500 hover:shadow-md flex flex-col justify-between h-full space-y-3">
-                <div className="flex items-center gap-3">
-                  {/* Profile Avatar */}
-                  {b.profile_image_url ? (
-                    <img
-                      src={resolveImageUrl(b.profile_image_url)}
-                      alt={`${b.first_name} ${b.last_name}`}
-                      className="h-12 w-12 shrink-0 rounded-full border-2 border-slate-900 object-cover shadow-2xs"
-                    />
-                  ) : (
-                    <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-full border border-slate-200 bg-slate-900 text-xs font-extrabold text-white shadow-2xs">
-                      {b.first_name?.[0]}
-                      {b.last_name?.[0]}
+          paginatedBorrowers.map((b: any) => {
+            const balance = Number(b.balance || b.total_loan || 0);
+            const isPaid = balance <= 0;
+
+            return (
+              <Link
+                key={b.borrower_id}
+                to={`/borrowers/${b.borrower_id}`}
+                className="block group"
+              >
+                <article className="rounded-3xl border border-slate-200/90 bg-white p-4 sm:p-5 shadow-2xs transition-all duration-200 hover:border-blue-500 hover:shadow-md hover:-translate-y-0.5 flex flex-col justify-between h-full space-y-3.5">
+                  <div className="flex items-center gap-3.5">
+                    {/* Profile Avatar */}
+                    {b.profile_image_url ? (
+                      <img
+                        src={resolveImageUrl(b.profile_image_url)}
+                        alt={`${b.first_name} ${b.last_name}`}
+                        className="h-12 w-12 shrink-0 rounded-2xl border-2 border-white object-cover shadow-2xs"
+                      />
+                    ) : (
+                      <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-2xl bg-gradient-to-br from-slate-900 to-slate-950 text-xs font-black text-white shadow-2xs border border-slate-800">
+                        {b.first_name?.[0]}
+                        {b.last_name?.[0]}
+                      </div>
+                    )}
+
+                    {/* Borrower Info */}
+                    <div className="min-w-0 flex-1 space-y-0.5">
+                      <h2 className="truncate text-sm font-black text-slate-950 group-hover:text-blue-600 transition">
+                        {b.first_name} {b.middle_name ? `${b.middle_name} ` : ""}{b.last_name}
+                      </h2>
+
+                      <div className="flex items-center gap-1.5 text-xs text-slate-500 font-semibold truncate">
+                        <svg className="w-3.5 h-3.5 text-slate-400 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M3 5a2 2 0 012-2h3.28a1 1 0 01.948.684l1.498 4.493a1 1 0 01-.502 1.21l-2.257 1.13a11.042 11.042 0 005.516 5.516l1.13-2.257a1 1 0 011.21-.502l4.493 1.498a1 1 0 01.684.949V19a2 2 0 01-2 2h-1C9.716 21 3 14.284 3 6V5z" />
+                        </svg>
+                        <span>{b.contact_number || b.phone_number || t("borrowers.no_contact")}</span>
+                      </div>
+
+                      <p className="text-[11px] font-bold text-slate-400">
+                        {t("borrowers.age_label")} {calculateAge(b.dob)}
+                      </p>
                     </div>
-                  )}
-
-                  {/* Borrower Info */}
-                  <div className="min-w-0 flex-1 space-y-0.5">
-                    <h2 className="truncate text-sm font-black text-slate-900 group-hover:text-blue-600 transition">
-                      {b.first_name} {b.middle_name ? `${b.middle_name} ` : ""}{b.last_name}
-                    </h2>
-
-                    <div className="flex items-center gap-1 text-xs text-slate-500 font-medium truncate">
-                      <svg className="w-3.5 h-3.5 text-slate-400 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M3 5a2 2 0 012-2h32a2 2 0 012 2v2a2 2 0 01-2 2H5a2 2 0 01-2-2V5z" />
-                      </svg>
-                      <span>{b.contact_number || b.phone_number || t("borrowers.no_contact")}</span>
-                    </div>
-
-                    <p className="text-[11px] font-bold text-slate-400">
-                      {t("borrowers.age_label")} {calculateAge(b.dob)}
-                    </p>
-                  </div>
-                </div>
-
-                {/* Balance & Status */}
-                <div className="pt-3 border-t border-slate-100 flex items-center justify-between">
-                  <div>
-                    <p className="text-[10px] uppercase font-extrabold tracking-wider text-slate-400">
-                      {t("borrowers.balance")}
-                    </p>
-
-                    <p className="text-base font-black text-slate-900">
-                      ₱{Number(b.balance || b.total_loan || 0).toLocaleString()}
-                    </p>
                   </div>
 
-                  <span
-                    className={`rounded-full px-3 py-1 text-xs font-extrabold shadow-2xs ${
-                      Number(b.balance || b.total_loan || 0) <= 0
-                        ? "bg-emerald-50 text-emerald-700 border border-emerald-200"
-                        : "bg-rose-50 text-rose-700 border border-rose-200"
-                    }`}
-                  >
-                    {Number(b.balance || b.total_loan || 0) <= 0
-                      ? t("borrowers.paid")
-                      : t("borrowers.unpaid")}
-                  </span>
-                </div>
-              </article>
-            </Link>
-          ))}
+                  {/* Balance & Status */}
+                  <div className="pt-3 border-t border-slate-100 flex items-center justify-between">
+                    <div>
+                      <p className="text-[10px] uppercase font-black tracking-wider text-slate-400">
+                        {t("borrowers.balance")}
+                      </p>
+
+                      <p className="text-base sm:text-lg font-black text-slate-950">
+                        ₱{balance.toLocaleString()}
+                      </p>
+                    </div>
+
+                    <span
+                      className={`inline-flex items-center gap-1 px-3 py-1 rounded-xl text-xs font-black shadow-2xs ${
+                        isPaid
+                          ? "bg-emerald-50 text-emerald-700 border border-emerald-200/80"
+                          : "bg-rose-50 text-rose-700 border border-rose-200/80"
+                      }`}
+                    >
+                      {isPaid ? (
+                        <>
+                          <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2.5" d="M5 13l4 4L19 7" />
+                          </svg>
+                          <span>{t("borrowers.paid")}</span>
+                        </>
+                      ) : (
+                        <>
+                          <span className="h-1.5 w-1.5 rounded-full bg-rose-500 shrink-0" />
+                          <span>{t("borrowers.unpaid")}</span>
+                        </>
+                      )}
+                    </span>
+                  </div>
+                </article>
+              </Link>
+            );
+          })}
 
         {!loading && filteredBorrowers.length === 0 && (
           <div className="col-span-full rounded-3xl border border-slate-200 bg-white p-10 text-center shadow-2xs space-y-3">
