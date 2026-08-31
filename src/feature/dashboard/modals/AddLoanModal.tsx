@@ -46,63 +46,54 @@ export default function AddLoanModal({
   const { products, fetchProducts, createProduct, error: productError, clearError: clearProductError } = useProduct();
   const isOnline = useOnlineStatus();
 
-  const [animate, setAnimate] = useState(false);
   const [search, setSearch] = useState("");
   const [selectedBorrower, setSelectedBorrower] = useState<Borrower | null>(null);
 
-const [items, setItems] = useState([
-  { product: "", product_id: null as number | null, quantity: "1", price: "" },
-]);
+  const [items, setItems] = useState([
+    { product: "", product_id: null as number | null, quantity: "1", price: "" },
+  ]);
 
-const [quickCashMode, setQuickCashMode] = useState(true);
-const [quickAmount, setQuickAmount] = useState("");
+  const [quickCashMode, setQuickCashMode] = useState(true);
+  const [quickAmount, setQuickAmount] = useState("");
+  const [isProductModalOpen, setIsProductModalOpen] = useState(false);
+  const [newProductName, setNewProductName] = useState("");
 
-const [isProductModalOpen, setIsProductModalOpen] =
-  useState(false);
+  const [globalModal, setGlobalModal] = useState({
+    isOpen: false,
+    title: "",
+    message: "",
+    type: "info",
+  });
 
-const [newProductName, setNewProductName] =
-  useState("");
+  const [showReminderPrompt, setShowReminderPrompt] = useState(false);
+  const [reminderLoanTotal, setReminderLoanTotal] = useState(0);
+  const [reminderDate, setReminderDate] = useState(() => {
+    const d = new Date();
+    d.setDate(d.getDate() + 7);
+    return d.toISOString().split("T")[0];
+  });
 
-const [globalModal, setGlobalModal] = useState({
-  isOpen: false,
-  title: "",
-  message: "",
-  type: "info",
-});
+  useEffect(() => {
+    if (loanError) {
+      setGlobalModal({ isOpen: true, title: "Error", message: loanError, type: "error" });
+    }
+  }, [loanError]);
 
-const [showReminderPrompt, setShowReminderPrompt] = useState(false);
-const [reminderLoanTotal, setReminderLoanTotal] = useState(0);
-const [reminderDate, setReminderDate] = useState(() => {
-  const d = new Date();
-  d.setDate(d.getDate() + 7);
-  return d.toISOString().split("T")[0];
-});
+  useEffect(() => {
+    if (productError) {
+      setGlobalModal({ isOpen: true, title: "Error", message: productError, type: "error" });
+    }
+  }, [productError]);
 
-useEffect(() => {
-  if (loanError) {
-    setGlobalModal({ isOpen: true, title: "Error", message: loanError, type: "error" });
-  }
-}, [loanError]);
-
-useEffect(() => {
-  if (productError) {
-    setGlobalModal({ isOpen: true, title: "Error", message: productError, type: "error" });
-  }
-}, [productError]);
-
-const resetLoanForm = () => {
-  setSearch("");
-  setSelectedBorrower(null);
-  setItems([{ product: "", product_id: null, quantity: "1", price: "" }]);
-  setShowReminderPrompt(false);
-  setQuickCashMode(true);
-  setQuickAmount("");
-  localStorage.removeItem("active_borrower_id");
-};
-
-  // -----------------------------
-  // Load borrowers
-  // -----------------------------
+  const resetLoanForm = () => {
+    setSearch("");
+    setSelectedBorrower(null);
+    setItems([{ product: "", product_id: null, quantity: "1", price: "" }]);
+    setShowReminderPrompt(false);
+    setQuickCashMode(true);
+    setQuickAmount("");
+    localStorage.removeItem("active_borrower_id");
+  };
 
   useEffect(() => {
     if (!isOpen) return;
@@ -113,7 +104,6 @@ const resetLoanForm = () => {
     fetchProducts();
 
     const activeId = localStorage.getItem("active_borrower_id");
-
     if (activeId) {
       const borrower = borrowers.find(
         (b) => b.borrower_id === Number(activeId)
@@ -124,16 +114,10 @@ const resetLoanForm = () => {
         setSearch(`${borrower.first_name} ${borrower.last_name}`);
       }
     }
-
   }, [isOpen]);
-
-  // -----------------------------
-  // Auto-open ProductModal for tutorial
-  // -----------------------------
 
   useEffect(() => {
     if (isOpen && autoOpenProducts) {
-      // Small delay to let the loan modal animate in first
       const timer = setTimeout(() => {
         setIsProductModalOpen(true);
       }, 400);
@@ -141,33 +125,13 @@ const resetLoanForm = () => {
     }
   }, [isOpen, autoOpenProducts]);
 
-  // -----------------------------
-  // Modal animation
-  // -----------------------------
-
-  useEffect(() => {
-    if (isOpen) {
-      setTimeout(() => setAnimate(true), 10);
-    } else {
-      setAnimate(false);
-    }
-  }, [isOpen]);
-
   if (!isOpen) return null;
-
-  // -----------------------------
-  // Borrower filtering
-  // -----------------------------
 
   const filteredBorrowers = borrowers.filter((b: any) =>
     `${b.first_name} ${b.last_name}`
       .toLowerCase()
       .includes(search.toLowerCase())
   );
-
-  // -----------------------------
-  // Loan items logic
-  // -----------------------------
 
   const handleItemChange = (index: number, field: string, value: string) => {
     const updated = [...items];
@@ -176,45 +140,16 @@ const resetLoanForm = () => {
   };
 
   const addNewItem = () => {
-   setItems([
-  ...items,
-  { product: "", product_id: null, quantity: "1", price: "" },
-]);
+    setItems([
+      ...items,
+      { product: "", product_id: null, quantity: "1", price: "" },
+    ]);
   };
 
   const removeItem = (index: number) => {
     if (items.length === 1) return;
     setItems(items.filter((_, i) => i !== index));
   };
-
-  // -----------------------------
-  // Voice search
-  // -----------------------------
-
-  const handleVoiceSearch = () => {
-    const SpeechRecognition =
-      (window as any).webkitSpeechRecognition ||
-      (window as any).SpeechRecognition;
-
-    if (!SpeechRecognition) {
-      alert("Voice not supported on this browser");
-      return;
-    }
-
-    const recognition = new SpeechRecognition();
-    recognition.lang = "en-US";
-
-    recognition.onresult = (event: any) => {
-      const transcript = event.results[0][0].transcript;
-      setSearch(transcript);
-    };
-
-    recognition.start();
-  };
-
-  // -----------------------------
-  // Save loan
-  // -----------------------------
 
   const handleProductSubmit = async (payload: { product_name: string; product_price: number }) => {
     const res = await createProduct(payload);
@@ -225,7 +160,6 @@ const resetLoanForm = () => {
   };
 
   const handleSubmit = async () => {
-
     if (!selectedBorrower) {
       setGlobalModal({
         isOpen: true,
@@ -287,44 +221,42 @@ const resetLoanForm = () => {
       items: loanItems,
     };
 
-    // Pass dependency info so queue can resolve real borrower_id after sync
-    const loanOptions = selectedBorrower._pending && selectedBorrower._queuedItemId
-      ? { dependsOn: selectedBorrower._queuedItemId, dependencyField: "borrower_id" }
+    const loanOptions = (selectedBorrower as any)._pending && (selectedBorrower as any)._queuedItemId
+      ? { dependsOn: (selectedBorrower as any)._queuedItemId, dependencyField: "borrower_id" }
       : {};
 
     const res = await createLoan(payload, loanOptions);
 
-if (!res?.ok) {
-  setGlobalModal({
-    isOpen: true,
-    title: "Error",
-    message: res?.message || "Failed to create loan",
-    type: "error",
-  });
-  return;
-}
+    if (!res?.ok) {
+      setGlobalModal({
+        isOpen: true,
+        title: "Error",
+        message: res?.message || "Failed to create loan",
+        type: "error",
+      });
+      return;
+    }
 
-  await onLoanCreated?.();
+    await onLoanCreated?.();
 
-  if (mode === "quick") {
-    const total = quickCashMode
-      ? Number(quickAmount) || 0
-      : items.reduce((sum, i) => sum + (Number(i.quantity) || 0) * (Number(i.price) || 0), 0);
-    const borrowerName = `${selectedBorrower.first_name} ${selectedBorrower.last_name}`;
-    onQuickLoanSaved?.(total, borrowerName, 0);
-    resetLoanForm();
-    isClose();
-    return;
-  }
+    if (mode === "quick") {
+      const total = quickCashMode
+        ? Number(quickAmount) || 0
+        : items.reduce((sum, i) => sum + (Number(i.quantity) || 0) * (Number(i.price) || 0), 0);
+      const borrowerName = `${selectedBorrower.first_name} ${selectedBorrower.last_name}`;
+      onQuickLoanSaved?.(total, borrowerName, 0);
+      resetLoanForm();
+      isClose();
+      return;
+    }
 
-  // Show reminder prompt instead of closing
-  const total = items.reduce((sum, i) => sum + (Number(i.quantity) || 0) * (Number(i.price) || 0), 0);
-  setReminderLoanTotal(total);
-  const defaultDate = new Date();
-  defaultDate.setDate(defaultDate.getDate() + 7);
-  setReminderDate(defaultDate.toISOString().split("T")[0]);
-  setShowReminderPrompt(true);
-  }
+    const total = items.reduce((sum, i) => sum + (Number(i.quantity) || 0) * (Number(i.price) || 0), 0);
+    setReminderLoanTotal(total);
+    const defaultDate = new Date();
+    defaultDate.setDate(defaultDate.getDate() + 7);
+    setReminderDate(defaultDate.toISOString().split("T")[0]);
+    setShowReminderPrompt(true);
+  };
 
   const handleSetReminder = async () => {
     if (!selectedBorrower) return;
@@ -341,173 +273,245 @@ if (!res?.ok) {
     resetLoanForm();
     isClose();
   };
-  
 
   return (
     <div
-      className="fixed inset-0 z-50 bg-black/40 transition-opacity duration-300"
+      className="fixed inset-0 z-[100] bg-slate-950/70 backdrop-blur-md flex items-center justify-center p-3 sm:p-4 md:p-6 overflow-y-auto animate-backdrop-fade"
       onClick={isClose}
     >
-<div
-  onClick={(e) => e.stopPropagation()}
-  className={`
-    fixed top-0 left-0 flex h-screen w-full flex-col bg-white
-    rounded-b-2xl shadow-xl
-    transform transition-transform duration-300 ease-out
-    ${animate ? "translate-y-0" : "-translate-y-full"}
-  `}
->
+      <div
+        onClick={(e) => e.stopPropagation()}
+        className="w-full max-w-lg bg-white/95 backdrop-blur-xl rounded-[2rem] shadow-2xl shadow-slate-950/20 border border-slate-200/90 overflow-hidden flex flex-col max-h-[90vh] my-auto animate-modal-pop"
+      >
         {showReminderPrompt ? (
-          /* Reminder Prompt */
           <>
-            <div className="shrink-0 p-6 pb-4">
-              <h2 className="text-lg font-semibold text-[#1E3A8A]">
-                Collection Reminder
-              </h2>
+            {/* Header */}
+            <div className="px-6 py-5 border-b border-slate-100 flex items-center justify-between bg-gradient-to-r from-slate-50/80 via-white to-slate-50/50">
+              <div className="flex items-center gap-3">
+                <div className="h-10 w-10 rounded-2xl bg-emerald-50 text-emerald-600 flex items-center justify-center border border-emerald-100/80 shrink-0 shadow-2xs">
+                  <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2.5" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
+                  </svg>
+                </div>
+                <div>
+                  <h2 className="text-base font-black text-slate-950 tracking-tight">Collection Reminder</h2>
+                  <p className="text-xs font-semibold text-slate-400 mt-0.5">Set due date for this loan</p>
+                </div>
+              </div>
             </div>
-            <div className="flex-1 overflow-y-auto px-6 pb-4 space-y-4">
-              <div className="rounded-xl bg-green-50 border border-green-200 p-4 text-center">
-                <p className="text-sm text-green-700 font-medium">Loan saved!</p>
-                <p className="text-lg font-bold text-green-800 mt-1">
+
+            <div className="p-6 overflow-y-auto space-y-5 flex-1">
+              <div className="rounded-3xl bg-emerald-50/80 border border-emerald-200/80 p-5 text-center shadow-2xs">
+                <p className="text-xs font-black text-emerald-700 uppercase tracking-wide">Loan recorded!</p>
+                <p className="text-3xl font-black text-emerald-950 mt-1">
                   ₱{reminderLoanTotal.toLocaleString()}
                 </p>
               </div>
-              <p className="text-sm text-gray-600 text-center">
-                When do you want to collect from <span className="font-semibold">{selectedBorrower?.first_name}</span>?
+
+              <p className="text-xs font-semibold text-slate-600 text-center">
+                When do you want to collect from <span className="font-black text-slate-950">{selectedBorrower?.first_name}</span>?
               </p>
+
               <div>
-                <label className="text-sm text-gray-500 mb-1 block">Collection date</label>
+                <label className="text-[11px] font-black text-slate-500 mb-1.5 block">Collection date</label>
                 <input
                   type="date"
                   value={reminderDate}
                   onChange={(e) => setReminderDate(e.target.value)}
-                  className="w-full rounded-lg border border-gray-300 px-3 py-3 text-base focus:border-[#1E3A8A] focus:ring-1 focus:ring-[#1E3A8A] outline-none"
+                  className="w-full rounded-2xl border border-slate-200/90 bg-slate-50/60 px-4 py-3 text-xs font-bold text-slate-900 focus:border-blue-600 focus:bg-white outline-none transition"
                 />
               </div>
             </div>
-            <div className="shrink-0 border-t border-gray-100 p-6 pt-4 space-y-3">
-              <div className="flex gap-3">
-                <button
-                  onClick={handleSkipReminder}
-                  className="w-1/2 rounded-xl border border-gray-300 py-3 text-sm"
-                >
-                  Skip
-                </button>
-                <button
-                  onClick={handleSetReminder}
-                  className="w-1/2 rounded-xl bg-[#16A34A] py-3 text-sm text-white"
-                >
-                  Set Reminder
-                </button>
-              </div>
+
+            <div className="px-6 py-4 border-t border-slate-100 flex gap-3 bg-white">
+              <button
+                onClick={handleSkipReminder}
+                className="flex-1 rounded-2xl border border-slate-200/90 py-3 text-xs font-black text-slate-700 hover:bg-slate-50 transition active:scale-[0.98] cursor-pointer"
+              >
+                Skip
+              </button>
+              <button
+                onClick={handleSetReminder}
+                className="flex-1 rounded-2xl bg-emerald-600 hover:bg-emerald-700 py-3 text-xs font-black text-white shadow-md transition active:scale-[0.98] cursor-pointer"
+              >
+                Set Reminder
+              </button>
             </div>
           </>
         ) : (
-          /* Loan Form */
           <>
-        {/* Sticky Header */}
-        <div className="shrink-0 p-6 pb-4">
-          <h2 className="text-lg font-semibold text-[#1E3A8A]">
-            {mode === "quick" ? t("loan.quick_title") : "Add Loan"}
-          </h2>
+            {/* Header */}
+            <div className="px-6 py-5 border-b border-slate-100 flex items-center justify-between bg-gradient-to-r from-slate-50/80 via-white to-slate-50/50">
+              <div className="flex items-center gap-3">
+                <div className="h-10 w-10 rounded-2xl bg-blue-50 text-blue-600 flex items-center justify-center border border-blue-100/80 shrink-0 shadow-2xs">
+                  <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2.5" d="M12 6v6m0 0v6m0-6h6m-6 0H6" />
+                  </svg>
+                </div>
+                <div>
+                  <h2 className="text-base font-black text-slate-950 tracking-tight">
+                    {mode === "quick" ? t("loan.quick_title") : "Add Loan"}
+                  </h2>
+                  <p className="text-xs font-semibold text-slate-400 mt-0.5">Record a cash or product loan</p>
+                </div>
+              </div>
 
-          {/* Borrower Search */}
-          <div className="mt-4 space-y-2">
-            <div className="flex gap-2">
-              <input
-                placeholder={t("loan.search_borrower")}
-                value={search}
-                onChange={(e) => setSearch(e.target.value)}
-                className="flex-1 rounded-lg border border-gray-300 px-3 py-3 text-base focus:border-[#1E3A8A] focus:ring-1 focus:ring-[#1E3A8A] outline-none"
-              />
               <button
-                onClick={handleVoiceSearch}
-                className="rounded-lg bg-gray-100 px-3 text-lg"
+                onClick={isClose}
+                className="h-9 w-9 rounded-2xl bg-slate-100/80 hover:bg-slate-200/80 text-slate-500 hover:text-slate-900 transition flex items-center justify-center cursor-pointer"
               >
-                🎤
+                <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2.5" d="M6 18L18 6M6 6l12 12" />
+                </svg>
               </button>
             </div>
 
-            {search && !selectedBorrower && (
-              <div className="max-h-32 overflow-y-auto space-y-1">
-                {filteredBorrowers.map((b: any) => (
-                  <div
-                    key={b.borrower_id}
-                    onClick={() => {
-                      setSelectedBorrower(b);
-                      setSearch(`${b.first_name} ${b.last_name}`);
-                    }}
-                    className="px-3 py-2 rounded-lg text-sm cursor-pointer hover:bg-gray-100"
-                  >
-                    {b.first_name} {b.last_name}
+            {/* Scrollable Content */}
+            <div className="p-6 overflow-y-auto space-y-4 flex-1">
+              {/* Borrower Search */}
+              <div className="space-y-2">
+                <input
+                  placeholder={t("loan.search_borrower")}
+                  value={search}
+                  onChange={(e) => setSearch(e.target.value)}
+                  className="w-full rounded-2xl border border-slate-200/90 bg-slate-50/60 px-4 py-3 text-xs font-bold text-slate-900 placeholder:text-slate-400 focus:border-blue-600 focus:bg-white focus:ring-4 focus:ring-blue-600/10 outline-none transition"
+                />
+
+                {search && !selectedBorrower && (
+                  <div className="max-h-36 overflow-y-auto space-y-1 bg-white border border-slate-200/90 rounded-2xl p-1.5 shadow-md">
+                    {filteredBorrowers.map((b: any) => (
+                      <div
+                        key={b.borrower_id}
+                        onClick={() => {
+                          setSelectedBorrower(b);
+                          setSearch(`${b.first_name} ${b.last_name}`);
+                        }}
+                        className="px-3.5 py-2.5 rounded-xl text-xs font-bold text-slate-800 cursor-pointer hover:bg-blue-50/80 transition"
+                      >
+                        {b.first_name} {b.last_name}
+                      </div>
+                    ))}
                   </div>
-                ))}
-              </div>
-            )}
+                )}
 
-            {selectedBorrower && (
-              <div className="flex items-center justify-between rounded-lg bg-blue-50 px-3 py-2">
-                <span className="text-sm font-medium text-[#1E3A8A]">
-                  {selectedBorrower.first_name} {selectedBorrower.last_name}
-                </span>
-                <button
-                  onClick={() => {
-                    setSelectedBorrower(null);
-                    setSearch("");
-                  }}
-                  className="rounded-lg px-2 py-1 text-xs font-medium text-red-500"
-                >
-                  {t("loan.change")}
-                </button>
-              </div>
-            )}
-          </div>
-        </div>
-
-        {/* Scrollable Items Area */}
-        <div className="flex-1 overflow-y-auto px-6 pb-4 space-y-4">
-          {mode === "quick" ? (
-            /* Quick Mode — Cash or Product toggle */
-            <div className="space-y-4">
-              <div className="flex gap-2">
-                <button
-                  onClick={() => setQuickCashMode(true)}
-                  className={`flex-1 rounded-lg py-2 text-sm font-medium transition-colors ${
-                    quickCashMode
-                      ? "bg-[#1E3A8A] text-white"
-                      : "bg-gray-100 text-gray-600"
-                  }`}
-                >
-                  {t("loan.cash_mode")}
-                </button>
-                <button
-                  onClick={() => setQuickCashMode(false)}
-                  className={`flex-1 rounded-lg py-2 text-sm font-medium transition-colors ${
-                    !quickCashMode
-                      ? "bg-[#1E3A8A] text-white"
-                      : "bg-gray-100 text-gray-600"
-                  }`}
-                >
-                  {t("loan.product_mode")}
-                </button>
+                {selectedBorrower && (
+                  <div className="flex items-center justify-between rounded-2xl bg-blue-50/80 border border-blue-200/80 px-4 py-3">
+                    <span className="text-xs font-black text-blue-950">
+                      {selectedBorrower.first_name} {selectedBorrower.last_name}
+                    </span>
+                    <button
+                      onClick={() => {
+                        setSelectedBorrower(null);
+                        setSearch("");
+                      }}
+                      className="rounded-xl px-2.5 py-1 text-[11px] font-black text-rose-600 hover:bg-rose-50 transition cursor-pointer"
+                    >
+                      {t("loan.change")}
+                    </button>
+                  </div>
+                )}
               </div>
 
-              {quickCashMode ? (
-                <div>
-                  <label className="text-sm text-gray-500 mb-1 block">Amount</label>
-                  <input
-                    type="number"
-                    min="1"
-                    placeholder="0"
-                    value={quickAmount}
-                    onChange={(e) => setQuickAmount(e.target.value)}
-                    className="w-full rounded-lg border border-gray-300 px-3 py-3 text-base focus:border-[#1E3A8A] focus:ring-1 focus:ring-[#1E3A8A] outline-none"
-                  />
+              {mode === "quick" ? (
+                <div className="space-y-3">
+                  <div className="flex gap-2">
+                    <button
+                      onClick={() => setQuickCashMode(true)}
+                      className={`flex-1 rounded-2xl py-2.5 text-xs font-black transition cursor-pointer ${
+                        quickCashMode
+                          ? "bg-slate-950 text-white shadow-md"
+                          : "bg-slate-100/90 text-slate-700 hover:bg-slate-200/80"
+                      }`}
+                    >
+                      {t("loan.cash_mode")}
+                    </button>
+                    <button
+                      onClick={() => setQuickCashMode(false)}
+                      className={`flex-1 rounded-2xl py-2.5 text-xs font-black transition cursor-pointer ${
+                        !quickCashMode
+                          ? "bg-slate-950 text-white shadow-md"
+                          : "bg-slate-100/90 text-slate-700 hover:bg-slate-200/80"
+                      }`}
+                    >
+                      {t("loan.product_mode")}
+                    </button>
+                  </div>
+
+                  {quickCashMode ? (
+                    <div>
+                      <label className="text-[11px] font-black text-slate-500 mb-1.5 block">Amount (₱)</label>
+                      <input
+                        type="number"
+                        min="1"
+                        placeholder="0"
+                        value={quickAmount}
+                        onChange={(e) => setQuickAmount(e.target.value)}
+                        className="w-full rounded-2xl border border-slate-200/90 bg-slate-50/60 px-4 py-3 text-xs font-bold text-slate-900 placeholder:text-slate-400 focus:border-blue-600 focus:bg-white focus:ring-4 focus:ring-blue-600/10 outline-none transition"
+                      />
+                    </div>
+                  ) : (
+                    <div className="space-y-3">
+                      {items.map((item, index) => (
+                        <div key={index} className="space-y-2 border border-slate-200/90 rounded-3xl p-4 bg-slate-50/40">
+                          <div className="flex items-center gap-2">
+                            <select
+                              value={item.product}
+                              onChange={(e) => {
+                                const selectedProduct = products.find(
+                                  (p: Product) => p.product_name === e.target.value
+                                );
+                                const updated = [...items];
+                                updated[index] = {
+                                  ...updated[index],
+                                  product: selectedProduct?.product_name || "",
+                                  product_id: selectedProduct?.product_id || null,
+                                  price: selectedProduct ? String(selectedProduct.product_price) : "",
+                                };
+                                setItems(updated);
+                              }}
+                              className="flex-1 rounded-2xl border border-slate-200/90 bg-white px-3.5 py-2.5 text-xs font-bold text-slate-900 outline-none focus:border-blue-600 transition"
+                            >
+                              <option value="">{t("loan.select_product")}</option>
+                              {products.map((product: Product) => (
+                                <option key={product.product_id} value={product.product_name}>
+                                  {product.product_name}
+                                </option>
+                              ))}
+                            </select>
+                            <button
+                              type="button"
+                              onClick={addNewItem}
+                              className="rounded-2xl bg-slate-950 hover:bg-slate-900 text-white px-4 py-2.5 text-xs font-black transition cursor-pointer"
+                            >
+                              +
+                            </button>
+                          </div>
+                          <div className="flex gap-2">
+                            <input
+                              type="number"
+                              placeholder={t("loan.qty")}
+                              value={item.quantity}
+                              onChange={(e) => handleItemChange(index, "quantity", e.target.value)}
+                              className="w-1/2 rounded-2xl border border-slate-200/90 bg-white px-3.5 py-2.5 text-xs font-bold text-slate-900 outline-none focus:border-blue-600 transition"
+                            />
+                            <input
+                              type="number"
+                              min="1"
+                              placeholder={t("loan.price_placeholder")}
+                              value={item.price}
+                              readOnly
+                              className="w-1/2 rounded-2xl border border-slate-200/90 bg-slate-100 px-3.5 py-2.5 text-xs font-bold text-slate-500"
+                            />
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                  )}
                 </div>
               ) : (
                 <div className="space-y-3">
                   {items.map((item, index) => (
-                    <div key={index} className="space-y-2 border border-gray-200 rounded-xl p-3">
+                    <div key={index} className="space-y-2 border border-slate-200/90 rounded-3xl p-4 bg-slate-50/40">
                       <div className="flex items-center gap-2">
                         <select
                           value={item.product}
@@ -524,7 +528,7 @@ if (!res?.ok) {
                             };
                             setItems(updated);
                           }}
-                          className="flex-1 rounded-lg border border-gray-300 px-3 py-3 text-base"
+                          className="flex-1 rounded-2xl border border-slate-200/90 bg-white px-3.5 py-2.5 text-xs font-bold text-slate-900 outline-none focus:border-blue-600 transition"
                         >
                           <option value="">{t("loan.select_product")}</option>
                           {products.map((product: Product) => (
@@ -536,7 +540,7 @@ if (!res?.ok) {
                         <button
                           type="button"
                           onClick={addNewItem}
-                          className="rounded-lg bg-[#1E3A8A] text-white px-3 py-3 text-lg"
+                          className="rounded-2xl bg-slate-950 hover:bg-slate-900 text-white px-4 py-2.5 text-xs font-black transition cursor-pointer"
                         >
                           +
                         </button>
@@ -547,7 +551,7 @@ if (!res?.ok) {
                           placeholder={t("loan.qty")}
                           value={item.quantity}
                           onChange={(e) => handleItemChange(index, "quantity", e.target.value)}
-                          className="w-1/2 rounded-lg border border-gray-300 px-3 py-3 text-base"
+                          className="w-1/2 rounded-2xl border border-slate-200/90 bg-white px-3.5 py-2.5 text-xs font-bold text-slate-900 outline-none focus:border-blue-600 transition"
                         />
                         <input
                           type="number"
@@ -555,202 +559,68 @@ if (!res?.ok) {
                           placeholder={t("loan.price_placeholder")}
                           value={item.price}
                           readOnly
-                          className="w-1/2 rounded-lg border border-gray-300 bg-gray-100 px-3 py-3 text-base"
+                          className="w-1/2 rounded-2xl border border-slate-200/90 bg-slate-100 px-3.5 py-2.5 text-xs font-bold text-slate-500"
                         />
                       </div>
-                      {items.length > 1 && (
-                        <button
-                          type="button"
-                          onClick={() => removeItem(index)}
-                          className="rounded-lg px-2 py-1 text-xs font-medium text-red-500"
-                        >
-                          {t("loan.remove")}
-                        </button>
-                      )}
                     </div>
                   ))}
                 </div>
               )}
             </div>
-          ) : (
-            /* Full Mode — existing multi-item UI */
-            <>
-            {items.map((item, index) => (
-              <div
-                key={index}
-                className="space-y-2 border border-gray-200 rounded-xl p-3"
-              >
-                <div className="flex items-center gap-2">
-<select
-  value={item.product}
-  onChange={(e) => {
-    const selectedProduct = products.find(
-      (p: Product) => p.product_name === e.target.value
-    );
 
-    const updated = [...items];
-
-    updated[index] = {
-      ...updated[index],
-      product: selectedProduct?.product_name || "",
-      product_id: selectedProduct?.product_id || null,
-      price: selectedProduct
-        ? String(selectedProduct.product_price)
-        : "",
-    };
-
-    setItems(updated);
-  }}
-  className="flex-1 rounded-lg border border-gray-300 px-3 py-3 text-base"
->
-  <option value="">{t("loan.select_product")}</option>
-
-  {products.map((product: Product) => (
-    <option key={product.product_id} value={product.product_name}>
-      {product.product_name}
-    </option>
-  ))}
-</select>
-
-{item.product.trim() &&
-  !products.some(
-    (p: any) =>
-      p.product_name.toLowerCase() ===
-      item.product.toLowerCase()
-  ) && (
-    isOnline ? (
-      <button
-        type="button"
-        onClick={() => {
-          setNewProductName(item.product);
-          setIsProductModalOpen(true);
-        }}
-        className="w-full rounded-lg border border-dashed border-[#1E3A8A] bg-blue-50 px-3 py-3 text-left text-sm font-medium text-[#1E3A8A] transition hover:bg-blue-100"
-      >
-        {t("loan.add_new_product_as", { name: item.product })}
-      </button>
-    ) : (
-      <div className="w-full rounded-lg border border-dashed border-gray-300 bg-gray-50 px-3 py-3 text-left text-sm text-gray-400">
-        {t("loan.add_new_product_as", { name: item.product })} — go online
-      </div>
-    )
-  )}
-
-                  <button
-                    type="button"
-                    onClick={addNewItem}
-                    className="rounded-lg bg-[#1E3A8A] text-white px-3 py-3 text-lg"
-                  >
-                    +
-                  </button>
-                </div>
-
-                <div className="flex gap-2">
-                  <input
-                    type="number"
-                    placeholder={t("loan.qty")}
-                    value={item.quantity}
-                    onChange={(e) =>
-                      handleItemChange(index, "quantity", e.target.value)
-                    }
-                    className="w-1/2 rounded-lg border border-gray-300 px-3 py-3 text-base"
-                  />
-
-<input
-  type="number"
-  min="1"
-  placeholder={t("loan.price_placeholder")}
-  value={item.price}
-  readOnly
-  className="w-1/2 rounded-lg border border-gray-300 bg-gray-100 px-3 py-3 text-base"
-/>
-                </div>
-
-                {items.length > 1 && (
-                  <button
-                    type="button"
-                    onClick={() => removeItem(index)}
-                    className="rounded-lg px-2 py-1 text-xs font-medium text-red-500"
-                  >
-                    {t("loan.remove")}
-                  </button>
-                )}
+            {/* Footer */}
+            <div className="px-6 py-4 border-t border-slate-100 space-y-3 bg-white">
+              <div className="flex items-center justify-between rounded-2xl bg-slate-50/80 border border-slate-200/90 px-4 py-2.5">
+                <span className="text-xs font-black text-slate-500 uppercase tracking-wide">Total</span>
+                <span className="text-base font-black text-slate-950">
+                  ₱{(mode === "quick" && quickCashMode
+                    ? Number(quickAmount) || 0
+                    : items.reduce((sum, i) => sum + (Number(i.quantity) || 0) * (Number(i.price) || 0), 0)
+                  ).toLocaleString()}
+                </span>
               </div>
-            ))}
 
-            {isOnline ? (
-              <button
-                type="button"
-                onClick={() => setIsProductModalOpen(true)}
-                className="w-full rounded-xl border border-dashed border-[#1E3A8A] bg-blue-50 py-3 text-sm font-medium text-[#1E3A8A] transition hover:bg-blue-100"
-              >
-                {t("loan.add_new_product")}
-              </button>
-            ) : (
-              <div className="w-full rounded-xl border border-dashed border-gray-300 bg-gray-50 py-3 text-center text-sm text-gray-400">
-                Go online to add new products
+              <div className="flex gap-3">
+                <button
+                  onClick={() => {
+                    resetLoanForm();
+                    isClose();
+                  }}
+                  className="flex-1 rounded-2xl border border-slate-200/90 py-3 text-xs font-black text-slate-700 hover:bg-slate-50 transition active:scale-[0.98] cursor-pointer"
+                >
+                  {t("loan.cancel")}
+                </button>
+                <button
+                  onClick={handleSubmit}
+                  className="flex-1 rounded-2xl bg-emerald-600 hover:bg-emerald-700 py-3 text-xs font-black text-white shadow-md transition active:scale-[0.98] cursor-pointer"
+                >
+                  {mode === "quick" ? t("loan.save") : t("loan.save_loan")}
+                </button>
               </div>
-            )}
-            </>
-          )}
-        </div>
-
-        {/* Sticky Footer */}
-        <div className="shrink-0 border-t border-gray-100 p-6 pt-4 space-y-3">
-          <div className="flex items-center justify-between rounded-lg bg-gray-50 px-4 py-2">
-            <span className="text-sm text-gray-500">Total</span>
-            <span className="text-lg font-bold text-[#1E3A8A]">
-              ₱{(mode === "quick" && quickCashMode
-                ? Number(quickAmount) || 0
-                : items.reduce((sum, i) => sum + (Number(i.quantity) || 0) * (Number(i.price) || 0), 0)
-              ).toLocaleString()}
-            </span>
-          </div>
-          <div className="flex gap-3">
-<button
-  onClick={() => {
-    resetLoanForm();
-    isClose();
-  }}
-              className="w-1/2 rounded-xl border border-gray-300 py-3 text-sm"
-            >
-              {t("loan.cancel")}
-            </button>
-
-            <button
-              onClick={handleSubmit}
-              className="w-1/2 rounded-xl bg-[#16A34A] py-3 text-sm text-white"
-            >
-              {mode === "quick" ? t("loan.save") : t("loan.save_loan")}
-            </button>
-          </div>
-        </div>
+            </div>
           </>
         )}
       </div>
-<ProductModal
-  isOpen={isProductModalOpen}
-  isClose={() => setIsProductModalOpen(false)}
-  mode="add"
-  initialProductName={newProductName}
-  onSubmit={handleProductSubmit}
-/>
 
-<GlobalModal
-  isOpen={globalModal.isOpen}
-  title={globalModal.title}
-  message={globalModal.message}
-  type={globalModal.type as any}
-  onClose={() => {
-    setGlobalModal({
-      ...globalModal,
-      isOpen: false,
-    });
-    clearLoanError();
-    clearProductError();
-  }}
-/>
+      <ProductModal
+        isOpen={isProductModalOpen}
+        isClose={() => setIsProductModalOpen(false)}
+        mode="add"
+        initialProductName={newProductName}
+        onSubmit={handleProductSubmit}
+      />
 
+      <GlobalModal
+        isOpen={globalModal.isOpen}
+        title={globalModal.title}
+        message={globalModal.message}
+        type={globalModal.type as any}
+        onClose={() => {
+          setGlobalModal({ ...globalModal, isOpen: false });
+          clearLoanError();
+          clearProductError();
+        }}
+      />
     </div>
   );
 }

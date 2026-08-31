@@ -36,7 +36,6 @@ export default function AddExpenseModal({
   editExpense,
 }: Props) {
   const { t } = useTranslation();
-  const [animate, setAnimate] = useState(false);
   const [loading, setLoading] = useState(false);
   const [form, setForm] = useState({
     amount: "",
@@ -62,9 +61,6 @@ export default function AddExpenseModal({
           expense_date: new Date().toISOString().split("T")[0],
         });
       }
-      setTimeout(() => setAnimate(true), 10);
-    } else {
-      setAnimate(false);
     }
   }, [isOpen, editExpense]);
 
@@ -85,26 +81,44 @@ export default function AddExpenseModal({
 
   return (
     <div
-      className={`fixed inset-0 z-50 flex items-start justify-center bg-black/40 pt-24 transition-opacity duration-200 ${
-        animate ? "opacity-100" : "opacity-0"
-      }`}
+      className="fixed inset-0 z-[100] bg-slate-950/70 backdrop-blur-md flex items-center justify-center p-3 sm:p-4 md:p-6 overflow-y-auto animate-backdrop-fade"
       onClick={isClose}
     >
       <div
-        className={`mx-4 w-full max-w-md rounded-2xl bg-white p-6 shadow-xl transition-transform duration-200 ${
-          animate ? "translate-y-0" : "-translate-y-4"
-        }`}
         onClick={(e) => e.stopPropagation()}
+        className="w-full max-w-lg bg-white/95 backdrop-blur-xl rounded-[2rem] shadow-2xl shadow-slate-950/20 border border-slate-200/90 overflow-hidden flex flex-col max-h-[90vh] my-auto animate-modal-pop"
       >
-        <h2 className="mb-4 text-lg font-bold text-[#1E3A8A]">
-          {editExpense ? "Edit Expense" : t("income.add_expense")}
-        </h2>
+        {/* Header */}
+        <div className="px-6 py-5 border-b border-slate-100 flex items-center justify-between bg-gradient-to-r from-slate-50/80 via-white to-slate-50/50">
+          <div className="flex items-center gap-3">
+            <div className="h-10 w-10 rounded-2xl bg-rose-50 text-rose-600 flex items-center justify-center border border-rose-100/80 shrink-0 shadow-2xs">
+              <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2.5" d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+              </svg>
+            </div>
+            <div>
+              <h2 className="text-base font-black text-slate-950 tracking-tight">
+                {editExpense ? "Edit Expense" : t("income.add_expense")}
+              </h2>
+              <p className="text-xs font-semibold text-slate-400 mt-0.5">Record store expenditures</p>
+            </div>
+          </div>
 
-        <div className="space-y-3">
-          {/* Amount */}
+          <button
+            onClick={isClose}
+            className="h-9 w-9 rounded-2xl bg-slate-100/80 hover:bg-slate-200/80 text-slate-500 hover:text-slate-900 transition flex items-center justify-center cursor-pointer"
+          >
+            <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2.5" d="M6 18L18 6M6 6l12 12" />
+            </svg>
+          </button>
+        </div>
+
+        {/* Content Body */}
+        <div className="p-6 overflow-y-auto space-y-4 flex-1">
           <div>
-            <label className="mb-1 block text-sm font-medium text-gray-700">
-              Amount (P)
+            <label className="mb-1.5 block text-[11px] font-black text-slate-500">
+              Amount (₱)
             </label>
             <input
               type="number"
@@ -113,19 +127,18 @@ export default function AddExpenseModal({
               placeholder="0.00"
               min="0"
               step="0.01"
-              className="w-full rounded-lg border border-gray-300 p-3 text-base focus:border-[#1E3A8A] focus:ring-1 focus:ring-[#1E3A8A]"
+              className="w-full rounded-2xl border border-slate-200/90 bg-slate-50/60 px-4 py-3 text-xs font-bold text-slate-900 placeholder:text-slate-400 focus:border-blue-600 focus:bg-white focus:ring-4 focus:ring-blue-600/10 outline-none transition"
             />
           </div>
 
-          {/* Category */}
           <div>
-            <label className="mb-1 block text-sm font-medium text-gray-700">
+            <label className="mb-1.5 block text-[11px] font-black text-slate-500">
               Category
             </label>
             <select
               value={form.category}
               onChange={(e) => setForm({ ...form, category: e.target.value })}
-              className="w-full rounded-lg border border-gray-300 p-3 text-base focus:border-[#1E3A8A] focus:ring-1 focus:ring-[#1E3A8A]"
+              className="w-full rounded-2xl border border-slate-200/90 bg-slate-50/60 px-4 py-3 text-xs font-bold text-slate-900 outline-none focus:border-blue-600 focus:bg-white transition"
             >
               {CATEGORIES.map((cat) => (
                 <option key={cat} value={cat}>
@@ -135,9 +148,8 @@ export default function AddExpenseModal({
             </select>
           </div>
 
-          {/* Date */}
           <div>
-            <label className="mb-1 block text-sm font-medium text-gray-700">
+            <label className="mb-1.5 block text-[11px] font-black text-slate-500">
               Date
             </label>
             <input
@@ -146,13 +158,12 @@ export default function AddExpenseModal({
               onChange={(e) =>
                 setForm({ ...form, expense_date: e.target.value })
               }
-              className="w-full rounded-lg border border-gray-300 p-3 text-base focus:border-[#1E3A8A] focus:ring-1 focus:ring-[#1E3A8A]"
+              className="w-full rounded-2xl border border-slate-200/90 bg-slate-50/60 px-4 py-3 text-xs font-bold text-slate-900 outline-none focus:border-blue-600 focus:bg-white transition"
             />
           </div>
 
-          {/* Description */}
           <div>
-            <label className="mb-1 block text-sm font-medium text-gray-700">
+            <label className="mb-1.5 block text-[11px] font-black text-slate-500">
               Description (optional)
             </label>
             <textarea
@@ -162,22 +173,23 @@ export default function AddExpenseModal({
               }
               placeholder="e.g., Bought 10 cases of Coke"
               rows={2}
-              className="w-full rounded-lg border border-gray-300 p-3 text-base focus:border-[#1E3A8A] focus:ring-1 focus:ring-[#1E3A8A]"
+              className="w-full rounded-2xl border border-slate-200/90 bg-slate-50/60 px-4 py-3 text-xs font-bold text-slate-900 placeholder:text-slate-400 focus:border-blue-600 focus:bg-white focus:ring-4 focus:ring-blue-600/10 outline-none transition resize-none"
             />
           </div>
         </div>
 
-        <div className="mt-5 flex gap-3">
+        {/* Footer */}
+        <div className="px-6 py-4 border-t border-slate-100 flex gap-3 bg-white">
           <button
             onClick={isClose}
-            className="flex-1 rounded-lg border border-gray-300 py-2.5 text-sm font-medium text-gray-600"
+            className="flex-1 rounded-2xl border border-slate-200/90 py-3 text-xs font-black text-slate-700 hover:bg-slate-50 transition active:scale-[0.98] cursor-pointer"
           >
             Cancel
           </button>
           <button
             onClick={handleSubmit}
             disabled={loading || !form.amount || Number(form.amount) <= 0}
-            className="flex-1 rounded-lg bg-[#1E3A8A] py-2.5 text-sm font-semibold text-white disabled:opacity-50"
+            className="flex-1 rounded-2xl bg-slate-950 hover:bg-slate-900 py-3 text-xs font-black text-white shadow-md transition active:scale-[0.98] disabled:opacity-50 cursor-pointer"
           >
             {loading ? "Saving..." : editExpense ? "Update" : "Save"}
           </button>

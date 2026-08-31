@@ -30,43 +30,40 @@ export default function GlobalModal({
   if (!isOpen) return null;
 
   const colorStyles = {
-    success: "bg-green-500",
-    error: "bg-red-500",
-    warning: "bg-orange-500",
-    info: "bg-[#1E3A8A]",
+    success: "bg-emerald-500",
+    error: "bg-rose-500",
+    warning: "bg-amber-500",
+    info: "bg-blue-600",
   };
 
   return (
     <div
       onClick={onClose}
-      className="fixed inset-0 z-[100] bg-black/40"
+      className="fixed inset-0 z-[200] bg-slate-950/70 backdrop-blur-md flex items-center justify-center p-4 transition-opacity duration-300"
     >
       <div
         onClick={(e) => e.stopPropagation()}
         className={`
-          fixed left-1/2 top-1/2 w-[90%] max-w-md
-          -translate-x-1/2 -translate-y-1/2
-          rounded-2xl bg-white shadow-2xl
+          w-full max-w-sm
+          rounded-3xl bg-white shadow-2xl border border-slate-200/90 overflow-hidden
           transition-all duration-300
           ${animate ? "scale-100 opacity-100" : "scale-95 opacity-0"}
         `}
       >
-        <div
-          className={`h-2 w-full rounded-t-2xl ${colorStyles[type]}`}
-        />
+        <div className={`h-1.5 w-full ${colorStyles[type]}`} />
 
-        <div className="p-6">
-          <h2 className="text-lg font-semibold text-[#1E3A8A]">
+        <div className="p-6 text-center space-y-4">
+          <h2 className="text-lg font-black text-slate-950 tracking-tight">
             {title}
           </h2>
 
-          <p className="mt-3 text-sm leading-6 text-gray-600">
+          <p className="text-xs font-semibold text-slate-600 leading-relaxed">
             {message}
           </p>
 
           <button
             onClick={onClose}
-            className="mt-6 w-full rounded-xl bg-[#1E3A8A] py-3 text-sm font-semibold text-white"
+            className="w-full rounded-2xl bg-slate-950 hover:bg-slate-900 py-3 text-xs font-black text-white shadow-md transition active:scale-[0.98] cursor-pointer"
           >
             {confirmText}
           </button>

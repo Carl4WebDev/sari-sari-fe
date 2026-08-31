@@ -494,13 +494,11 @@ export default function ProductModal({
 
   return (
     <div
-      className="fixed inset-0 z-50 bg-black/40 transition-opacity duration-300"
+      className="fixed inset-0 z-[100] bg-slate-950/60 backdrop-blur-xs flex items-center justify-center p-3 sm:p-4 md:p-6 overflow-y-auto animate-backdrop-fade"
       onClick={isClose}
     >
       <div
-        className={`fixed top-0 left-0 w-full bg-white rounded-b-2xl shadow-xl transform transition-transform duration-300 ease-out ${
-          animate ? "translate-y-0" : "-translate-y-full"
-        }`}
+        className="w-full max-w-xl sm:max-w-2xl bg-white rounded-3xl shadow-2xl border border-slate-200 overflow-hidden flex flex-col max-h-[90vh] sm:max-h-[85vh] my-auto animate-modal-pop"
         onClick={(e) => e.stopPropagation()}
       >
         <div className="max-h-[90vh] overflow-y-auto p-6 space-y-6">

@@ -6,58 +6,65 @@ import { useOnlineStatus } from "../hooks/useOnlineStatus";
 interface Props {
   onQuickLoan: () => void;
   onQuickPayment: () => void;
-  isAnyModalOpen: boolean;
+  isAnyModalOpen?: boolean;
+  hidden?: boolean;
 }
 
 export default function QuickActionFab({
   onQuickLoan,
   onQuickPayment,
   isAnyModalOpen,
+  hidden,
 }: Props) {
   const { t } = useTranslation();
   const isOnline = useOnlineStatus();
   const { borrowers } = useBorrower();
   const [expanded, setExpanded] = useState(false);
 
-  if (isAnyModalOpen) return null;
+  if (isAnyModalOpen || hidden) return null;
 
   if (!isOnline && borrowers.length === 0) return null;
 
   return (
-    <div className="fixed bottom-20 right-4 z-40 md:bottom-6 md:right-6 flex flex-col items-end gap-3">
-      {expanded && (
-        <>
-          <button
-            onClick={() => {
-              setExpanded(false);
-              onQuickPayment();
-            }}
-            className="flex items-center gap-2 rounded-full bg-blue-600 px-4 py-3 text-sm font-semibold text-white shadow-lg transition-all hover:bg-blue-700"
-          >
-            <span>₱</span>
-            <span className="hidden sm:inline">{t("fab.quick_payment")}</span>
-          </button>
-          <button
-            onClick={() => {
-              setExpanded(false);
-              onQuickLoan();
-            }}
-            className="flex items-center gap-2 rounded-full bg-[#16A34A] px-4 py-3 text-sm font-semibold text-white shadow-lg transition-all hover:bg-green-700"
-          >
-            <span>+</span>
-            <span className="hidden sm:inline">{t("fab.quick_loan")}</span>
-          </button>
-        </>
-      )}
+    <div className="fixed bottom-8 inset-x-0 z-40 pointer-events-none">
+      <div className="max-w-7xl mx-auto px-6 sm:px-10 lg:px-14 flex flex-col items-end gap-3 pointer-events-auto">
+        {expanded && (
+          <>
+            <button
+              onClick={() => {
+                setExpanded(false);
+                onQuickPayment();
+              }}
+              className="flex items-center gap-2 rounded-full bg-emerald-600 px-5 py-3.5 text-sm font-extrabold text-white shadow-xl transition-all hover:bg-emerald-700 cursor-pointer"
+            >
+              <span className="text-base">₱</span>
+              <span>{t("fab.quick_payment")}</span>
+            </button>
+            <button
+              onClick={() => {
+                setExpanded(false);
+                onQuickLoan();
+              }}
+              className="flex items-center gap-2 rounded-full bg-indigo-600 px-5 py-3.5 text-sm font-extrabold text-white shadow-xl transition-all hover:bg-indigo-700 cursor-pointer"
+            >
+              <span className="text-base">+</span>
+              <span>{t("fab.quick_loan")}</span>
+            </button>
+          </>
+        )}
 
-      <button
-        onClick={() => setExpanded((prev) => !prev)}
-        className={`flex h-14 w-14 items-center justify-center rounded-full bg-[#1E3A8A] text-2xl text-white shadow-xl transition-transform hover:bg-[#1E3A8A]/90 ${
-          expanded ? "rotate-45" : ""
-        }`}
-      >
-        +
-      </button>
+        <button
+          onClick={() => setExpanded((prev) => !prev)}
+          className={`flex h-14 w-14 md:h-16 md:w-16 items-center justify-center rounded-full bg-blue-900 text-white shadow-2xl transition-transform duration-300 hover:bg-blue-950 active:scale-95 cursor-pointer ${
+            expanded ? "rotate-45" : ""
+          }`}
+          aria-label="Quick Actions"
+        >
+          <svg className="w-7 h-7 text-white shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2.5" d="M12 6v12m6-6H6" />
+          </svg>
+        </button>
+      </div>
     </div>
   );
 }

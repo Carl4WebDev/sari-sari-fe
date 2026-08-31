@@ -87,110 +87,127 @@ export default function EditLoanModal({
 
   return (
     <div
-      className="fixed inset-0 z-50 bg-black/40 transition-opacity duration-300"
+      className="fixed inset-0 z-[100] bg-slate-950/70 backdrop-blur-md flex items-center justify-center p-3 sm:p-4 md:p-6 overflow-y-auto animate-backdrop-fade"
       onClick={isClose}
     >
       <div
-        className={`
-          fixed top-0 left-0 w-full bg-white
-          rounded-b-2xl shadow-xl
-          transform transition-transform duration-300 ease-out
-          ${animate ? "translate-y-0" : "-translate-y-full"}
-        `}
+        className="w-full max-w-lg bg-white/95 backdrop-blur-xl rounded-[2rem] shadow-2xl shadow-slate-950/20 border border-slate-200/90 overflow-hidden flex flex-col max-h-[90vh] my-auto animate-modal-pop"
         onClick={(e) => e.stopPropagation()}
       >
-        <div className="p-6 space-y-6">
-          <h2 className="text-lg font-semibold text-[#1E3A8A]">
-            Edit Loan
-          </h2>
+        {/* Header */}
+        <div className="px-6 py-5 border-b border-slate-100 flex items-center justify-between bg-gradient-to-r from-slate-50/80 via-white to-slate-50/50">
+          <div className="flex items-center gap-3">
+            <div className="h-10 w-10 rounded-2xl bg-blue-50 text-blue-600 flex items-center justify-center border border-blue-100/80 shrink-0 shadow-2xs">
+              <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2.5" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
+              </svg>
+            </div>
+            <div>
+              <h2 className="text-base font-black text-slate-950 tracking-tight">
+                Edit Loan
+              </h2>
+              <p className="text-xs font-semibold text-slate-400 mt-0.5">Modify loan items & pricing</p>
+            </div>
+          </div>
 
-          <div className="space-y-4">
-            {items.map((item, index) => (
-              <div
-                key={index}
-                className="space-y-2 border border-gray-200 rounded-xl p-3"
-              >
-                <div className="flex items-center gap-2">
-                  <input
-                    value={item.product}
-                    onChange={(e) =>
-                      handleItemChange(
-                        index,
-                        "product",
-                        e.target.value
-                      )
-                    }
-                    placeholder="Product"
-                    className="flex-1 rounded-lg border border-gray-300 px-3 py-3 text-base focus:border-[#1E3A8A] focus:ring-1 focus:ring-[#1E3A8A] outline-none"
-                  />
+          <button
+            onClick={isClose}
+            className="h-9 w-9 rounded-2xl bg-slate-100/80 hover:bg-slate-200/80 text-slate-500 hover:text-slate-900 transition flex items-center justify-center cursor-pointer"
+          >
+            <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2.5" d="M6 18L18 6M6 6l12 12" />
+            </svg>
+          </button>
+        </div>
 
-                  <button
-                    type="button"
-                    onClick={addNewItem}
-                    className="rounded-lg bg-[#1E3A8A] text-white px-3 py-3 text-lg"
-                  >
-                    +
-                  </button>
-                </div>
+        {/* Modal Body */}
+        <div className="p-6 overflow-y-auto space-y-4 flex-1">
+          {items.map((item, index) => (
+            <div
+              key={index}
+              className="space-y-2 border border-slate-200/90 rounded-3xl p-4 bg-slate-50/40"
+            >
+              <div className="flex items-center gap-2">
+                <input
+                  value={item.product}
+                  onChange={(e) =>
+                    handleItemChange(
+                      index,
+                      "product",
+                      e.target.value
+                    )
+                  }
+                  placeholder="Product"
+                  className="flex-1 rounded-2xl border border-slate-200/90 bg-white px-4 py-2.5 text-xs font-bold text-slate-900 placeholder:text-slate-400 focus:border-blue-600 focus:ring-4 focus:ring-blue-600/10 outline-none transition"
+                />
 
-                <div className="flex gap-2">
-                  <input
-                    type="number"
-                    value={item.quantity}
-                    onChange={(e) =>
-                      handleItemChange(
-                        index,
-                        "quantity",
-                        e.target.value
-                      )
-                    }
-                    placeholder="Qty"
-                    className="w-1/2 rounded-lg border border-gray-300 px-3 py-3 text-base focus:border-[#1E3A8A] focus:ring-1 focus:ring-[#1E3A8A] outline-none"
-                  />
-
-                  <input
-                    type="number"
-                    value={item.price}
-                    onChange={(e) =>
-                      handleItemChange(
-                        index,
-                        "price",
-                        e.target.value
-                      )
-                    }
-                    placeholder="Price"
-                    className="w-1/2 rounded-lg border border-gray-300 px-3 py-3 text-base focus:border-[#1E3A8A] focus:ring-1 focus:ring-[#1E3A8A] outline-none"
-                  />
-                </div>
-
-                {items.length > 1 && (
-                  <button
-                    type="button"
-                    onClick={() => removeItem(index)}
-                    className="rounded-lg px-2 py-1 text-xs font-medium text-red-500"
-                  >
-                    Remove
-                  </button>
-                )}
+                <button
+                  type="button"
+                  onClick={addNewItem}
+                  className="rounded-2xl bg-slate-950 hover:bg-slate-900 text-white px-4 py-2.5 text-xs font-black transition cursor-pointer"
+                >
+                  +
+                </button>
               </div>
-            ))}
-          </div>
 
-          <div className="flex gap-3">
-            <button
-              onClick={isClose}
-              className="w-1/2 rounded-xl border border-gray-300 py-3 text-sm font-medium text-gray-700"
-            >
-              Cancel
-            </button>
+              <div className="flex gap-2">
+                <input
+                  type="number"
+                  value={item.quantity}
+                  onChange={(e) =>
+                    handleItemChange(
+                      index,
+                      "quantity",
+                      e.target.value
+                    )
+                  }
+                  placeholder="Qty"
+                  className="w-1/2 rounded-2xl border border-slate-200/90 bg-white px-4 py-2.5 text-xs font-bold text-slate-900 placeholder:text-slate-400 focus:border-blue-600 outline-none transition"
+                />
 
-            <button
-              onClick={handleSubmit}
-              className="w-1/2 rounded-xl bg-[#1E3A8A] py-3 text-sm font-semibold text-white"
-            >
-              Save Changes
-            </button>
-          </div>
+                <input
+                  type="number"
+                  value={item.price}
+                  onChange={(e) =>
+                    handleItemChange(
+                      index,
+                      "price",
+                      e.target.value
+                    )
+                  }
+                  placeholder="Price"
+                  className="w-1/2 rounded-2xl border border-slate-200/90 bg-white px-4 py-2.5 text-xs font-bold text-slate-900 placeholder:text-slate-400 focus:border-blue-600 outline-none transition"
+                />
+              </div>
+
+              {items.length > 1 && (
+                <button
+                  type="button"
+                  onClick={() => removeItem(index)}
+                  className="rounded-xl px-2.5 py-1 text-[11px] font-black text-rose-600 hover:bg-rose-50 transition cursor-pointer"
+                >
+                  Remove
+                </button>
+              )}
+            </div>
+          ))}
+        </div>
+
+        {/* Buttons */}
+        <div className="px-6 py-4 border-t border-slate-100 flex gap-3 bg-white">
+          <button
+            onClick={isClose}
+            className="flex-1 rounded-2xl border border-slate-200/90 py-3 text-xs font-black text-slate-700 hover:bg-slate-50 transition active:scale-[0.98] cursor-pointer"
+          >
+            Cancel
+          </button>
+
+          <button
+            onClick={handleSubmit}
+            className="flex-1 rounded-2xl bg-slate-950 hover:bg-slate-900 py-3 text-xs font-black text-white shadow-md transition active:scale-[0.98] cursor-pointer"
+          >
+            Save Changes
+          </button>
         </div>
       </div>
     </div>

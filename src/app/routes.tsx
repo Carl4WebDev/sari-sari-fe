@@ -13,6 +13,8 @@ import { CollectionReminderProvider } from "../feature/context/collection-remind
 import ProtectedLayout from "../feature/components/layouts/ProtectedLayout";
 import PublicRoute from "../feature/components/layouts/PublicRoute";
 
+const LandingPage = lazy(() => import("../feature/landing/pages/LandingPage"));
+const DemoPage = lazy(() => import("../feature/landing/pages/DemoPage"));
 const LoginPage = lazy(() => import("../feature/auth/pages/LoginPage"));
 const RegisterPage = lazy(() => import("../feature/auth/pages/RegisterPage"));
 const DashboardPage = lazy(() => import("../feature/dashboard/pages/DashboardPage"));
@@ -38,9 +40,12 @@ export default function AppRoutes() {
   return (
     <UserProvider>
       <Routes>
-        {/* Public auth routes — no extra providers */}
+        {/* Public Landing & Demo Sandbox routes */}
+        <Route path="/" element={<SuspenseWrap><LandingPage /></SuspenseWrap>} />
+        <Route path="/demo" element={<SuspenseWrap><DemoPage /></SuspenseWrap>} />
+
+        {/* Auth routes */}
         <Route element={<PublicRoute />}>
-          <Route path="/" element={<SuspenseWrap><LoginPage /></SuspenseWrap>} />
           <Route path="/login" element={<SuspenseWrap><LoginPage /></SuspenseWrap>} />
           <Route path="/register" element={<SuspenseWrap><RegisterPage /></SuspenseWrap>} />
         </Route>

@@ -62,42 +62,53 @@ export default function PendingItemsModal({ isOpen, onClose }: Props) {
   };
 
   return (
-    <div className="fixed inset-0 z-[9999] flex items-center justify-center bg-black/50 p-4">
-      <div className="w-full max-w-md rounded-2xl bg-white shadow-xl overflow-hidden">
+    <div className="fixed inset-0 z-[9999] bg-slate-950/70 backdrop-blur-md flex items-center justify-center p-3 sm:p-4 overflow-y-auto animate-backdrop-fade">
+      <div className="w-full max-w-md bg-white/95 backdrop-blur-xl rounded-[2rem] shadow-2xl shadow-slate-950/20 border border-slate-200/90 overflow-hidden flex flex-col max-h-[90vh] my-auto animate-modal-pop">
         {/* Header */}
-        <div className="flex items-center justify-between px-5 py-4 border-b border-gray-100">
-          <h2 className="text-base font-bold text-gray-900">
-            {t("pending_modal.title") || "Pending Items"}
-          </h2>
+        <div className="px-6 py-5 border-b border-slate-100 flex items-center justify-between bg-gradient-to-r from-slate-50/80 via-white to-slate-50/50">
+          <div className="flex items-center gap-3">
+            <div className="h-10 w-10 rounded-2xl bg-amber-50 text-amber-600 flex items-center justify-center border border-amber-100/80 shrink-0 shadow-2xs">
+              <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2.5" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
+              </svg>
+            </div>
+            <div>
+              <h2 className="text-base font-black text-slate-950 tracking-tight">
+                {t("pending_modal.title") || "Pending Items"}
+              </h2>
+              <p className="text-xs font-semibold text-slate-400 mt-0.5">Queued offline changes</p>
+            </div>
+          </div>
+
           <button
             onClick={onClose}
-            className="text-gray-400 hover:text-gray-600 text-xl leading-none"
+            className="h-9 w-9 rounded-2xl bg-slate-100/80 hover:bg-slate-200/80 text-slate-500 hover:text-slate-900 transition flex items-center justify-center cursor-pointer"
           >
-            &times;
+            <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2.5" d="M6 18L18 6M6 6l12 12" />
+            </svg>
           </button>
         </div>
 
         {/* Body */}
-        <div className="max-h-80 overflow-y-auto">
+        <div className="max-h-80 overflow-y-auto p-4 space-y-2">
           {items.length === 0 ? (
-            <div className="p-6 text-center text-sm text-gray-500">
+            <div className="p-8 text-center text-xs font-semibold text-slate-400">
               {t("pending_modal.empty") || "No pending items"}
             </div>
           ) : (
-            <ul className="divide-y divide-gray-50">
+            <ul className="space-y-2">
               {items.map((item) => (
-                <li key={item.id} className="px-5 py-3">
-                  <div className="flex items-start justify-between gap-3">
-                    <div className="min-w-0 flex-1">
-                      <p className="text-sm font-medium text-gray-900 truncate">
-                        {item.description || `${item.method} ${item.url}`}
-                      </p>
-                      <p className="text-xs text-gray-400 mt-0.5">
-                        {formatTime(item.timestamp)}
-                      </p>
-                    </div>
-                    {getMethodBadge(item.method)}
+                <li key={item.id} className="p-4 rounded-2xl border border-slate-200/90 bg-slate-50/50 flex items-start justify-between gap-3">
+                  <div className="min-w-0 flex-1">
+                    <p className="text-xs font-black text-slate-950 truncate">
+                      {item.description || `${item.method} ${item.url}`}
+                    </p>
+                    <p className="text-[11px] font-semibold text-slate-400 mt-1">
+                      {formatTime(item.timestamp)}
+                    </p>
                   </div>
+                  {getMethodBadge(item.method)}
                 </li>
               ))}
             </ul>
@@ -105,8 +116,8 @@ export default function PendingItemsModal({ isOpen, onClose }: Props) {
         </div>
 
         {/* Footer */}
-        <div className="px-5 py-3 border-t border-gray-100 bg-gray-50">
-          <p className="text-xs text-gray-500 text-center">
+        <div className="px-6 py-4 border-t border-slate-100 bg-slate-50/50">
+          <p className="text-[11px] font-semibold text-slate-500 text-center leading-relaxed">
             {t("pending_modal.sync_hint") || "These will sync automatically when you're back online."}
           </p>
         </div>

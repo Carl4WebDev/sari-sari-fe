@@ -164,66 +164,69 @@ export default function PublicStatusPage() {
   }
 
   return (
-    <div className="min-h-screen bg-gray-50 px-4 py-6 space-y-6">
-      <div className="text-center space-y-1">
-        <h1 className="text-lg font-semibold text-[#1E3A8A]">
-          {storeName}
-        </h1>
-        <p className="text-xs text-gray-500">{t("public.loan_status")}</p>
-      </div>
+    <div className="min-h-screen bg-slate-100 p-4 md:p-10 font-sans selection:bg-blue-900 selection:text-white">
+      <div className="max-w-4xl mx-auto space-y-6">
+        <div className="text-center space-y-2 py-2">
+          <h1 className="text-2xl md:text-3xl font-extrabold text-blue-900 tracking-tight">
+            {storeName}
+          </h1>
+          <p className="text-xs md:text-sm font-semibold text-slate-500">{t("public.loan_status")}</p>
+        </div>
 
-      <div className="bg-white rounded-xl shadow-sm p-5 space-y-3 text-center">
-        {borrower.profile_image_url ? (
-          <img
-            src={resolveImageUrl(borrower.profile_image_url)}
-            alt={borrower.name}
-            className="mx-auto h-20 w-20 rounded-full object-cover border"
-          />
-        ) : (
-          <div className="mx-auto h-20 w-20 rounded-full bg-[#1E3A8A] text-white flex items-center justify-center text-2xl font-bold">
-            {borrower.name?.charAt(0)}
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+          <div className="bg-white rounded-3xl shadow-sm border border-slate-200 p-6 space-y-4 text-center flex flex-col items-center justify-center">
+            {borrower.profile_image_url ? (
+              <img
+                src={resolveImageUrl(borrower.profile_image_url)}
+                alt={borrower.name}
+                className="h-24 w-24 rounded-full object-cover border-4 border-blue-900 shadow-md"
+              />
+            ) : (
+              <div className="h-24 w-24 rounded-full bg-blue-900 text-white flex items-center justify-center text-3xl font-extrabold shadow-md">
+                {borrower.name?.charAt(0)}
+              </div>
+            )}
+
+            <div>
+              <p className="text-xs font-semibold text-slate-400 uppercase tracking-wider">{t("public.borrower")}</p>
+              <p className="text-xl md:text-2xl font-extrabold text-slate-900">
+                {borrower.name}
+              </p>
+            </div>
+          </div>
+
+          <div className="bg-slate-900 text-white rounded-3xl p-6 md:p-8 shadow-md border border-slate-800 flex flex-col items-center justify-center space-y-2">
+            <p className="text-xs md:text-sm font-bold text-blue-400 uppercase tracking-wider">{t("public.total_balance")}</p>
+            <p className="text-3xl md:text-4xl font-extrabold text-white tracking-tight">
+              ₱{totalBalance.toLocaleString()}
+            </p>
+          </div>
+        </div>
+
+        <div className="grid grid-cols-2 gap-3">
+          <button
+            onClick={exportToExcel}
+            className="rounded-2xl bg-emerald-600 hover:bg-emerald-700 py-3.5 text-xs md:text-sm font-extrabold text-white shadow-xs transition cursor-pointer"
+          >
+            {t("common.export_csv")}
+          </button>
+          <button
+            onClick={exportToPDF}
+            className="rounded-2xl bg-rose-600 hover:bg-rose-700 py-3.5 text-xs md:text-sm font-extrabold text-white shadow-xs transition cursor-pointer"
+          >
+            {t("common.export_pdf")}
+          </button>
+        </div>
+
+        {lastPayment && (
+          <div className="bg-white rounded-3xl border border-slate-200 shadow-2xs p-5">
+            <p className="text-xs font-bold text-slate-400 uppercase tracking-wider">{t("public.last_payment")}</p>
+            <p className="text-base font-extrabold text-emerald-600 mt-1">
+              ₱{Number(lastPayment.amount).toLocaleString()} on{" "}
+              {normalizeDate(lastPayment.date)}
+            </p>
           </div>
         )}
-
-        <div>
-          <p className="text-sm text-gray-500">{t("public.borrower")}</p>
-          <p className="text-lg font-semibold text-gray-800">
-            {borrower.name}
-          </p>
-        </div>
-      </div>
-
-      <div className="bg-[#1E3A8A] text-white rounded-xl p-6 text-center">
-        <p className="text-sm text-blue-100">{t("public.total_balance")}</p>
-        <p className="text-3xl font-bold mt-2">
-          ₱{totalBalance.toLocaleString()}
-        </p>
-      </div>
-
-      <div className="grid grid-cols-2 gap-2">
-        <button
-          onClick={exportToExcel}
-          className="rounded-xl bg-[#16A34A] py-3 text-sm font-semibold text-white"
-        >
-          {t("common.export_csv")}
-        </button>
-        <button
-          onClick={exportToPDF}
-          className="rounded-xl bg-[#DC2626] py-3 text-sm font-semibold text-white"
-        >
-          {t("common.export_pdf")}
-        </button>
-      </div>
-
-      {lastPayment && (
-        <div className="bg-white rounded-xl shadow-sm p-4">
-          <p className="text-xs text-gray-500">{t("public.last_payment")}</p>
-          <p className="text-sm font-medium text-[#16A34A]">
-            ₱{Number(lastPayment.amount).toLocaleString()} on{" "}
-            {normalizeDate(lastPayment.date)}
-          </p>
-        </div>
-      )}
 
       <div className="space-y-3">
         <h2 className="text-sm font-semibold text-gray-700">
@@ -310,9 +313,10 @@ export default function PublicStatusPage() {
         ))}
       </div>
 
-      <div className="text-center text-xs text-gray-500 pt-6">
+      <div className="text-center text-xs text-slate-400 font-semibold pt-6">
         {t("public.footer")}
       </div>
+    </div>
     </div>
   );
 }

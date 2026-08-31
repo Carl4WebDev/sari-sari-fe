@@ -1,4 +1,4 @@
-import { useState, useCallback } from "react";
+import { useState, useCallback, useEffect } from "react";
 import { translations, type Language, type TranslationKey } from "./translations";
 
 const STORAGE_KEY = "app_language";
@@ -12,9 +12,19 @@ function getStoredLanguage(): Language {
 export function useTranslation() {
   const [language, setLanguageState] = useState<Language>(getStoredLanguage);
 
+  useEffect(() => {
+    const handleLanguageChange = () => {
+      setLanguageState(getStoredLanguage());
+    };
+
+    window.addEventListener("language-changed", handleLanguageChange);
+    return () => window.removeEventListener("language-changed", handleLanguageChange);
+  }, []);
+
   const setLanguage = useCallback((lang: Language) => {
     setLanguageState(lang);
     localStorage.setItem(STORAGE_KEY, lang);
+    window.dispatchEvent(new Event("language-changed"));
   }, []);
 
   const t = useCallback(

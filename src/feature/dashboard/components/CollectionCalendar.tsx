@@ -116,39 +116,46 @@ export default function CollectionCalendar({
   };
 
   return (
-    <div className="rounded-xl bg-white p-4 shadow-sm">
-      <div className="mb-4 flex items-center justify-between">
+    <div className="rounded-3xl bg-white border border-slate-200/90 p-5 sm:p-6 shadow-2xs space-y-4">
+      {/* Calendar Header */}
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
         <div>
-          <h2 className="text-lg font-bold text-gray-800">
+          <h2 className="text-lg sm:text-xl font-black text-slate-900 tracking-tight">
             {t("calendar.title")}
           </h2>
-          <p className="text-sm text-gray-500">{t("calendar.subtitle")}</p>
+          <p className="text-xs sm:text-sm font-semibold text-slate-500 mt-0.5">{t("calendar.subtitle")}</p>
         </div>
-        <div className="flex items-center gap-2">
+        <div className="flex items-center gap-2 border border-slate-200 bg-slate-50/80 rounded-2xl p-1 shrink-0 self-start sm:self-auto">
           <button
             onClick={onPrevMonth}
-            className="rounded-lg p-2 text-gray-600 hover:bg-gray-100"
+            className="p-2 rounded-xl text-slate-600 hover:text-slate-900 hover:bg-white transition cursor-pointer"
+            title="Previous Month"
           >
-            &#8249;
+            <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2.5" d="M15 19l-7-7 7-7" />
+            </svg>
           </button>
-          <span className="min-w-[140px] text-center font-semibold text-gray-700">
+          <span className="min-w-[130px] text-center font-black text-xs sm:text-sm text-slate-900">
             {monthName}
           </span>
           <button
             onClick={onNextMonth}
-            className="rounded-lg p-2 text-gray-600 hover:bg-gray-100"
+            className="p-2 rounded-xl text-slate-600 hover:text-slate-900 hover:bg-white transition cursor-pointer"
+            title="Next Month"
           >
-            &#8250;
+            <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2.5" d="M9 5l7 7-7 7" />
+            </svg>
           </button>
         </div>
       </div>
 
       {/* Day-of-week headers */}
-      <div className="mb-1 grid grid-cols-7 gap-1">
+      <div className="grid grid-cols-7 gap-1.5 pt-2">
         {DAY_LABELS.map((label) => (
           <div
             key={label}
-            className="py-1 text-center text-xs font-medium text-gray-400"
+            className="py-1.5 text-center text-xs font-black uppercase tracking-wider text-slate-400"
           >
             {t(label)}
           </div>
@@ -156,7 +163,7 @@ export default function CollectionCalendar({
       </div>
 
       {/* Calendar grid */}
-      <div className="grid grid-cols-7 gap-1">
+      <div className="grid grid-cols-7 gap-1.5">
         {calendarDays.map((cell) => {
           const reminders = reminderMap[cell.dateStr];
           const hasReminders = reminders && reminders.length > 0;
@@ -171,25 +178,27 @@ export default function CollectionCalendar({
                   onDayClick(cell.dateStr, reminders);
                 }
               }}
-              className={`relative flex min-h-[3.5rem] flex-col items-center rounded-lg border p-1.5 transition-colors ${
+              className={`relative flex min-h-[3.8rem] flex-col items-center justify-between rounded-2xl border p-2 transition-all ${
                 cell.isCurrentMonth ? "" : "opacity-30"
-              } ${hasReminders ? `cursor-pointer ${colorClass}` : "border-gray-100 hover:bg-gray-50"} ${isToday ? "ring-2 ring-[#1E3A8A]" : ""}`}
+              } ${hasReminders ? `cursor-pointer ${colorClass} hover:scale-[1.03] shadow-xs` : "border-slate-100/90 hover:bg-slate-50"} ${
+                isToday ? "ring-2 ring-blue-600 bg-blue-50/70 font-black border-blue-200 shadow-xs" : ""
+              }`}
             >
               <span
-                className={`text-sm font-medium ${isToday ? "text-[#1E3A8A]" : "text-gray-700"}`}
+                className={`text-xs sm:text-sm font-black ${isToday ? "text-blue-950" : "text-slate-800"}`}
               >
                 {cell.day}
               </span>
               {hasReminders && (
-                <div className="mt-0.5 flex gap-0.5">
+                <div className="mt-1 flex gap-1 items-center">
                   {reminders.slice(0, 3).map((r, i) => (
                     <span
                       key={i}
-                      className={`h-1.5 w-1.5 rounded-full ${getDotColor(r.status)}`}
+                      className={`h-2 w-2 rounded-full ${getDotColor(r.status)} shadow-xs`}
                     />
                   ))}
                   {reminders.length > 3 && (
-                    <span className="text-[8px] text-gray-500">
+                    <span className="text-[9px] font-black text-slate-500">
                       +{reminders.length - 3}
                     </span>
                   )}

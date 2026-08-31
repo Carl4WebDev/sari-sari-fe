@@ -138,54 +138,71 @@ if (amount > currentBalance) {
 
   return (
     <div
-      className="fixed inset-0 z-50 bg-black/40 transition-opacity duration-300"
+      className="fixed inset-0 z-[100] bg-slate-950/70 backdrop-blur-md flex items-center justify-center p-3 sm:p-4 md:p-6 overflow-y-auto animate-backdrop-fade"
       onClick={isClose}
     >
       <div
+        className="w-full max-w-lg bg-white/95 backdrop-blur-xl rounded-[2rem] shadow-2xl shadow-slate-950/20 border border-slate-200/90 overflow-hidden flex flex-col max-h-[90vh] my-auto animate-modal-pop"
         onClick={(e) => e.stopPropagation()}
-        className={`
-          fixed top-0 left-0 w-full bg-white
-          rounded-b-2xl shadow-xl
-          transform transition-transform duration-300 ease-out
-          ${animate ? "translate-y-0" : "-translate-y-full"}
-        `}
       >
-        <div className="mx-auto max-w-xl p-6 space-y-4">
-          <h2 className="text-lg font-semibold text-[#1E3A8A]">
-            Add Collection Reminder
-          </h2>
+        {/* Header */}
+        <div className="px-6 py-5 border-b border-slate-100 flex items-center justify-between bg-gradient-to-r from-slate-50/80 via-white to-slate-50/50">
+          <div className="flex items-center gap-3">
+            <div className="h-10 w-10 rounded-2xl bg-indigo-50 text-indigo-600 flex items-center justify-center border border-indigo-100/80 shrink-0 shadow-2xs">
+              <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2.5" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
+              </svg>
+            </div>
+            <div>
+              <h2 className="text-base font-black text-slate-950 tracking-tight">
+                Add Collection Reminder
+              </h2>
+              <p className="text-xs font-semibold text-slate-400 mt-0.5">Set payment schedule</p>
+            </div>
+          </div>
 
-          <div className="rounded-xl bg-[#1E3A8A] p-4 text-white">
-  <p className="text-sm text-blue-100">Current Balance</p>
-  <p className="mt-1 text-2xl font-bold">
-    ₱{Number(currentBalance || 0).toLocaleString()}
-  </p>
-</div>
+          <button
+            onClick={isClose}
+            className="h-9 w-9 rounded-2xl bg-slate-100/80 hover:bg-slate-200/80 text-slate-500 hover:text-slate-900 transition flex items-center justify-center cursor-pointer"
+          >
+            <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2.5" d="M6 18L18 6M6 6l12 12" />
+            </svg>
+          </button>
+        </div>
 
-<input
-  type="number"
-  min="0"
-  max={currentBalance}
-  placeholder="Expected amount"
-  value={form.amount_expected}
-  onChange={(e) => {
-    const value = Number(e.target.value);
+        <div className="p-6 overflow-y-auto space-y-4 flex-1">
+          <div className="rounded-3xl bg-slate-950 p-5 text-white shadow-md">
+            <p className="text-xs font-bold text-slate-400">Current Balance</p>
+            <p className="mt-1 text-2xl font-black">
+              ₱{Number(currentBalance || 0).toLocaleString()}
+            </p>
+          </div>
 
-    if (value > currentBalance) {
-      setForm({
-        ...form,
-        amount_expected: String(currentBalance),
-      });
-      return;
-    }
+          <input
+            type="number"
+            min="0"
+            max={currentBalance}
+            placeholder="Expected amount (₱)"
+            value={form.amount_expected}
+            onChange={(e) => {
+              const value = Number(e.target.value);
 
-    setForm({
-      ...form,
-      amount_expected: e.target.value,
-    });
-  }}
-  className="w-full rounded-lg border border-gray-300 px-3 py-3 text-sm outline-none focus:border-[#1E3A8A]"
-/>
+              if (value > currentBalance) {
+                setForm({
+                  ...form,
+                  amount_expected: String(currentBalance),
+                });
+                return;
+              }
+
+              setForm({
+                ...form,
+                amount_expected: e.target.value,
+              });
+            }}
+            className="w-full rounded-2xl border border-slate-200/90 bg-slate-50/60 px-4 py-3 text-xs font-bold text-slate-900 placeholder:text-slate-400 focus:border-blue-600 focus:bg-white focus:ring-4 focus:ring-blue-600/10 outline-none transition"
+          />
 
           <input
             type="date"
@@ -193,7 +210,7 @@ if (amount > currentBalance) {
             onChange={(e) =>
               setForm({ ...form, due_date: e.target.value })
             }
-            className="w-full rounded-lg border border-gray-300 px-3 py-3 text-sm outline-none focus:border-[#1E3A8A]"
+            className="w-full rounded-2xl border border-slate-200/90 bg-slate-50/60 px-4 py-3 text-xs font-bold text-slate-900 focus:border-blue-600 focus:bg-white transition outline-none"
           />
 
           <textarea
@@ -202,16 +219,17 @@ if (amount > currentBalance) {
             onChange={(e) =>
               setForm({ ...form, note: e.target.value })
             }
-            className="min-h-28 w-full rounded-lg border border-gray-300 px-3 py-3 text-sm outline-none focus:border-[#1E3A8A]"
+            rows={3}
+            className="w-full rounded-2xl border border-slate-200/90 bg-slate-50/60 px-4 py-3 text-xs font-bold text-slate-900 placeholder:text-slate-400 focus:border-blue-600 focus:bg-white focus:ring-4 focus:ring-blue-600/10 outline-none transition resize-none"
           />
 
           {borrowerEmail && (
-            <label className="flex items-center gap-2 text-sm text-gray-600">
+            <label className="flex items-center gap-2.5 text-xs font-extrabold text-slate-700 cursor-pointer">
               <input
                 type="checkbox"
                 checked={sendEmail}
                 onChange={(e) => setSendEmail(e.target.checked)}
-                className="h-4 w-4 rounded border-gray-300 text-[#1E3A8A] focus:ring-[#1E3A8A]"
+                className="h-4 w-4 rounded-md border-slate-300 text-slate-900 focus:ring-slate-900 cursor-pointer"
               />
               Also send email to borrower
             </label>
@@ -219,53 +237,53 @@ if (amount > currentBalance) {
 
           {contactNumber && (
             canSendSMS() ? (
-              <label className="flex items-center gap-2 text-sm text-gray-600">
+              <label className="flex items-center gap-2.5 text-xs font-extrabold text-slate-700 cursor-pointer">
                 <input
                   type="checkbox"
                   checked={sendSMS}
                   onChange={(e) => setSendSMS(e.target.checked)}
-                  className="h-4 w-4 rounded border-gray-300 text-emerald-600 focus:ring-emerald-600"
+                  className="h-4 w-4 rounded-md border-slate-300 text-emerald-600 focus:ring-emerald-600 cursor-pointer"
                 />
                 {t("sms.auto_send")}
               </label>
             ) : (
-              <div className="flex items-center gap-2 rounded-lg border border-amber-200 bg-amber-50 px-3 py-2 text-xs text-amber-700">
+              <div className="flex items-center gap-2 rounded-2xl border border-amber-200 bg-amber-50/80 px-3.5 py-2.5 text-xs font-bold text-amber-700">
                 <span>{t("sms.mobile_only")}</span>
               </div>
             )
           )}
+        </div>
 
-          <div className="flex gap-3">
-            <button
-              onClick={isClose}
-              className="w-1/2 rounded-xl border border-gray-300 py-3 text-sm font-medium text-gray-700"
-            >
-              Cancel
-            </button>
+        {/* Buttons */}
+        <div className="px-6 py-4 border-t border-slate-100 flex gap-3 bg-white">
+          <button
+            onClick={isClose}
+            className="flex-1 rounded-2xl border border-slate-200/90 py-3 text-xs font-black text-slate-700 hover:bg-slate-50 transition active:scale-[0.98] cursor-pointer"
+          >
+            Cancel
+          </button>
 
-            <button
-              onClick={handleSubmit}
-              disabled={loading}
-              className="w-1/2 rounded-xl bg-[#1E3A8A] py-3 text-sm font-semibold text-white disabled:opacity-50"
-            >
-              {loading ? "Saving..." : "Save Reminder"}
-            </button>
-          </div>
+          <button
+            onClick={handleSubmit}
+            disabled={loading}
+            className="flex-1 rounded-2xl bg-slate-950 hover:bg-slate-900 py-3 text-xs font-black text-white shadow-md transition active:scale-[0.98] disabled:opacity-50 cursor-pointer"
+          >
+            {loading ? "Saving..." : "Save Reminder"}
+          </button>
         </div>
       </div>
       <GlobalModal
-  isOpen={globalModal.isOpen}
-  title={globalModal.title}
-  message={globalModal.message}
-  type={globalModal.type as any}
-  onClose={() =>
-    setGlobalModal({
-      ...globalModal,
-      isOpen: false,
-    })
-  }
-/>
+        isOpen={globalModal.isOpen}
+        title={globalModal.title}
+        message={globalModal.message}
+        type={globalModal.type as any}
+        onClose={() =>
+          setGlobalModal({
+            ...globalModal,
+            isOpen: false,
+          })
+        }
+      />
     </div>
-    
   );
 }

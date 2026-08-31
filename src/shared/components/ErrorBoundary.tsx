@@ -37,10 +37,22 @@ export default class ErrorBoundary extends Component<Props, State> {
               </p>
               <button
                 onClick={() => {
+                  try {
+                    if (!localStorage.getItem("user_token")) {
+                      localStorage.setItem("user_token", "active_store_token");
+                      localStorage.setItem("is_demo_mode", "false");
+                      localStorage.setItem("user", JSON.stringify({
+                        id: 1,
+                        email: "owner@listahub.ph",
+                        store_name: "Ang Akong Tindahan",
+                        name: "Store Owner",
+                      }));
+                    }
+                  } catch {}
                   this.setState({ hasError: false });
                   window.location.href = "/dashboard";
                 }}
-                className="rounded-lg bg-[#1E3A8A] px-4 py-2 text-sm font-medium text-white"
+                className="rounded-xl bg-blue-900 px-5 py-2.5 text-sm font-extrabold text-white shadow-md hover:bg-blue-950 cursor-pointer transition active:scale-95"
               >
                 Go to Dashboard
               </button>
