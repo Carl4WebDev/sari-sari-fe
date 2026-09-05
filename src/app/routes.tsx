@@ -2,6 +2,7 @@ import { Routes, Route } from "react-router-dom";
 import { lazy, Suspense } from "react";
 
 import { UserProvider } from "../feature/context/users/UserProvider";
+import { SubscriptionProvider } from "../feature/subscription/context/SubscriptionProvider";
 import { BorrowerProvider } from "../feature/context/borrowers/BorrowerProvider";
 import { LoanProvider } from "../feature/context/loans/LoanProvider";
 import { PaymentProvider } from "../feature/context/payments/PaymentProvider";
@@ -39,47 +40,49 @@ function SuspenseWrap({ children }: { children: React.ReactNode }) {
 export default function AppRoutes() {
   return (
     <UserProvider>
-      <Routes>
-        {/* Public Landing & Demo Sandbox routes */}
-        <Route path="/" element={<SuspenseWrap><LandingPage /></SuspenseWrap>} />
-        <Route path="/demo" element={<SuspenseWrap><DemoPage /></SuspenseWrap>} />
+      <SubscriptionProvider>
+        <Routes>
+          {/* Public Landing & Demo Sandbox routes */}
+          <Route path="/" element={<SuspenseWrap><LandingPage /></SuspenseWrap>} />
+          <Route path="/demo" element={<SuspenseWrap><DemoPage /></SuspenseWrap>} />
 
-        {/* Auth routes */}
-        <Route element={<PublicRoute />}>
-          <Route path="/login" element={<SuspenseWrap><LoginPage /></SuspenseWrap>} />
-          <Route path="/register" element={<SuspenseWrap><RegisterPage /></SuspenseWrap>} />
-        </Route>
+          {/* Auth routes */}
+          <Route element={<PublicRoute />}>
+            <Route path="/login" element={<SuspenseWrap><LoginPage /></SuspenseWrap>} />
+            <Route path="/register" element={<SuspenseWrap><RegisterPage /></SuspenseWrap>} />
+          </Route>
 
-        {/* Public borrower status — own provider */}
-        <Route path="/status/:token" element={
-          <PublicStatusProvider>
-            <SuspenseWrap><PublicStatusPage /></SuspenseWrap>
-          </PublicStatusProvider>
-        } />
+          {/* Public borrower status — own provider */}
+          <Route path="/status/:token" element={
+            <PublicStatusProvider>
+              <SuspenseWrap><PublicStatusPage /></SuspenseWrap>
+            </PublicStatusProvider>
+          } />
 
-        {/* Protected routes — all providers needed for cross-page modals */}
-        <Route element={
-          <DashboardProvider>
-            <BorrowerProvider>
-              <LoanProvider>
-                <PaymentProvider>
-                  <ProductProvider>
-                    <CollectionReminderProvider>
-                      <ProtectedLayout />
-                    </CollectionReminderProvider>
-                  </ProductProvider>
-                </PaymentProvider>
-              </LoanProvider>
-            </BorrowerProvider>
-          </DashboardProvider>
-        }>
-          <Route path="/dashboard" element={<SuspenseWrap><DashboardPage /></SuspenseWrap>} />
-          <Route path="/borrowers" element={<SuspenseWrap><BorrowersPage /></SuspenseWrap>} />
-          <Route path="/borrowers/:id" element={<SuspenseWrap><BorrowerDetailsPage /></SuspenseWrap>} />
-          <Route path="/products" element={<SuspenseWrap><ManageProductsPage /></SuspenseWrap>} />
-          <Route path="/profile" element={<SuspenseWrap><UserManagementPage /></SuspenseWrap>} />
-        </Route>
-      </Routes>
+          {/* Protected routes — all providers needed for cross-page modals */}
+          <Route element={
+            <DashboardProvider>
+              <BorrowerProvider>
+                <LoanProvider>
+                  <PaymentProvider>
+                    <ProductProvider>
+                      <CollectionReminderProvider>
+                        <ProtectedLayout />
+                      </CollectionReminderProvider>
+                    </ProductProvider>
+                  </PaymentProvider>
+                </LoanProvider>
+              </BorrowerProvider>
+            </DashboardProvider>
+          }>
+            <Route path="/dashboard" element={<SuspenseWrap><DashboardPage /></SuspenseWrap>} />
+            <Route path="/borrowers" element={<SuspenseWrap><BorrowersPage /></SuspenseWrap>} />
+            <Route path="/borrowers/:id" element={<SuspenseWrap><BorrowerDetailsPage /></SuspenseWrap>} />
+            <Route path="/products" element={<SuspenseWrap><ManageProductsPage /></SuspenseWrap>} />
+            <Route path="/profile" element={<SuspenseWrap><UserManagementPage /></SuspenseWrap>} />
+          </Route>
+        </Routes>
+      </SubscriptionProvider>
     </UserProvider>
   );
 }

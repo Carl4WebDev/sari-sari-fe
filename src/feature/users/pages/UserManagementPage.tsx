@@ -1,5 +1,6 @@
 import { useEffect, useState } from "react";
 import { useUser } from "../../context/users/useUser";
+import { useSubscription } from "../../subscription/context/useSubscription";
 import { useTranslation } from "../../../shared/i18n/useTranslation";
 import GlobalModal from "../../../shared/components/GlobalModal";
 import SubscriptionModal from "../../subscription/components/SubscriptionModal";
@@ -15,6 +16,7 @@ export default function UserManagementPage() {
     updateStoreName,
     changePassword,
   } = useUser();
+  const { subscription, fetchSubscription } = useSubscription();
 
   const [storeName, setStoreName] = useState("");
   const [currentPassword, setCurrentPassword] = useState("");
@@ -32,11 +34,12 @@ export default function UserManagementPage() {
     type: "info",
   });
 
-  const activePlan = (localStorage.getItem("user_subscription_plan") || "standard").toUpperCase();
+  const activePlan = (subscription?.plan || localStorage.getItem("user_subscription_plan") || "FREE").toUpperCase();
 
   useEffect(() => {
     fetchProfile();
-  }, [fetchProfile]);
+    fetchSubscription();
+  }, [fetchProfile, fetchSubscription]);
 
   useEffect(() => {
     if (profile?.store_name) {
@@ -387,7 +390,7 @@ export default function UserManagementPage() {
         </div>
 
         {/* Subscription Plan Overview Card */}
-        <div className="rounded-3xl border border-amber-400/40 bg-gradient-to-br from-slate-900 via-slate-900 to-amber-950/40 text-white p-6 sm:p-7 shadow-xl space-y-4 md:col-span-2 relative overflow-hidden">
+        <div className="rounded-3xl border border-amber-400/40 bg-gradient-to-br from-slate-900 via-slate-900 to-amber-950/40 text-white p-6 sm:p-7 shadow-xl space-y-5 md:col-span-2 relative overflow-hidden">
           <div className="absolute right-0 top-0 w-64 h-64 bg-amber-500/10 rounded-full blur-3xl pointer-events-none" />
 
           <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-5 relative z-10">
@@ -399,13 +402,20 @@ export default function UserManagementPage() {
               </div>
               <div>
                 <div className="flex items-center gap-2">
-                  <h2 className="text-lg font-black text-white tracking-tight">ListaHub VIP Subscription Tier</h2>
-                  <span className="px-2.5 py-0.5 rounded-full text-[11px] font-black bg-amber-500/20 text-amber-300 border border-amber-400/40">
-                    VIP Member
+                  <h2 className="text-lg font-black text-white tracking-tight">ListaHub {activePlan} Tier</h2>
+                  <span className={`px-2.5 py-0.5 rounded-full text-[11px] font-black ${
+                    activePlan === "FREE"
+                      ? "bg-slate-700 text-slate-300 border border-slate-600"
+                      : "bg-amber-500/20 text-amber-300 border border-amber-400/40"
+                  }`}>
+                    {subscription?.status === "active" ? "Active Status" : subscription?.status || "Active"}
                   </span>
                 </div>
                 <p className="text-xs text-slate-400 mt-0.5">
-                  Active Plan: <span className="font-extrabold text-amber-400">{activePlan} VIP</span> • Unlimited Cloud Access
+                  Plan: <span className="font-extrabold text-amber-400">{activePlan}</span> • Cycle: <span className="font-semibold text-slate-300 uppercase">{subscription?.billing_cycle || "monthly"}</span>
+                  {subscription?.end_date && (
+                    <span className="text-slate-400"> • Valid until {new Date(subscription.end_date).toLocaleDateString()}</span>
+                  )}
                 </p>
               </div>
             </div>
@@ -415,11 +425,41 @@ export default function UserManagementPage() {
               onClick={() => setIsSubscriptionModalOpen(true)}
               className="bg-gradient-to-r from-amber-500 via-amber-500 to-yellow-500 hover:from-amber-400 hover:to-yellow-400 text-slate-950 font-black px-5 py-3 rounded-2xl text-xs sm:text-sm shadow-lg shadow-amber-500/20 transition active:scale-95 cursor-pointer flex items-center gap-2 shrink-0"
             >
-              <span>Manage / Upgrade Plan</span>
+              <span>{activePlan === "FREE" ? "Upgrade to VIP" : "Manage / Switch Plan"}</span>
               <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2.5" d="M14 5l7 7m0 0l-7 7m7-7H3" />
               </svg>
             </button>
+          </div>
+
+          {/* Plan Limits Grid */}
+          <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 pt-2 relative z-10 border-t border-slate-800/80">
+            <div className="bg-slate-950/50 border border-slate-800 rounded-2xl p-3.5">
+              <p className="text-[10px] font-extrabold text-slate-400 uppercase tracking-wider">Max Borrowers</p>
+              <p className="text-base font-black text-amber-300 mt-0.5">
+                {subscription?.limits?.maxBorrowers && subscription.limits.maxBorrowers >= 99999
+                  ? "Unlimited"
+                  : `${subscription?.limits?.maxBorrowers ?? 15} Borrowers`}
+              </p>
+            </div>
+            <div className="bg-slate-950/50 border border-slate-800 rounded-2xl p-3.5">
+              <p className="text-[10px] font-extrabold text-slate-400 uppercase tracking-wider">SMS Reminders</p>
+              <p className="text-base font-black text-slate-200 mt-0.5">
+                {subscription?.limits?.allowSms ? "✅ Automated" : "❌ Not Included"}
+              </p>
+            </div>
+            <div className="bg-slate-950/50 border border-slate-800 rounded-2xl p-3.5">
+              <p className="text-[10px] font-extrabold text-slate-400 uppercase tracking-wider">Export PDF/CSV</p>
+              <p className="text-base font-black text-slate-200 mt-0.5">
+                {subscription?.limits?.allowCsvExport ? "✅ Custom" : "Basic PDF"}
+              </p>
+            </div>
+            <div className="bg-slate-950/50 border border-slate-800 rounded-2xl p-3.5">
+              <p className="text-[10px] font-extrabold text-slate-400 uppercase tracking-wider">Cloud Sync</p>
+              <p className="text-base font-black text-emerald-400 mt-0.5">
+                {subscription?.limits?.allowCloudSync ? "✅ Real-time" : "Local"}
+              </p>
+            </div>
           </div>
         </div>
       </div>

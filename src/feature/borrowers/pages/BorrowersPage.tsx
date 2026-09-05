@@ -1,10 +1,12 @@
 import { useEffect, useMemo, useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { useBorrower } from "../../context/borrowers/useBorrower";
+import { useSubscription } from "../../subscription/context/useSubscription";
 import { calculateAge } from "../../components/utility/calculateAge";
 import { resolveImageUrl } from "../../../shared/utils/resolveImageUrl";
 
 import ArchivedBorrowersModal from "../modals/ArchivedBorrowersModal";
+import SubscriptionModal from "../../subscription/components/SubscriptionModal";
 
 import GlobalModal from "../../../shared/components/GlobalModal";
 import AddBorrowerModal from "../../dashboard/modals/AddBorrowerModal";
@@ -16,7 +18,9 @@ export default function BorrowersPage() {
   const [search, setSearch] = useState("");
   const navigate = useNavigate();
   const isOnline = useOnlineStatus();
+  const { subscription, canAddBorrower } = useSubscription();
   const [isAddBorrowerOpen, setIsAddBorrowerOpen] = useState(false);
+  const [isSubscriptionOpen, setIsSubscriptionOpen] = useState(false);
 
   const {
     borrowers,
@@ -51,6 +55,21 @@ export default function BorrowersPage() {
       setGlobalModal({ isOpen: true, title: "Error", message: borrowerError, type: "error" });
     }
   }, [borrowerError]);
+
+  const handleAddBorrowerClick = () => {
+    if (!canAddBorrower(borrowers.length)) {
+      const max = subscription?.limits?.maxBorrowers || 15;
+      setGlobalModal({
+        isOpen: true,
+        title: "Borrower Limit Reached",
+        message: `You have reached the limit of ${max} borrowers on your ${subscription?.plan || "FREE"} plan. Upgrade your plan to add more borrowers.`,
+        type: "warning",
+      });
+      setIsSubscriptionOpen(true);
+      return;
+    }
+    setIsAddBorrowerOpen(true);
+  };
 
   const filteredBorrowers = useMemo(() => {
     return borrowers.filter((b: any) =>
@@ -198,7 +217,7 @@ export default function BorrowersPage() {
           <div className="flex flex-wrap items-center gap-2">
             {isOnline && (
               <button
-                onClick={() => setIsAddBorrowerOpen(true)}
+                onClick={handleAddBorrowerClick}
                 className="flex items-center gap-2 rounded-2xl bg-slate-900 hover:bg-slate-800 py-2.5 px-4 text-white shadow-xs transition cursor-pointer font-black text-xs sm:text-sm active:scale-95"
               >
                 <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -429,6 +448,29 @@ export default function BorrowersPage() {
           </button>
         </div>
       )}
+
+      <AddBorrowerModal
+        isOpen={isAddBorrowerOpen}
+        isClose={() => setIsAddBorrowerOpen(false)}
+        onBorrowerCreated={() => fetchBorrowers()}
+      />
+
+      <ArchivedBorrowersModal
+        isOpen={isArchivedOpen}
+        isClose={() => setIsArchivedOpen(false)}
+        archivedBorrowers={archivedBorrowers}
+        loading={loading}
+        onFetchArchived={fetchArchivedBorrowers}
+        onReactivate={async (id) => {
+          await reactivateBorrower(id);
+          await fetchBorrowers();
+        }}
+      />
+
+      <SubscriptionModal
+        isOpen={isSubscriptionOpen}
+        onClose={() => setIsSubscriptionOpen(false)}
+      />
 
       <GlobalModal
         isOpen={globalModal.isOpen}

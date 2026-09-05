@@ -266,6 +266,42 @@ function handleDemoRequest(url, options = {}) {
     if (url.includes("/products")) {
       return { ok: true, data: demoStore.products };
     }
+    if (url.includes("/subscriptions/plans")) {
+      return {
+        ok: true,
+        data: [
+          { id: "free", name: "FREE", monthlyPrice: 0, annualPriceMonthly: 0, maxBorrowers: 15, allowSms: false, allowCustomPdf: false, allowCsvExport: false, allowCloudSync: true },
+          { id: "basic", name: "BASIC", monthlyPrice: 149, annualPriceMonthly: 119, maxBorrowers: 50, allowSms: false, allowCustomPdf: true, allowCsvExport: false, allowCloudSync: true },
+          { id: "standard", name: "STANDARD", monthlyPrice: 299, annualPriceMonthly: 239, maxBorrowers: 250, allowSms: true, allowCustomPdf: true, allowCsvExport: true, allowCloudSync: true },
+          { id: "premium", name: "PREMIUM", monthlyPrice: 499, annualPriceMonthly: 399, maxBorrowers: 999999, allowSms: true, allowCustomPdf: true, allowCsvExport: true, allowCloudSync: true, prioritySupport: true }
+        ]
+      };
+    }
+    if (url.includes("/subscriptions/current")) {
+      const savedPlan = localStorage.getItem("user_subscription_plan") || "standard";
+      const isPrem = savedPlan.toLowerCase() === "premium";
+      const isStd = savedPlan.toLowerCase() === "standard";
+      return {
+        ok: true,
+        data: {
+          plan: savedPlan.toUpperCase(),
+          status: "active",
+          billing_cycle: "annual",
+          limits: {
+            id: savedPlan.toLowerCase(),
+            name: savedPlan.toUpperCase(),
+            monthlyPrice: isPrem ? 499 : isStd ? 299 : 149,
+            annualPriceMonthly: isPrem ? 399 : isStd ? 239 : 119,
+            maxBorrowers: isPrem ? 999999 : isStd ? 250 : 50,
+            allowSms: isPrem || isStd,
+            allowCustomPdf: true,
+            allowCsvExport: isPrem || isStd,
+            allowCloudSync: true,
+            prioritySupport: isPrem
+          }
+        }
+      };
+    }
   }
 
   if (method === "POST") {
@@ -362,6 +398,36 @@ function handleDemoRequest(url, options = {}) {
       demoStore.products.unshift(newP);
       localStorage.setItem("demo_store_data", JSON.stringify(demoStore));
       return { ok: true, data: newP, message: "Product added in Demo Mode" };
+    }
+    if (url.includes("/subscriptions/subscribe")) {
+      const targetPlan = (payload.plan || "STANDARD").toUpperCase();
+      localStorage.setItem("user_subscription_plan", targetPlan.toLowerCase());
+      const isPrem = targetPlan === "PREMIUM";
+      const isStd = targetPlan === "STANDARD";
+      const subData = {
+        plan: targetPlan,
+        status: "active",
+        billing_cycle: payload.billing_cycle || "annual",
+        start_date: new Date().toISOString(),
+        end_date: new Date(Date.now() + 365 * 24 * 60 * 60 * 1000).toISOString(),
+        limits: {
+          id: targetPlan.toLowerCase(),
+          name: targetPlan,
+          monthlyPrice: isPrem ? 499 : isStd ? 299 : 149,
+          annualPriceMonthly: isPrem ? 399 : isStd ? 239 : 119,
+          maxBorrowers: isPrem ? 999999 : isStd ? 250 : 50,
+          allowSms: isPrem || isStd,
+          allowCustomPdf: true,
+          allowCsvExport: isPrem || isStd,
+          allowCloudSync: true,
+          prioritySupport: isPrem
+        }
+      };
+      localStorage.setItem("user_subscription_data", JSON.stringify(subData));
+      return { ok: true, data: subData, message: `Subscribed to ${targetPlan} Plan` };
+    }
+    if (url.includes("/subscriptions/cancel")) {
+      return { ok: true, message: "Subscription cancelled successfully" };
     }
   }
 
