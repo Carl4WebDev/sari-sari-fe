@@ -405,15 +405,16 @@ export async function customFetch(url, options = {}) {
     ...(token ? { Authorization: `Bearer ${token}` } : {}),
   };
 
-  const isJSON = options.body && typeof options.body === "object" && !(options.body instanceof FormData);
-  if (isJSON) {
+  const isFormData = options.body instanceof FormData;
+  if (!isFormData && options.body && !headers["Content-Type"]) {
     headers["Content-Type"] = "application/json";
   }
 
+  const isPlainObject = options.body && typeof options.body === "object" && !isFormData;
   const fetchOptions = {
     ...options,
     headers,
-    body: isJSON ? JSON.stringify(options.body) : options.body,
+    body: isPlainObject ? JSON.stringify(options.body) : options.body,
   };
 
   const cacheKey = `${method}:${url}`;
@@ -449,7 +450,9 @@ export async function customFetch(url, options = {}) {
     try {
       const response = await fetch(`${API_BASE}${url}`, fetchOptions);
 
-      if (response.status === 401) {
+      const isAuthEndpoint = url.includes("/login") || url.includes("/register") || url.includes("/api/users/login") || url.includes("/api/users/register");
+
+      if (response.status === 401 && !isAuthEndpoint) {
         localStorage.removeItem("user_token");
         window.location.href = "/login";
         return { ok: false, message: "Unauthorized. Please log in again." };
@@ -458,10 +461,18 @@ export async function customFetch(url, options = {}) {
       const json = await response.json().catch(() => null);
 
       if (!response.ok) {
+        let errorMsg = json?.message || json?.error || `Request failed with status ${response.status}`;
+        if (json?.details && typeof json.details === "object") {
+          const detailValues = Object.values(json.details).filter(Boolean);
+          if (detailValues.length > 0) {
+            errorMsg = detailValues.join(". ");
+          }
+        }
         return {
           ok: false,
           status: response.status,
-          message: json?.message || `Request failed with status ${response.status}`,
+          message: errorMsg,
+          details: json?.details,
         };
       }
 
@@ -474,6 +485,14 @@ export async function customFetch(url, options = {}) {
       if (method === "GET") {
         const cached = getCachedData(cacheKey);
         if (cached) return { ok: true, data: cached, _fromCache: true };
+      }
+
+      // If network error occurred during an explicit auth action, surface clear network error
+      if (url.includes("/users/login") || url.includes("/users/register")) {
+        return {
+          ok: false,
+          message: "Unable to connect to server. Please check your internet connection or backend server.",
+        };
       }
 
       // Fallback to mock store data if backend server is unreachable

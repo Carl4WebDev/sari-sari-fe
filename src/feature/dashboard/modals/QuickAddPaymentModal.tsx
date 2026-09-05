@@ -7,17 +7,22 @@ import { useTranslation } from "../../../shared/i18n/useTranslation";
 
 interface Props {
   isOpen: boolean;
-  isClose: () => void;
+  isClose?: () => void;
+  onClose?: () => void;
   mode?: "navigate" | "direct";
   onPaymentCreated?: () => Promise<void> | void;
+  onSuccess?: (data: any) => Promise<void> | void;
 }
 
 export default function QuickAddPaymentModal({
   isOpen,
-  isClose,
+  isClose: isCloseProp,
+  onClose: onCloseProp,
   mode = "navigate",
   onPaymentCreated,
+  onSuccess,
 }: Props) {
+  const isClose = onCloseProp || isCloseProp || (() => {});
   const navigate = useNavigate();
   const { t } = useTranslation();
   const { borrowers, fetchBorrowers } = useBorrower();

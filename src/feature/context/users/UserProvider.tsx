@@ -1,5 +1,5 @@
-import { useState, useCallback, useMemo } from "react";
-import { UserContext } from "./UserContext.js";
+import { useState, useCallback, useMemo, type ReactNode } from "react";
+import { UserContext, type UserProfile } from "./UserContext";
 import {
   loginUser,
   registerUser,
@@ -11,33 +11,54 @@ import {
 import { clearAllCache } from "../../../shared/utils/offlineCache";
 import { clearQueue } from "../../../shared/utils/offlineQueue";
 
-export const UserProvider = ({ children }) => {
+interface UserProviderProps {
+  children: ReactNode;
+}
+
+export const UserProvider = ({ children }: UserProviderProps) => {
   const [loading, setLoading] = useState(false);
-  const [error, setError] = useState(null);
-  const [profile, setProfile] = useState(null);
+  const [error, setError] = useState<string | null>(null);
+  const [profile, setProfile] = useState<UserProfile | null>(() => {
+    try {
+      const stored = localStorage.getItem("user");
+      if (stored && stored !== "undefined") {
+        return JSON.parse(stored);
+      }
+    } catch {
+      // ignore
+    }
+    return null;
+  });
 
   const clearError = useCallback(() => setError(null), []);
 
   // -------------------------
   // LOGIN
   // -------------------------
-  const login = useCallback(async (email, password) => {
+  const login = useCallback(async (email: string, password: string) => {
     setLoading(true);
     setError(null);
 
     const res = await loginUser(email, password);
 
     if (!res?.ok) {
-      setError(res?.message || "Login failed");
+      const errMsg = res?.message || "Login failed";
+      setError(errMsg);
       setLoading(false);
       return res;
     }
 
-    // store token + user info
-    localStorage.setItem("user_token", res.data.token);
-    localStorage.setItem("user", JSON.stringify(res.data.user));
+    // Clear demo mode flag and save real user credentials
+    localStorage.removeItem("is_demo_mode");
+    if (res.data?.token) {
+      localStorage.setItem("user_token", res.data.token);
+    }
+    if (res.data?.user) {
+      localStorage.setItem("user", JSON.stringify(res.data.user));
+      setProfile(res.data.user);
+    }
 
-    // Clear stale cache and queue from previous account
+    // Clear stale cache and queue from previous session
     clearAllCache();
     clearQueue();
 
@@ -48,16 +69,32 @@ export const UserProvider = ({ children }) => {
   // -------------------------
   // REGISTER
   // -------------------------
-  const register = useCallback(async (payload) => {
+  const register = useCallback(async (payload: { email: string; store_name: string; password: string }) => {
     setLoading(true);
     setError(null);
 
     const res = await registerUser(payload);
 
     if (!res?.ok) {
-      setError(res?.message || "Registration failed");
+      const errMsg = res?.message || "Registration failed";
+      setError(errMsg);
       setLoading(false);
       return res;
+    }
+
+    // Auto-login upon successful registration
+    const loginRes = await loginUser(payload.email, payload.password);
+    if (loginRes?.ok) {
+      localStorage.removeItem("is_demo_mode");
+      if (loginRes.data?.token) {
+        localStorage.setItem("user_token", loginRes.data.token);
+      }
+      if (loginRes.data?.user) {
+        localStorage.setItem("user", JSON.stringify(loginRes.data.user));
+        setProfile(loginRes.data.user);
+      }
+      clearAllCache();
+      clearQueue();
     }
 
     setLoading(false);
@@ -70,10 +107,11 @@ export const UserProvider = ({ children }) => {
   const clearUser = useCallback(() => {
     localStorage.removeItem("user_token");
     localStorage.removeItem("user");
+    localStorage.removeItem("is_demo_mode");
     clearAllCache();
     clearQueue();
     setProfile(null);
-    // Best-effort server-side logout (don't await)
+    // Best-effort server-side logout
     logoutUser().catch(() => {});
   }, []);
 
@@ -92,12 +130,15 @@ export const UserProvider = ({ children }) => {
       return res;
     }
 
-    setProfile(res.data);
+    if (res.data) {
+      setProfile(res.data);
+      localStorage.setItem("user", JSON.stringify(res.data));
+    }
     setLoading(false);
     return res;
   }, []);
 
-  const updateStoreName = useCallback(async (storeName) => {
+  const updateStoreName = useCallback(async (storeName: string) => {
     setLoading(true);
     setError(null);
 
@@ -110,16 +151,20 @@ export const UserProvider = ({ children }) => {
     }
 
     // Update localStorage user object
-    const stored = JSON.parse(localStorage.getItem("user") || "{}");
-    stored.store_name = res.data.store_name;
-    localStorage.setItem("user", JSON.stringify(stored));
+    try {
+      const stored = JSON.parse(localStorage.getItem("user") || "{}");
+      stored.store_name = res.data?.store_name || storeName;
+      localStorage.setItem("user", JSON.stringify(stored));
+    } catch {
+      // ignore
+    }
 
-    setProfile((prev) => (prev ? { ...prev, store_name: res.data.store_name } : prev));
+    setProfile((prev) => (prev ? { ...prev, store_name: res.data?.store_name || storeName } : prev));
     setLoading(false);
     return res;
   }, []);
 
-  const changePassword = useCallback(async (currentPassword, newPassword) => {
+  const changePassword = useCallback(async (currentPassword: string, newPassword: string) => {
     setLoading(true);
     setError(null);
 

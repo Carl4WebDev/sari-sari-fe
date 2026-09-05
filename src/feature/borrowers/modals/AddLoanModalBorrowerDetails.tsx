@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useEffect, useState, useMemo } from "react";
 import { useLoan } from "../../context/loans/useLoan";
 import { useProduct } from "../../context/products/useProduct";
 import { createReminderApi } from "../../context/collection-reminders/collectionReminderApi";
@@ -83,6 +83,14 @@ useEffect(() => {
   }
 }, [isOpen]);
   if (!isOpen) return null;
+
+  const totalAmount = useMemo(() => {
+    return items.reduce((acc, item) => {
+      const q = parseFloat(item.quantity) || 0;
+      const p = parseFloat(item.price) || 0;
+      return acc + q * p;
+    }, 0);
+  }, [items]);
 
   // -----------------------------
   // Loan items logic

@@ -1,6 +1,6 @@
 import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
-import { useUser } from "../../context/users/useUser.js";
+import { useUser } from "../../context/users/useUser";
 import { useTranslation } from "../../../shared/i18n/useTranslation";
 
 interface AuthModalProps {
@@ -10,7 +10,7 @@ interface AuthModalProps {
 }
 
 export default function AuthModal({ isOpen, initialMode = "login", onClose }: AuthModalProps) {
-  const { login, register, loading, error } = useUser();
+  const { login, register, loading, error, clearError } = useUser();
   const navigate = useNavigate();
   const { t } = useTranslation();
 
@@ -31,11 +31,12 @@ export default function AuthModal({ isOpen, initialMode = "login", onClose }: Au
     if (isOpen) {
       setMode(initialMode);
       setLocalError("");
+      clearError();
       setIsClosing(false);
       setShowPassword(false);
       setShowConfirmPassword(false);
     }
-  }, [initialMode, isOpen]);
+  }, [initialMode, isOpen, clearError]);
 
   if (!isOpen && !isClosing) return null;
 
@@ -50,7 +51,14 @@ export default function AuthModal({ isOpen, initialMode = "login", onClose }: Au
   const handleLoginSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setLocalError("");
-    const res = await login(email, password);
+    clearError();
+
+    if (!email.trim() || !password) {
+      setLocalError("Please enter both email and password");
+      return;
+    }
+
+    const res = await login(email.trim(), password);
     if (res?.ok) {
       handleClose();
       navigate("/dashboard");
@@ -60,6 +68,27 @@ export default function AuthModal({ isOpen, initialMode = "login", onClose }: Au
   const handleRegisterSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setLocalError("");
+    clearError();
+
+    if (!email.trim()) {
+      setLocalError("Email is required");
+      return;
+    }
+
+    if (!storeName.trim()) {
+      setLocalError("Store name is required");
+      return;
+    }
+
+    if (password.length < 8) {
+      setLocalError("Password must be at least 8 characters long");
+      return;
+    }
+
+    if (!/[a-z]/.test(password) || !/[A-Z]/.test(password) || !/[0-9]/.test(password)) {
+      setLocalError("Password must contain uppercase, lowercase, and at least one digit (0-9)");
+      return;
+    }
 
     if (password !== confirmPassword) {
       setLocalError("Passwords do not match");
@@ -72,8 +101,8 @@ export default function AuthModal({ isOpen, initialMode = "login", onClose }: Au
     }
 
     const res = await register({
-      email,
-      store_name: storeName,
+      email: email.trim(),
+      store_name: storeName.trim(),
       password,
     });
 
@@ -82,6 +111,21 @@ export default function AuthModal({ isOpen, initialMode = "login", onClose }: Au
       navigate("/dashboard");
     }
   };
+
+  // Switch mode helper
+  const switchMode = (newMode: "login" | "register") => {
+    setMode(newMode);
+    setLocalError("");
+    clearError();
+  };
+
+  const activeError = localError || error;
+
+  // Password rules validation flags
+  const hasMinLength = password.length >= 8;
+  const hasUpper = /[A-Z]/.test(password);
+  const hasLower = /[a-z]/.test(password);
+  const hasDigit = /[0-9]/.test(password);
 
   return (
     <div
@@ -110,11 +154,11 @@ export default function AuthModal({ isOpen, initialMode = "login", onClose }: Au
                   ListaHub
                 </h3>
                 <span className="px-2 py-0.5 rounded-full text-[10px] font-black bg-blue-50 text-blue-700 border border-blue-200/70">
-                  Store Access
+                  Store Portal
                 </span>
               </div>
               <p className="text-xs font-semibold text-slate-400 mt-0.5">
-                {mode === "login" ? "Sign in to manage your store" : "Create a new store account"}
+                {mode === "login" ? "Sign in to manage your store" : "Create your store account"}
               </p>
             </div>
           </div>
@@ -136,7 +180,7 @@ export default function AuthModal({ isOpen, initialMode = "login", onClose }: Au
           <div className="grid grid-cols-2 gap-1 bg-slate-100/90 p-1.5 rounded-2xl border border-slate-200/70">
             <button
               type="button"
-              onClick={() => { setMode("login"); setLocalError(""); }}
+              onClick={() => switchMode("login")}
               className={`py-2.5 text-xs sm:text-sm font-black rounded-xl transition-all duration-200 cursor-pointer flex items-center justify-center gap-1.5 ${
                 mode === "login"
                   ? "bg-white text-slate-950 shadow-xs scale-100 font-black"
@@ -147,7 +191,7 @@ export default function AuthModal({ isOpen, initialMode = "login", onClose }: Au
             </button>
             <button
               type="button"
-              onClick={() => { setMode("register"); setLocalError(""); }}
+              onClick={() => switchMode("register")}
               className={`py-2.5 text-xs sm:text-sm font-black rounded-xl transition-all duration-200 cursor-pointer flex items-center justify-center gap-1.5 ${
                 mode === "register"
                   ? "bg-white text-slate-950 shadow-xs scale-100 font-black"
@@ -160,7 +204,7 @@ export default function AuthModal({ isOpen, initialMode = "login", onClose }: Au
         </div>
 
         {/* Body Content */}
-        <div key={mode} className="p-5 overflow-y-auto space-y-4 flex-1 animate-tab-fade">
+        <div key={mode} className="p-5 overflow-y-auto space-y-4 flex-1">
           {mode === "login" ? (
             <form onSubmit={handleLoginSubmit} className="space-y-3.5">
               <div>
@@ -178,6 +222,7 @@ export default function AuthModal({ isOpen, initialMode = "login", onClose }: Au
                     value={email}
                     onChange={(e) => setEmail(e.target.value)}
                     required
+                    autoComplete="email"
                     className="w-full rounded-2xl border border-slate-200/90 pl-10 pr-4 py-3 text-xs sm:text-sm font-semibold focus:border-blue-600 focus:outline-none focus:ring-4 focus:ring-blue-600/10 transition-all bg-slate-50/50 hover:bg-white focus:bg-white text-slate-900 placeholder:text-slate-400 shadow-2xs"
                     placeholder="you@example.com"
                   />
@@ -199,6 +244,7 @@ export default function AuthModal({ isOpen, initialMode = "login", onClose }: Au
                     value={password}
                     onChange={(e) => setPassword(e.target.value)}
                     required
+                    autoComplete="current-password"
                     className="w-full rounded-2xl border border-slate-200/90 pl-10 pr-11 py-3 text-xs sm:text-sm font-semibold focus:border-blue-600 focus:outline-none focus:ring-4 focus:ring-blue-600/10 transition-all bg-slate-50/50 hover:bg-white focus:bg-white text-slate-900 placeholder:text-slate-400 shadow-2xs"
                     placeholder="••••••••"
                   />
@@ -221,12 +267,12 @@ export default function AuthModal({ isOpen, initialMode = "login", onClose }: Au
                 </div>
               </div>
 
-              {(localError || error) && (
-                <div className="flex items-center gap-2 p-3 rounded-2xl bg-rose-50 border border-rose-200/80 text-rose-700 text-xs font-black animate-fadeIn">
-                  <svg className="w-4 h-4 shrink-0 text-rose-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              {activeError && (
+                <div className="flex items-start gap-2.5 p-3.5 rounded-2xl bg-rose-50 border border-rose-200/90 text-rose-700 text-xs font-bold leading-relaxed animate-fadeIn">
+                  <svg className="w-4 h-4 shrink-0 text-rose-600 mt-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2.5" d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
                   </svg>
-                  <span>{localError || error}</span>
+                  <span>{activeError}</span>
                 </div>
               )}
 
@@ -256,11 +302,15 @@ export default function AuthModal({ isOpen, initialMode = "login", onClose }: Au
               </div>
 
               <div className="pt-2 text-center">
-                <p className="text-[11px] text-slate-400 font-semibold flex items-center justify-center gap-1.5">
-                  <svg className="w-3.5 h-3.5 text-slate-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z" />
-                  </svg>
-                  <span>{t("auth.info_notice")}</span>
+                <p className="text-[11px] text-slate-500 font-semibold">
+                  Don&apos;t have an account yet?{" "}
+                  <button
+                    type="button"
+                    onClick={() => switchMode("register")}
+                    className="text-blue-600 font-bold hover:underline cursor-pointer"
+                  >
+                    Create store account
+                  </button>
                 </p>
               </div>
             </form>
@@ -281,6 +331,7 @@ export default function AuthModal({ isOpen, initialMode = "login", onClose }: Au
                     required
                     value={email}
                     onChange={(e) => setEmail(e.target.value)}
+                    autoComplete="email"
                     className="w-full rounded-2xl border border-slate-200/90 pl-10 pr-4 py-3 text-xs sm:text-sm font-semibold focus:border-blue-600 focus:outline-none focus:ring-4 focus:ring-blue-600/10 transition-all bg-slate-50/50 hover:bg-white focus:bg-white text-slate-900 placeholder:text-slate-400 shadow-2xs"
                     placeholder="you@example.com"
                   />
@@ -323,6 +374,7 @@ export default function AuthModal({ isOpen, initialMode = "login", onClose }: Au
                     required
                     value={password}
                     onChange={(e) => setPassword(e.target.value)}
+                    autoComplete="new-password"
                     className="w-full rounded-2xl border border-slate-200/90 pl-10 pr-11 py-3 text-xs sm:text-sm font-semibold focus:border-blue-600 focus:outline-none focus:ring-4 focus:ring-blue-600/10 transition-all bg-slate-50/50 hover:bg-white focus:bg-white text-slate-900 placeholder:text-slate-400 shadow-2xs"
                     placeholder="••••••••"
                   />
@@ -343,6 +395,24 @@ export default function AuthModal({ isOpen, initialMode = "login", onClose }: Au
                     )}
                   </button>
                 </div>
+
+                {/* Password strength checklist */}
+                {password && (
+                  <div className="mt-2 grid grid-cols-2 gap-1.5 p-2.5 rounded-xl bg-slate-50 border border-slate-200/80 text-[10px] font-bold">
+                    <span className={hasMinLength ? "text-emerald-600 flex items-center gap-1" : "text-slate-400 flex items-center gap-1"}>
+                      {hasMinLength ? "✓" : "○"} 8+ chars
+                    </span>
+                    <span className={hasUpper ? "text-emerald-600 flex items-center gap-1" : "text-slate-400 flex items-center gap-1"}>
+                      {hasUpper ? "✓" : "○"} Uppercase (A-Z)
+                    </span>
+                    <span className={hasLower ? "text-emerald-600 flex items-center gap-1" : "text-slate-400 flex items-center gap-1"}>
+                      {hasLower ? "✓" : "○"} Lowercase (a-z)
+                    </span>
+                    <span className={hasDigit ? "text-emerald-600 flex items-center gap-1" : "text-slate-400 flex items-center gap-1"}>
+                      {hasDigit ? "✓" : "○"} Number (0-9)
+                    </span>
+                  </div>
+                )}
               </div>
 
               <div>
@@ -360,6 +430,7 @@ export default function AuthModal({ isOpen, initialMode = "login", onClose }: Au
                     required
                     value={confirmPassword}
                     onChange={(e) => setConfirmPassword(e.target.value)}
+                    autoComplete="new-password"
                     className="w-full rounded-2xl border border-slate-200/90 pl-10 pr-11 py-3 text-xs sm:text-sm font-semibold focus:border-blue-600 focus:outline-none focus:ring-4 focus:ring-blue-600/10 transition-all bg-slate-50/50 hover:bg-white focus:bg-white text-slate-900 placeholder:text-slate-400 shadow-2xs"
                     placeholder="••••••••"
                   />
@@ -395,12 +466,12 @@ export default function AuthModal({ isOpen, initialMode = "login", onClose }: Au
                 </label>
               </div>
 
-              {(localError || error) && (
-                <div className="flex items-center gap-2 p-3 rounded-2xl bg-rose-50 border border-rose-200/80 text-rose-700 text-xs font-black animate-fadeIn">
-                  <svg className="w-4 h-4 shrink-0 text-rose-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              {activeError && (
+                <div className="flex items-start gap-2.5 p-3.5 rounded-2xl bg-rose-50 border border-rose-200/90 text-rose-700 text-xs font-bold leading-relaxed animate-fadeIn">
+                  <svg className="w-4 h-4 shrink-0 text-rose-600 mt-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2.5" d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
                   </svg>
-                  <span>{localError || error}</span>
+                  <span>{activeError}</span>
                 </div>
               )}
 
@@ -427,6 +498,19 @@ export default function AuthModal({ isOpen, initialMode = "login", onClose }: Au
                     </>
                   )}
                 </button>
+              </div>
+
+              <div className="pt-2 text-center">
+                <p className="text-[11px] text-slate-500 font-semibold">
+                  Already have an account?{" "}
+                  <button
+                    type="button"
+                    onClick={() => switchMode("login")}
+                    className="text-blue-600 font-bold hover:underline cursor-pointer"
+                  >
+                    Sign in here
+                  </button>
+                </p>
               </div>
             </form>
           )}

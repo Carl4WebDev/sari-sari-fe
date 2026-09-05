@@ -72,11 +72,11 @@ export default function LandingPage() {
           </div>
 
           {/* Action Buttons in Navbar */}
-          <div className="flex items-center gap-1.5 sm:gap-4 shrink-0">
+          <div className="flex items-center gap-1.5 sm:gap-3 shrink-0">
             {/* Language Switcher Button */}
             <button
               onClick={toggleLanguage}
-              className="flex items-center gap-1 sm:gap-2 px-2.5 sm:px-4 py-1.5 sm:py-2 text-[11px] sm:text-xs md:text-sm font-black rounded-2xl bg-slate-100 hover:bg-slate-200/70 border border-slate-200/90 transition cursor-pointer shadow-2xs whitespace-nowrap"
+              className="flex items-center gap-1 sm:gap-2 px-2.5 sm:px-3.5 py-1.5 sm:py-2 text-[11px] sm:text-xs md:text-sm font-black rounded-2xl bg-slate-100 hover:bg-slate-200/70 border border-slate-200/90 transition cursor-pointer shadow-2xs whitespace-nowrap"
               title="Switch Language"
             >
               <svg className="w-3.5 h-3.5 sm:w-4 sm:h-4 text-blue-600 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
@@ -87,9 +87,17 @@ export default function LandingPage() {
               <span className={language === "fil" ? "text-slate-950 font-black" : "text-slate-400 font-bold"}>FIL</span>
             </button>
 
-            {/* Get Started Button */}
+            {/* Log In Button */}
             <button
-              onClick={handleGetStarted}
+              onClick={handleOpenLogin}
+              className="px-3 sm:px-4 py-1.5 sm:py-2.5 text-[11px] sm:text-xs md:text-sm font-black text-slate-800 hover:text-blue-600 bg-slate-100 hover:bg-slate-200/80 rounded-2xl border border-slate-200/90 transition active:scale-95 whitespace-nowrap cursor-pointer"
+            >
+              {t("auth.login")}
+            </button>
+
+            {/* Register / Get Started Button */}
+            <button
+              onClick={handleOpenRegister}
               className="px-3 sm:px-5 py-1.5 sm:py-2.5 text-[11px] sm:text-xs md:text-sm font-black text-white bg-blue-600 hover:bg-blue-700 rounded-2xl shadow-md shadow-blue-600/25 transition active:scale-95 whitespace-nowrap cursor-pointer"
             >
               {t("landing.get_started")}
@@ -113,13 +121,27 @@ export default function LandingPage() {
             {t("landing.hero_subtitle")}
           </p>
 
-          {/* Quick Actions (Direct Get Started Button) */}
-          <div className="pt-2 flex items-center justify-center max-w-md mx-auto w-full">
+          {/* Quick Actions (Register, Log In, and Demo) */}
+          <div className="pt-2 flex flex-col sm:flex-row items-center justify-center gap-3 max-w-lg mx-auto w-full">
             <button
-              onClick={handleGetStarted}
-              className="w-full py-3.5 sm:py-4 px-6 sm:px-8 bg-gradient-to-r from-blue-600 via-indigo-600 to-blue-700 hover:from-blue-700 hover:to-indigo-700 text-white font-black text-sm sm:text-base md:text-lg rounded-3xl shadow-xl shadow-blue-600/30 hover:shadow-2xl hover:shadow-blue-600/40 transition-all duration-300 hover:scale-[1.01] active:scale-[0.99] flex items-center justify-center text-center cursor-pointer whitespace-nowrap"
+              onClick={handleOpenRegister}
+              className="w-full sm:flex-1 py-3.5 sm:py-4 px-6 bg-gradient-to-r from-blue-600 via-indigo-600 to-blue-700 hover:from-blue-700 hover:to-indigo-700 text-white font-black text-sm sm:text-base rounded-3xl shadow-xl shadow-blue-600/30 hover:shadow-2xl hover:shadow-blue-600/40 transition-all duration-300 hover:scale-[1.02] active:scale-[0.98] flex items-center justify-center text-center cursor-pointer whitespace-nowrap"
             >
               <span>{t("landing.get_started_now")}</span>
+            </button>
+            <button
+              onClick={handleOpenLogin}
+              className="w-full sm:w-auto py-3.5 sm:py-4 px-6 bg-white hover:bg-slate-100 text-slate-900 border border-slate-200/90 font-black text-sm sm:text-base rounded-3xl shadow-sm transition-all duration-300 hover:scale-[1.02] active:scale-[0.98] flex items-center justify-center text-center cursor-pointer whitespace-nowrap"
+            >
+              <span>{t("auth.login")}</span>
+            </button>
+          </div>
+          <div className="pt-1">
+            <button
+              onClick={handleGetStarted}
+              className="text-xs font-bold text-slate-500 hover:text-blue-600 transition cursor-pointer underline underline-offset-4"
+            >
+              ⚡ Or try instant Demo Sandbox without account
             </button>
           </div>
         </div>

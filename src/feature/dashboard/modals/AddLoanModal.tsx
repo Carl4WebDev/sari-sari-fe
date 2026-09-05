@@ -22,8 +22,10 @@ interface Product {
 
 interface Props {
   isOpen: boolean;
-  isClose: () => void;
+  isClose?: () => void;
+  onClose?: () => void;
   onLoanCreated?: () => Promise<void> | void;
+  onSuccess?: () => Promise<void> | void;
   autoOpenProducts?: boolean;
   onProductSaved?: () => void;
   mode?: "full" | "quick";
@@ -32,13 +34,16 @@ interface Props {
 
 export default function AddLoanModal({
   isOpen,
-  isClose,
+  isClose: isCloseProp,
+  onClose: onCloseProp,
   onLoanCreated,
+  onSuccess,
   autoOpenProducts,
   onProductSaved,
   mode = "full",
   onQuickLoanSaved,
 }: Props) {
+  const isClose = onCloseProp || isCloseProp || (() => {});
   const { t } = useTranslation();
 
   const { borrowers, fetchBorrowers } = useBorrower();

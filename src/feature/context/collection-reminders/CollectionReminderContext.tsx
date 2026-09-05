@@ -1,3 +1,3 @@
 import { createContext } from "react";
 
-export const CollectionReminderContext = createContext(null);
+export const CollectionReminderContext = createContext<any>(null);

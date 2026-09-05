@@ -88,7 +88,7 @@ export default function ManageProductsPage() {
         isOpen={isModalOpen}
         isClose={() => setIsModalOpen(false)}
         mode={modalMode}
-        product={selectedProduct}
+        product={selectedProduct as any}
         loading={actionLoading}
         onSubmit={(payload) => {
           if (modalMode === "add") {

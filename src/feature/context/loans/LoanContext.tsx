@@ -1,3 +1,3 @@
 import { createContext } from "react";
 
-export const LoanContext = createContext(null);
+export const LoanContext = createContext<any>(null);
