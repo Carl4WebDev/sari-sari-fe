@@ -36,14 +36,63 @@ interface Props {
   onDeleteExpense: (id: number) => void;
 }
 
-const CATEGORY_STYLES: Record<string, { badge: string; icon: string }> = {
-  RESTOCK: { badge: "bg-blue-50 text-blue-700 border-blue-200/70", icon: "📦" },
-  UTILITIES: { badge: "bg-amber-50 text-amber-700 border-amber-200/70", icon: "⚡" },
-  RENT: { badge: "bg-purple-50 text-purple-700 border-purple-200/70", icon: "🏠" },
-  SALARY: { badge: "bg-emerald-50 text-emerald-700 border-emerald-200/70", icon: "👥" },
-  TRANSPORT: { badge: "bg-orange-50 text-orange-700 border-orange-200/70", icon: "🚚" },
-  SUPPLIES: { badge: "bg-rose-50 text-rose-700 border-rose-200/70", icon: "🛍️" },
-  OTHER: { badge: "bg-slate-100 text-slate-700 border-slate-200/70", icon: "🧾" },
+const CATEGORY_STYLES: Record<string, { badge: string }> = {
+  RESTOCK: { badge: "bg-blue-50 text-blue-700 border-blue-200/70" },
+  UTILITIES: { badge: "bg-amber-50 text-amber-700 border-amber-200/70" },
+  RENT: { badge: "bg-purple-50 text-purple-700 border-purple-200/70" },
+  SALARY: { badge: "bg-emerald-50 text-emerald-700 border-emerald-200/70" },
+  TRANSPORT: { badge: "bg-orange-50 text-orange-700 border-orange-200/70" },
+  SUPPLIES: { badge: "bg-rose-50 text-rose-700 border-rose-200/70" },
+  OTHER: { badge: "bg-slate-100 text-slate-700 border-slate-200/70" },
+};
+
+const renderCategoryIcon = (category: string) => {
+  switch (category) {
+    case "RESTOCK":
+      return (
+        <svg className="w-3.5 h-3.5 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M20 7l-8-4-8 4m16 0l-8 4m8-4v10l-8 4m0-10L4 7m8 4v10M4 7v10l8 4" />
+        </svg>
+      );
+    case "UTILITIES":
+      return (
+        <svg className="w-3.5 h-3.5 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M13 10V3L4 14h7v7l9-11h-7z" />
+        </svg>
+      );
+    case "RENT":
+      return (
+        <svg className="w-3.5 h-3.5 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6" />
+        </svg>
+      );
+    case "SALARY":
+      return (
+        <svg className="w-3.5 h-3.5 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z" />
+        </svg>
+      );
+    case "TRANSPORT":
+      return (
+        <svg className="w-3.5 h-3.5 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M9 17a2 2 0 11-4 0 2 2 0 014 0zM19 17a2 2 0 11-4 0 2 2 0 014 0z" />
+          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M13 16V6a1 1 0 00-1-1H4a1 1 0 00-1 1v10a1 1 0 001 1h1m8-1a1 1 0 01-1 1H9m4-1V8h4l3 3v5a1 1 0 01-1 1h-1" />
+        </svg>
+      );
+    case "SUPPLIES":
+      return (
+        <svg className="w-3.5 h-3.5 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M16 11V7a4 4 0 00-8 0v4M5 9h14l1 12H4L5 9z" />
+        </svg>
+      );
+    case "OTHER":
+    default:
+      return (
+        <svg className="w-3.5 h-3.5 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M9 14l6-6m-5.5.5h.01m4.99 5h.01M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16l3.5-2 3.5 2 3.5-2 3.5 2z" />
+        </svg>
+      );
+  }
 };
 
 const METHOD_LABELS: Record<string, string> = {
@@ -314,7 +363,9 @@ export default function IncomeTab({
                     className="flex items-center justify-between p-3 rounded-2xl bg-slate-50/70 border border-slate-200/70 hover:bg-slate-100/80 transition"
                   >
                     <div className="flex items-center gap-2">
-                      <span className="text-sm">{style.icon}</span>
+                      <span className="p-1 rounded-lg bg-white border border-slate-200/80 shadow-2xs text-slate-700 flex items-center justify-center">
+                        {renderCategoryIcon(c.category)}
+                      </span>
                       <span className={`rounded-xl px-2.5 py-0.5 text-xs font-black border ${style.badge}`}>
                         {t(`income.categories.${c.category}`)}
                       </span>
@@ -391,8 +442,9 @@ export default function IncomeTab({
                 >
                   <div className="flex-1 min-w-0 pr-3">
                     <div className="flex items-center gap-2 flex-wrap">
-                      <span className={`rounded-xl px-2.5 py-0.5 text-xs font-black border ${style.badge}`}>
-                        {style.icon} {t(`income.categories.${expense.category}`)}
+                      <span className={`inline-flex items-center gap-1.5 rounded-xl px-2.5 py-0.5 text-xs font-black border ${style.badge}`}>
+                        {renderCategoryIcon(expense.category)}
+                        <span>{t(`income.categories.${expense.category}`)}</span>
                       </span>
                       <span className="text-[11px] font-bold text-slate-400">
                         {new Date(expense.expense_date).toLocaleDateString("en-US", {

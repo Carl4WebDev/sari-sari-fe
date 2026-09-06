@@ -8,7 +8,7 @@ export const apiFormRequest = async (url, options = {}) => {
     body: options.body, // FormData ONLY
     headers: {
       Authorization: `Bearer ${token}`,
-      // ❌ DO NOT SET Content-Type (browser sets boundary for FormData)
+      // DO NOT SET Content-Type (browser sets boundary for FormData)
     },
   });
 

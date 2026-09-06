@@ -79,7 +79,7 @@ export default function EditLoanModal({
 
     console.log("EDIT LOAN PAYLOAD:", payload);
 
-    // 🔥 Replace with API call
+    // Replace with API call
     // await loanApi.update(payload)
 
     isClose();

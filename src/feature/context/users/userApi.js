@@ -1,10 +1,17 @@
 import { apiRequest } from "../../auth/api/httpClient/httpClient";
 
-export const loginUser = (email, password) =>
-  apiRequest("/api/users/login", {
-    method: "POST",
-    body: JSON.stringify({ email, password }),
-  });
+export const loginUser = async (email, password) => {
+  const base = (import.meta.env.VITE_API_BASE || '').replace(/\/$/, '').replace(/\/api$/, '');
+  try {
+    const response = await fetch(`${base}/api/users/login`, {
+      method: 'POST', headers: {'Content-Type':'application/json'}, body: JSON.stringify({email,password}),
+    });
+    const json = await response.json().catch(() => ({}));
+    if (!response.ok) return {ok:false,message:json.message || 'Unable to sign in.'};
+    if (!json.data?.token || !json.data?.user) return {ok:false,message:'Invalid login response. Please try again.'};
+    return {ok:true,data:json.data};
+  } catch {return {ok:false,message:'Cannot connect to the server. Please try again.'};}
+};
 
 export const registerUser = (payload) =>
   apiRequest("/api/users/register", {

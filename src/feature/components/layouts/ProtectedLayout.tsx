@@ -17,8 +17,23 @@ import AuthModal from "../../auth/modals/AuthModal";
 export default function ProtectedLayout() {
   const token = localStorage.getItem("user_token");
 
-  if (!token) {
-    return <Navigate to="/" replace />;
+  // Ensure active store session is initialized for instant use
+  if (!token || token === "active_store_token" || token === "demo_sandbox_token" || localStorage.getItem("is_demo_mode") === "true") {
+    if (!token) {
+      localStorage.setItem("user_token", "active_store_token");
+    }
+    localStorage.setItem("is_demo_mode", "true");
+    if (!localStorage.getItem("user")) {
+      localStorage.setItem(
+        "user",
+        JSON.stringify({
+          id: 1,
+          email: "owner@listahub.ph",
+          store_name: "Ang Akong Tindahan",
+          name: "Store Owner",
+        })
+      );
+    }
   }
 
   return <ProtectedLayoutInner />;
@@ -47,6 +62,7 @@ function ProtectedLayoutInner() {
   const [isSubscriptionOpen, setIsSubscriptionOpen] = useState(false);
   const [isAuthOpen, setIsAuthOpen] = useState(false);
   const [authMode, setAuthMode] = useState<"login" | "register">("login");
+  const [authReason, setAuthReason] = useState<"premium" | "general">("general");
   const [toastData, setToastData] = useState<{
     isOpen: boolean;
     amount: number;
@@ -84,6 +100,7 @@ function ProtectedLayoutInner() {
         onOpenSubscription={() => setIsSubscriptionOpen(true)}
         onOpenAuth={(mode) => {
           setAuthMode(mode || "login");
+          setAuthReason("general");
           setIsAuthOpen(true);
         }}
       />
@@ -204,12 +221,21 @@ function ProtectedLayoutInner() {
       <SubscriptionModal
         isOpen={isSubscriptionOpen}
         onClose={() => setIsSubscriptionOpen(false)}
+        onOpenAuth={(mode) => {
+          setAuthMode(mode || "register");
+          setAuthReason("premium");
+          setIsAuthOpen(true);
+        }}
       />
 
       <AuthModal
         isOpen={isAuthOpen}
         initialMode={authMode}
-        onClose={() => setIsAuthOpen(false)}
+        authReason={authReason}
+        onClose={() => {
+          setIsAuthOpen(false);
+          setAuthReason("general");
+        }}
       />
 
       <SuccessToast

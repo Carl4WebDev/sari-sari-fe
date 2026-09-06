@@ -1,8 +1,9 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useTranslation } from "../../../shared/i18n/useTranslation";
 import GlobalModal from "../../../shared/components/GlobalModal";
 import AuthModal from "../../auth/modals/AuthModal";
-import { useSubscription } from "../context/useSubscription";
+import { subscriptionRequest } from "../api";
+import type { Customer } from "../api";
 
 interface SubscriptionModalProps {
   isOpen: boolean;
@@ -11,13 +12,17 @@ interface SubscriptionModalProps {
 }
 
 export default function SubscriptionModal({ isOpen, onClose, onOpenAuth }: SubscriptionModalProps) {
-  const { t, language } = useTranslation();
-  const { subscription, subscribe, actionLoading } = useSubscription();
+  const { language, t } = useTranslation();
   const [billingCycle, setBillingCycle] = useState<"monthly" | "annual">("annual");
-  const [selectedPlanId, setSelectedPlanId] = useState<string | null>(null);
+  const [activePlan, setActivePlan] = useState<string>("");
   const [isAuthModalOpen, setIsAuthModalOpen] = useState(false);
 
-  const activePlan = (subscription?.plan || localStorage.getItem("user_subscription_plan") || "standard").toLowerCase();
+  useEffect(() => {
+    if (!isOpen || !localStorage.getItem('user_token') || localStorage.getItem('is_demo_mode') === 'true') return;
+    subscriptionRequest<{customer: Customer}>('/mine').then(({customer}) => {
+      setActivePlan(['Active','Expiring soon'].includes(customer.status) ? customer.plan || '' : '');
+    }).catch(() => setActivePlan(''));
+  }, [isOpen]);
 
   const [globalModal, setGlobalModal] = useState({
     isOpen: false,
@@ -28,47 +33,29 @@ export default function SubscriptionModal({ isOpen, onClose, onOpenAuth }: Subsc
 
   if (!isOpen && !isAuthModalOpen) return null;
 
-  const handleSelectPlan = async (planId: string, planName: string) => {
+  const handleSelectPlan = (_planId: string, planName: string) => {
     const token = localStorage.getItem("user_token");
     const isDemoMode = localStorage.getItem("is_demo_mode") === "true";
     
-    // If user has NO real account / is unauthenticated
-    if (!token && !isDemoMode) {
+    // If user has NO real account / is unauthenticated or in demo mode
+    if (!token || isDemoMode) {
       if (onOpenAuth) {
         onOpenAuth("register");
       } else {
-        setIsAuthModalOpen(true);
+        setIsAuthModalOpen(true); // Open Auth modal directly on top of SubscriptionModal
       }
       return;
     }
 
-    setSelectedPlanId(planId);
-    const res = await subscribe({
-      plan: planId.toUpperCase(),
-      billing_cycle: billingCycle,
-      payment_method: "GCASH",
-    });
-
-    setSelectedPlanId(null);
-
     const isFil = language === "fil";
-    if (res?.ok) {
-      setGlobalModal({
-        isOpen: true,
-        title: isFil ? "Nabayaran / Napili na ang Plan!" : "Plan Selected Successfully!",
-        message: isFil
-          ? `Ang iyong tindahan ay kasalukuyan nang naka-subskriba sa ${planName} (${billingCycle === "annual" ? "Taunan" : "Buwanan"}) Plan!`
-          : `Your store is now active on the ${planName} (${billingCycle.toUpperCase()}) Plan!`,
-        type: "success",
-      });
-    } else {
-      setGlobalModal({
-        isOpen: true,
-        title: isFil ? "May Error" : "Subscription Error",
-        message: res?.message || "Failed to update subscription",
-        type: "error",
-      });
-    }
+    setGlobalModal({
+      isOpen: true,
+      title: isFil ? "Manwal na pagbabayad" : "Manual payment",
+      message: isFil
+        ? `Makipag-ugnayan sa ListaHub para sa ${planName} plan. Magiging aktibo ang subscription kapag na-verify na ang bayad.`
+        : `Contact ListaHub for manual payment for the ${planName} plan (${billingCycle}). Your subscription activates after the admin verifies your payment.`,
+      type: "info",
+    });
   };
 
   const plans = [
@@ -247,21 +234,15 @@ export default function SubscriptionModal({ isOpen, onClose, onOpenAuth }: Subsc
                       {/* Select / Current Plan Button */}
                       <button
                         onClick={() => handleSelectPlan(plan.id, plan.name)}
-                        disabled={actionLoading || isCurrentPlan}
                         className={`w-full py-3 px-4 rounded-2xl font-black text-xs sm:text-sm uppercase tracking-wider cursor-pointer transition active:scale-95 border flex items-center justify-center gap-2 ${
                           isCurrentPlan
-                            ? "bg-gradient-to-r from-emerald-600 to-teal-600 text-white border-emerald-400 shadow-lg shadow-emerald-600/30 cursor-default opacity-95"
+                            ? "bg-gradient-to-r from-emerald-600 to-teal-600 text-white border-emerald-400 shadow-lg shadow-emerald-600/30"
                             : plan.popular
-                            ? "bg-blue-600 hover:bg-blue-700 text-white border-blue-500 shadow-lg shadow-blue-600/30 disabled:opacity-50"
-                            : "bg-slate-800 hover:bg-slate-700 text-slate-200 border-slate-700 disabled:opacity-50"
+                            ? "bg-blue-600 hover:bg-blue-700 text-white border-blue-500 shadow-lg shadow-blue-600/30"
+                            : "bg-slate-800 hover:bg-slate-700 text-slate-200 border-slate-700"
                         }`}
                       >
-                        {actionLoading && selectedPlanId === plan.id ? (
-                          <div className="flex items-center gap-2">
-                            <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin" />
-                            <span>{language === "fil" ? "Pinoproseso..." : "Processing..."}</span>
-                          </div>
-                        ) : isCurrentPlan ? (
+                        {isCurrentPlan ? (
                           <>
                             <svg className="w-4 h-4 text-emerald-200" fill="currentColor" viewBox="0 0 24 24">
                               <path d="M9 16.17L4.83 12l-1.42 1.41L9 19 21 7l-1.41-1.41z" />
@@ -269,7 +250,7 @@ export default function SubscriptionModal({ isOpen, onClose, onOpenAuth }: Subsc
                             <span>{language === "fil" ? "Kasalukuyang Plan" : "Current Plan"}</span>
                           </>
                         ) : (
-                          <span>{language === "fil" ? "Pumili ng Plan" : "Select Plan"}</span>
+                          <span>{language === "fil" ? "Pumili ng Plan" : "Pumili Plan"}</span>
                         )}
                       </button>
                     </div>
@@ -285,6 +266,7 @@ export default function SubscriptionModal({ isOpen, onClose, onOpenAuth }: Subsc
       <AuthModal
         isOpen={isAuthModalOpen}
         initialMode="register"
+        authReason="premium"
         onClose={() => setIsAuthModalOpen(false)}
       />
 

@@ -93,44 +93,43 @@ export default function Sidebar({ isOpenExternal, onCloseExternal, onOpenSubscri
             </svg>
           </button>
           
-          <div className="flex items-center gap-2 pr-8">
-            <span className="text-[10px] font-black uppercase tracking-wider text-blue-400 bg-blue-500/10 border border-blue-400/20 px-2 py-0.5 rounded-md">
+          <div className="flex items-center gap-2">
+            <span className="inline-flex items-center gap-1.5 text-[10px] font-black uppercase tracking-wider text-blue-400 bg-blue-500/10 border border-blue-400/20 px-2.5 py-1 rounded-lg">
+              <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse" />
               {t("nav.store_label")}
             </span>
-            <button
-              type="button"
-              onClick={() => {
-                handleNavClick();
-                if (onOpenSubscription) onOpenSubscription();
-                else navigate("/profile");
-              }}
-              className="bg-amber-500/20 hover:bg-amber-500/30 text-amber-300 text-[11px] font-black px-2.5 py-0.5 rounded-full flex items-center gap-1.5 shadow-2xs border border-amber-400/40 shrink-0 cursor-pointer transition active:scale-95"
-              title="ListaHub VIP Subscription Plans"
-            >
-              <svg className="w-3 h-3 text-amber-300 shrink-0" fill="currentColor" viewBox="0 0 24 24">
-                <path d="M5 16L3 5l5.5 5L12 4l3.5 6L21 5l-2 11H5zm14 3c0 .6-.4 1-1 1H6c-.6 0-1-.4-1-1v-1h14v1z" />
-              </svg>
-              <span>PREMIUM</span>
-            </button>
           </div>
 
-          <h2 className="mt-2.5 text-lg sm:text-xl font-black leading-snug text-white tracking-tight break-words">
-            {storeDisplayName}
-          </h2>
-
-          {user?.email ? (
-            <p className="mt-0.5 text-xs font-semibold text-slate-400 break-words truncate">
-              {user.email}
-            </p>
-          ) : (
-            <p className="mt-0.5 text-xs font-semibold text-slate-500">
-              owner@listahub.ph
-            </p>
-          )}
+          <div className="mt-3.5 flex items-center gap-3">
+            <div className="h-10 w-10 rounded-2xl bg-gradient-to-tr from-blue-600 to-indigo-600 text-white font-black text-sm flex items-center justify-center shadow-md shadow-blue-600/20 shrink-0 border border-blue-400/30">
+              {storeDisplayName.charAt(0).toUpperCase()}
+            </div>
+            <div className="min-w-0 flex-1 pr-6">
+              <h2 className="text-base sm:text-lg font-black leading-tight text-white tracking-tight truncate">
+                {storeDisplayName}
+              </h2>
+              <p className="text-xs font-semibold text-slate-400 truncate mt-0.5">
+                {user?.email || "owner@listahub.ph"}
+              </p>
+            </div>
+          </div>
         </div>
 
         {/* Navigation Items with Modern SVG Vector Icons */}
         <nav className="flex-1 overflow-y-auto px-4 py-5 space-y-1.5">
+          {user?.is_admin && (
+            <Link to="/admin" onClick={handleNavClick} className="block">
+              <SidebarItem
+                label="Admin Portal"
+                active={location.pathname.startsWith("/admin")}
+                icon={
+                  <svg className="w-5 h-5 text-amber-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2.2" d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z" />
+                  </svg>
+                }
+              />
+            </Link>
+          )}
           <Link to={"/dashboard"} onClick={handleNavClick} className="block">
             <SidebarItem
               label={t("nav.dashboard")}
@@ -176,37 +175,6 @@ export default function Sidebar({ isOpenExternal, onCloseExternal, onOpenSubscri
             />
           </Link>
         </nav>
-
-        {/* Language Toggle Track */}
-        <div className="px-4 pb-4 border-t border-slate-800/90 pt-4">
-          <p className="text-[11px] font-black uppercase tracking-wider text-slate-400 mb-2 text-center">
-            {t("lang.label")}
-          </p>
-          <div className="flex gap-1.5 bg-slate-950/60 p-1 rounded-2xl border border-slate-800/80">
-            <button
-              type="button"
-              onClick={() => setLanguage("en")}
-              className={`flex-1 rounded-xl py-2 text-xs font-black transition-all cursor-pointer text-center ${
-                language === "en"
-                  ? "bg-blue-600 text-white shadow-md shadow-blue-600/30 font-black"
-                  : "text-slate-400 hover:text-white hover:bg-slate-850"
-              }`}
-            >
-              {t("lang.en")}
-            </button>
-            <button
-              type="button"
-              onClick={() => setLanguage("fil")}
-              className={`flex-1 rounded-xl py-2 text-xs font-black transition-all cursor-pointer text-center ${
-                language === "fil"
-                  ? "bg-blue-600 text-white shadow-md shadow-blue-600/30 font-black"
-                  : "text-slate-400 hover:text-white hover:bg-slate-850"
-              }`}
-            >
-              {t("lang.fil")}
-            </button>
-          </div>
-        </div>
 
         {/* Auth / Logout Button (bottom) */}
         <div className="p-4 border-t border-slate-800/90 bg-slate-950/40">

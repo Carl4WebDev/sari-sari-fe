@@ -2,14 +2,21 @@ import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { useUser } from "../../context/users/useUser";
 import { useTranslation } from "../../../shared/i18n/useTranslation";
+import { adminSessionKey } from "../../admin/api";
 
 interface AuthModalProps {
   isOpen: boolean;
   initialMode?: "login" | "register";
+  authReason?: "premium" | "general";
   onClose: () => void;
 }
 
-export default function AuthModal({ isOpen, initialMode = "login", onClose }: AuthModalProps) {
+export default function AuthModal({
+  isOpen,
+  initialMode = "login",
+  authReason = "general",
+  onClose,
+}: AuthModalProps) {
   const { login, register, loading, error, clearError } = useUser();
   const navigate = useNavigate();
   const { t } = useTranslation();
@@ -63,6 +70,12 @@ export default function AuthModal({ isOpen, initialMode = "login", onClose }: Au
       handleClose();
       navigate("/dashboard");
     }
+  };
+
+  const handleAdminDemoLogin = () => {
+    sessionStorage.setItem(adminSessionKey, "admin_demo_session");
+    handleClose();
+    navigate("/admin");
   };
 
   const handleRegisterSubmit = async (e: React.FormEvent) => {
@@ -174,6 +187,25 @@ export default function AuthModal({ isOpen, initialMode = "login", onClose }: Au
             </svg>
           </button>
         </div>
+
+        {/* Premium Upgrade Notice Banner */}
+        {authReason === "premium" && (
+          <div className="mx-5 mt-4 p-3.5 rounded-2xl bg-amber-500/10 border border-amber-400/40 flex items-start gap-3">
+            <div className="h-8 w-8 rounded-xl bg-amber-500/20 text-amber-600 flex items-center justify-center shrink-0 mt-0.5">
+              <svg className="w-4 h-4 text-amber-600" fill="currentColor" viewBox="0 0 24 24">
+                <path d="M5 16L3 5l5.5 5L12 4l3.5 6L21 5l-2 11H5zm14 3c0 .6-.4 1-1 1H6c-.6 0-1-.4-1-1v-1h14v1z" />
+              </svg>
+            </div>
+            <div className="text-xs">
+              <div className="font-black text-amber-900 tracking-tight">
+                {t("auth.premium_gate_title")}
+              </div>
+              <p className="text-amber-800/90 font-medium mt-0.5 leading-snug">
+                {t("auth.premium_gate_subtitle")}
+              </p>
+            </div>
+          </div>
+        )}
 
         {/* Mode Switcher Tabs */}
         <div className="px-5 pt-4 pb-2 bg-white">
@@ -301,6 +333,46 @@ export default function AuthModal({ isOpen, initialMode = "login", onClose }: Au
                 </button>
               </div>
 
+              {/* Admin Demo Login */}
+              <div className="pt-2">
+                <div className="relative flex py-2 items-center">
+                  <div className="flex-grow border-t border-slate-200"></div>
+                  <span className="flex-shrink mx-3 text-[10px] font-black text-slate-400 uppercase tracking-wider">
+                    Or Admin Portal
+                  </span>
+                  <div className="flex-grow border-t border-slate-200"></div>
+                </div>
+
+                <button
+                  type="button"
+                  onClick={handleAdminDemoLogin}
+                  className="w-full py-3 px-4 rounded-2xl border border-slate-800 bg-slate-900 hover:bg-slate-800 active:bg-slate-950 text-white font-bold text-xs sm:text-sm shadow-md shadow-slate-950/15 transition-all duration-150 cursor-pointer active:scale-[0.98] flex items-center justify-between group"
+                >
+                  <div className="flex items-center gap-2.5">
+                    <div className="h-7 w-7 rounded-xl bg-blue-600/30 text-blue-400 flex items-center justify-center group-hover:bg-blue-600 group-hover:text-white transition-colors">
+                      <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2.5" d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z" />
+                      </svg>
+                    </div>
+                    <div className="text-left">
+                      <div className="flex items-center gap-2">
+                        <span className="block leading-tight font-black text-slate-100">Admin Demo Login</span>
+                        <span className="px-1.5 py-0.5 rounded text-[9px] font-black bg-blue-500/20 text-blue-300 border border-blue-500/30">
+                          Admin POV
+                        </span>
+                      </div>
+                      <span className="block text-[10px] text-slate-400 font-medium">Explore admin dashboard & subscriptions</span>
+                    </div>
+                  </div>
+                  <div className="text-blue-400 group-hover:text-blue-300 flex items-center gap-1 font-bold text-xs">
+                    <span>Enter</span>
+                    <svg className="w-3.5 h-3.5 transition-transform group-hover:translate-x-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2.5" d="M9 5l7 7-7 7" />
+                    </svg>
+                  </div>
+                </button>
+              </div>
+
               <div className="pt-2 text-center">
                 <p className="text-[11px] text-slate-500 font-semibold">
                   Don&apos;t have an account yet?{" "}
@@ -399,17 +471,45 @@ export default function AuthModal({ isOpen, initialMode = "login", onClose }: Au
                 {/* Password strength checklist */}
                 {password && (
                   <div className="mt-2 grid grid-cols-2 gap-1.5 p-2.5 rounded-xl bg-slate-50 border border-slate-200/80 text-[10px] font-bold">
-                    <span className={hasMinLength ? "text-emerald-600 flex items-center gap-1" : "text-slate-400 flex items-center gap-1"}>
-                      {hasMinLength ? "✓" : "○"} 8+ chars
+                    <span className={hasMinLength ? "text-emerald-600 flex items-center gap-1.5" : "text-slate-400 flex items-center gap-1.5"}>
+                      {hasMinLength ? (
+                        <svg className="w-3 h-3 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="3" d="M5 13l4 4L19 7" />
+                        </svg>
+                      ) : (
+                        <span className="h-1.5 w-1.5 rounded-full bg-slate-300 shrink-0 mx-0.5" />
+                      )}
+                      <span>8+ chars</span>
                     </span>
-                    <span className={hasUpper ? "text-emerald-600 flex items-center gap-1" : "text-slate-400 flex items-center gap-1"}>
-                      {hasUpper ? "✓" : "○"} Uppercase (A-Z)
+                    <span className={hasUpper ? "text-emerald-600 flex items-center gap-1.5" : "text-slate-400 flex items-center gap-1.5"}>
+                      {hasUpper ? (
+                        <svg className="w-3 h-3 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="3" d="M5 13l4 4L19 7" />
+                        </svg>
+                      ) : (
+                        <span className="h-1.5 w-1.5 rounded-full bg-slate-300 shrink-0 mx-0.5" />
+                      )}
+                      <span>Uppercase (A-Z)</span>
                     </span>
-                    <span className={hasLower ? "text-emerald-600 flex items-center gap-1" : "text-slate-400 flex items-center gap-1"}>
-                      {hasLower ? "✓" : "○"} Lowercase (a-z)
+                    <span className={hasLower ? "text-emerald-600 flex items-center gap-1.5" : "text-slate-400 flex items-center gap-1.5"}>
+                      {hasLower ? (
+                        <svg className="w-3 h-3 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="3" d="M5 13l4 4L19 7" />
+                        </svg>
+                      ) : (
+                        <span className="h-1.5 w-1.5 rounded-full bg-slate-300 shrink-0 mx-0.5" />
+                      )}
+                      <span>Lowercase (a-z)</span>
                     </span>
-                    <span className={hasDigit ? "text-emerald-600 flex items-center gap-1" : "text-slate-400 flex items-center gap-1"}>
-                      {hasDigit ? "✓" : "○"} Number (0-9)
+                    <span className={hasDigit ? "text-emerald-600 flex items-center gap-1.5" : "text-slate-400 flex items-center gap-1.5"}>
+                      {hasDigit ? (
+                        <svg className="w-3 h-3 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="3" d="M5 13l4 4L19 7" />
+                        </svg>
+                      ) : (
+                        <span className="h-1.5 w-1.5 rounded-full bg-slate-300 shrink-0 mx-0.5" />
+                      )}
+                      <span>Number (0-9)</span>
                     </span>
                   </div>
                 )}

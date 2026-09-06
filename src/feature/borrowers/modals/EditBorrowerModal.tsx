@@ -208,7 +208,12 @@ export default function EditBorrowerModal({
 
               <p className="mt-2 text-xs font-bold text-slate-500">
                 {selectedImage ? (
-                  <span className="text-emerald-600 font-black">✓ {selectedImage.name}</span>
+                  <span className="text-emerald-600 font-black inline-flex items-center gap-1">
+                    <svg className="w-3.5 h-3.5 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2.5" d="M5 13l4 4L19 7" />
+                    </svg>
+                    <span>{selectedImage.name}</span>
+                  </span>
                 ) : (
                   <span>Click to change photo</span>
                 )}

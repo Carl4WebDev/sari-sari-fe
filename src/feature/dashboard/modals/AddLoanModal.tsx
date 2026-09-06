@@ -24,12 +24,15 @@ interface Props {
   isOpen: boolean;
   isClose?: () => void;
   onClose?: () => void;
-  onLoanCreated?: () => Promise<void> | void;
+  onLoanCreated?: (totalAmount?: number) => Promise<void> | void;
   onSuccess?: () => Promise<void> | void;
   autoOpenProducts?: boolean;
   onProductSaved?: () => void;
   mode?: "full" | "quick";
   onQuickLoanSaved?: (amount: number, borrowerName: string, newBalance: number) => void;
+  borrowerId?: number;
+  borrowerName?: string;
+  profileImageUrl?: string;
 }
 
 export default function AddLoanModal({
@@ -42,6 +45,9 @@ export default function AddLoanModal({
   onProductSaved,
   mode = "full",
   onQuickLoanSaved,
+  borrowerId,
+  borrowerName,
+  profileImageUrl,
 }: Props) {
   const isClose = onCloseProp || isCloseProp || (() => {});
   const { t } = useTranslation();
@@ -91,13 +97,15 @@ export default function AddLoanModal({
   }, [productError]);
 
   const resetLoanForm = () => {
-    setSearch("");
-    setSelectedBorrower(null);
+    if (!borrowerId) {
+      setSearch("");
+      setSelectedBorrower(null);
+      localStorage.removeItem("active_borrower_id");
+    }
     setItems([{ product: "", product_id: null, quantity: "1", price: "" }]);
     setShowReminderPrompt(false);
     setQuickCashMode(true);
     setQuickAmount("");
-    localStorage.removeItem("active_borrower_id");
   };
 
   useEffect(() => {
@@ -107,6 +115,23 @@ export default function AddLoanModal({
     clearProductError();
     fetchBorrowers();
     fetchProducts();
+
+    if (borrowerId) {
+      const existing = borrowers.find((b) => b.borrower_id === borrowerId);
+      if (existing) {
+        setSelectedBorrower(existing);
+        setSearch(`${existing.first_name} ${existing.last_name}`);
+      } else {
+        const parts = (borrowerName || "").trim().split(" ");
+        setSelectedBorrower({
+          borrower_id: borrowerId,
+          first_name: parts[0] || "",
+          last_name: parts.slice(1).join(" ") || "",
+        });
+        setSearch(borrowerName || "");
+      }
+      return;
+    }
 
     const activeId = localStorage.getItem("active_borrower_id");
     if (activeId) {
@@ -119,7 +144,7 @@ export default function AddLoanModal({
         setSearch(`${borrower.first_name} ${borrower.last_name}`);
       }
     }
-  }, [isOpen]);
+  }, [isOpen, borrowerId, borrowerName]);
 
   useEffect(() => {
     if (isOpen && autoOpenProducts) {
@@ -242,20 +267,21 @@ export default function AddLoanModal({
       return;
     }
 
-    await onLoanCreated?.();
+    const total = mode === "quick"
+      ? (quickCashMode ? Number(quickAmount) || 0 : items.reduce((sum, i) => sum + (Number(i.quantity) || 0) * (Number(i.price) || 0), 0))
+      : items.reduce((sum, i) => sum + (Number(i.quantity) || 0) * (Number(i.price) || 0), 0);
+
+    await onLoanCreated?.(total);
+    await onSuccess?.();
 
     if (mode === "quick") {
-      const total = quickCashMode
-        ? Number(quickAmount) || 0
-        : items.reduce((sum, i) => sum + (Number(i.quantity) || 0) * (Number(i.price) || 0), 0);
-      const borrowerName = `${selectedBorrower.first_name} ${selectedBorrower.last_name}`;
-      onQuickLoanSaved?.(total, borrowerName, 0);
+      const borrowerNameStr = `${selectedBorrower.first_name} ${selectedBorrower.last_name}`;
+      onQuickLoanSaved?.(total, borrowerNameStr, 0);
       resetLoanForm();
       isClose();
       return;
     }
 
-    const total = items.reduce((sum, i) => sum + (Number(i.quantity) || 0) * (Number(i.price) || 0), 0);
     setReminderLoanTotal(total);
     const defaultDate = new Date();
     defaultDate.setDate(defaultDate.getDate() + 7);
@@ -373,49 +399,67 @@ export default function AddLoanModal({
 
             {/* Scrollable Content */}
             <div className="p-6 overflow-y-auto space-y-4 flex-1">
-              {/* Borrower Search */}
-              <div className="space-y-2">
-                <input
-                  placeholder={t("loan.search_borrower")}
-                  value={search}
-                  onChange={(e) => setSearch(e.target.value)}
-                  className="w-full rounded-2xl border border-slate-200/90 bg-slate-50/60 px-4 py-3 text-xs font-bold text-slate-900 placeholder:text-slate-400 focus:border-blue-600 focus:bg-white focus:ring-4 focus:ring-blue-600/10 outline-none transition"
-                />
+              {/* Borrower Selection or Fixed Borrower Card */}
+              {borrowerId ? (
+                <div className="flex items-center gap-3.5 p-3.5 rounded-2xl bg-blue-50/70 border border-blue-200/80 shadow-2xs">
+                  <div className="w-11 h-11 rounded-2xl bg-blue-100 flex items-center justify-center font-black text-blue-700 overflow-hidden shrink-0 border border-blue-200/80 shadow-2xs">
+                    {profileImageUrl ? (
+                      <img src={profileImageUrl} alt={borrowerName || "Borrower"} className="w-full h-full object-cover" />
+                    ) : (
+                      (borrowerName?.charAt(0) || "B").toUpperCase()
+                    )}
+                  </div>
+                  <div>
+                    <div className="font-black text-slate-950 text-sm">
+                      {borrowerName || (selectedBorrower ? `${selectedBorrower.first_name} ${selectedBorrower.last_name}` : "Customer")}
+                    </div>
+                    <div className="text-[11px] font-semibold text-slate-500">Recording loan for this customer</div>
+                  </div>
+                </div>
+              ) : (
+                <div className="space-y-2">
+                  <input
+                    placeholder={t("loan.search_borrower")}
+                    value={search}
+                    onChange={(e) => setSearch(e.target.value)}
+                    className="w-full rounded-2xl border border-slate-200/90 bg-slate-50/60 px-4 py-3 text-xs font-bold text-slate-900 placeholder:text-slate-400 focus:border-blue-600 focus:bg-white focus:ring-4 focus:ring-blue-600/10 outline-none transition"
+                  />
 
-                {search && !selectedBorrower && (
-                  <div className="max-h-36 overflow-y-auto space-y-1 bg-white border border-slate-200/90 rounded-2xl p-1.5 shadow-md">
-                    {filteredBorrowers.map((b: any) => (
-                      <div
-                        key={b.borrower_id}
+                  {search && !selectedBorrower && (
+                    <div className="max-h-36 overflow-y-auto space-y-1 bg-white border border-slate-200/90 rounded-2xl p-1.5 shadow-md">
+                      {filteredBorrowers.map((b: any) => (
+                        <div
+                          key={b.borrower_id}
+                          onClick={() => {
+                            setSelectedBorrower(b);
+                            setSearch(`${b.first_name} ${b.last_name}`);
+                          }}
+                          className="px-3.5 py-2.5 rounded-xl text-xs font-bold text-slate-800 cursor-pointer hover:bg-blue-50/80 transition"
+                        >
+                          {b.first_name} {b.last_name}
+                        </div>
+                      ))}
+                    </div>
+                  )}
+
+                  {selectedBorrower && (
+                    <div className="flex items-center justify-between rounded-2xl bg-blue-50/80 border border-blue-200/80 px-4 py-3">
+                      <span className="text-xs font-black text-blue-950">
+                        {selectedBorrower.first_name} {selectedBorrower.last_name}
+                      </span>
+                      <button
                         onClick={() => {
-                          setSelectedBorrower(b);
-                          setSearch(`${b.first_name} ${b.last_name}`);
+                          setSelectedBorrower(null);
+                          setSearch("");
                         }}
-                        className="px-3.5 py-2.5 rounded-xl text-xs font-bold text-slate-800 cursor-pointer hover:bg-blue-50/80 transition"
+                        className="rounded-xl px-2.5 py-1 text-[11px] font-black text-rose-600 hover:bg-rose-50 transition cursor-pointer"
                       >
-                        {b.first_name} {b.last_name}
-                      </div>
-                    ))}
-                  </div>
-                )}
-
-                {selectedBorrower && (
-                  <div className="flex items-center justify-between rounded-2xl bg-blue-50/80 border border-blue-200/80 px-4 py-3">
-                    <span className="text-xs font-black text-blue-950">
-                      {selectedBorrower.first_name} {selectedBorrower.last_name}
-                    </span>
-                    <button
-                      onClick={() => {
-                        setSelectedBorrower(null);
-                        setSearch("");
-                      }}
-                      className="rounded-xl px-2.5 py-1 text-[11px] font-black text-rose-600 hover:bg-rose-50 transition cursor-pointer"
-                    >
-                      {t("loan.change")}
-                    </button>
-                  </div>
-                )}
-              </div>
+                        {t("loan.change")}
+                      </button>
+                    </div>
+                  )}
+                </div>
+              )}
 
               {mode === "quick" ? (
                 <div className="space-y-3">

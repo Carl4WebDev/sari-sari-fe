@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { Link, useNavigate } from "react-router-dom";
+import { useNavigate } from "react-router-dom";
 import { useTranslation } from "../../../shared/i18n/useTranslation";
 
 import AuthModal from "../../auth/modals/AuthModal";
@@ -56,30 +56,42 @@ export default function LandingPage() {
     <div className="min-h-screen bg-slate-50 flex flex-col font-sans antialiased text-slate-900 selection:bg-blue-900 selection:text-white">
       {/* Header / Top Bar */}
       <header className="sticky top-0 z-40 backdrop-blur-md bg-white/85 border-b border-slate-200/80 shadow-2xs">
-        <div className="max-w-7xl mx-auto px-3 sm:px-6 md:px-12 py-2.5 sm:py-4 flex items-center justify-between gap-2 overflow-x-hidden">
+        <div className="max-w-7xl mx-auto px-3 sm:px-6 md:px-12 py-2 sm:py-3.5 flex items-center justify-between gap-2">
           
           {/* Logo & Branding */}
           <div className="flex items-center gap-2 sm:gap-3 cursor-pointer shrink-0" onClick={() => navigate("/")}>
-            <div className="h-9 w-9 sm:h-11 sm:w-11 rounded-2xl bg-gradient-to-tr from-blue-700 via-indigo-600 to-blue-900 flex items-center justify-center text-white shadow-md shadow-blue-500/20 border border-blue-400/30 transition hover:scale-105 shrink-0">
-              <svg className="w-5 h-5 sm:w-6 sm:h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+            <div className="h-8 w-8 sm:h-11 sm:w-11 rounded-xl sm:rounded-2xl bg-gradient-to-tr from-blue-700 via-indigo-600 to-blue-900 flex items-center justify-center text-white shadow-md shadow-blue-500/20 border border-blue-400/30 transition hover:scale-105 shrink-0">
+              <svg className="w-4 h-4 sm:w-6 sm:h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2.5" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-3 7h3m-3 4h3m-6-4h.01M9 16h.01" />
               </svg>
             </div>
             <div>
-              <span className="text-lg sm:text-xl md:text-2xl font-black text-slate-950 tracking-tight leading-none block">Listahub</span>
-              <span className="text-[9px] sm:text-[10px] font-black text-blue-600 uppercase tracking-widest mt-0.5 block">Utang Tracker</span>
+              <span className="text-base sm:text-xl md:text-2xl font-black text-slate-950 tracking-tight leading-none block">Listahub</span>
+              <span className="text-[8px] sm:text-[10px] font-black text-blue-600 uppercase tracking-widest mt-0.5 block">Utang Tracker</span>
             </div>
           </div>
 
           {/* Action Buttons in Navbar */}
-          <div className="flex items-center gap-1.5 sm:gap-3 shrink-0">
+          <div className="flex items-center gap-1.5 sm:gap-2.5 shrink-0">
+            {/* View VIP Plans Button */}
+            <button
+              onClick={() => setSubscriptionModalOpen(true)}
+              className="bg-amber-500/15 hover:bg-amber-500/25 text-amber-700 font-black px-2 sm:px-3.5 py-1.5 sm:py-2 rounded-xl sm:rounded-2xl text-xs sm:text-sm shadow-2xs border border-amber-400/40 flex items-center gap-1.5 cursor-pointer transition active:scale-95 whitespace-nowrap shrink-0"
+              title="ListaHub VIP Plans"
+            >
+              <svg className="w-3.5 h-3.5 text-amber-600 shrink-0" fill="currentColor" viewBox="0 0 24 24">
+                <path d="M5 16L3 5l5.5 5L12 4l3.5 6L21 5l-2 11H5zm14 3c0 .6-.4 1-1 1H6c-.6 0-1-.4-1-1v-1h14v1z" />
+              </svg>
+              <span className="hidden xs:inline">{t("nav.premium")}</span>
+            </button>
+
             {/* Language Switcher Button */}
             <button
               onClick={toggleLanguage}
-              className="flex items-center gap-1 sm:gap-2 px-2.5 sm:px-3.5 py-1.5 sm:py-2 text-[11px] sm:text-xs md:text-sm font-black rounded-2xl bg-slate-100 hover:bg-slate-200/70 border border-slate-200/90 transition cursor-pointer shadow-2xs whitespace-nowrap"
+              className="flex items-center gap-1 sm:gap-1.5 px-2 sm:px-3 py-1.5 sm:py-2 text-xs sm:text-sm font-black rounded-xl sm:rounded-2xl bg-slate-100 hover:bg-slate-200/70 border border-slate-200/90 transition cursor-pointer shadow-2xs whitespace-nowrap"
               title="Switch Language"
             >
-              <svg className="w-3.5 h-3.5 sm:w-4 sm:h-4 text-blue-600 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+              <svg className="w-3.5 h-3.5 text-blue-600 shrink-0 hidden xs:inline" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2.5" d="M21 12a9 9 0 01-9 9m9-9a9 9 0 00-9-9m9 9H3m9 9a9 9 0 01-9-9m9 9c1.657 0 3-4.03 3-9s-1.343-9-3-9m0 18c-1.657 0-3-4.03-3-9s1.343-9 3-9m-9 9a9 9 0 019-9" />
               </svg>
               <span className={language === "en" ? "text-slate-950 font-black" : "text-slate-400 font-bold"}>EN</span>
@@ -87,18 +99,18 @@ export default function LandingPage() {
               <span className={language === "fil" ? "text-slate-950 font-black" : "text-slate-400 font-bold"}>FIL</span>
             </button>
 
-            {/* Log In Button */}
+            {/* Log In Button (for existing accounts) */}
             <button
               onClick={handleOpenLogin}
-              className="px-3 sm:px-4 py-1.5 sm:py-2.5 text-[11px] sm:text-xs md:text-sm font-black text-slate-800 hover:text-blue-600 bg-slate-100 hover:bg-slate-200/80 rounded-2xl border border-slate-200/90 transition active:scale-95 whitespace-nowrap cursor-pointer"
+              className="px-2.5 sm:px-4 py-1.5 sm:py-2 text-xs sm:text-sm font-black text-slate-800 hover:text-blue-600 bg-slate-100 hover:bg-slate-200/80 rounded-xl sm:rounded-2xl border border-slate-200/90 transition active:scale-95 whitespace-nowrap cursor-pointer"
             >
               {t("auth.login")}
             </button>
 
-            {/* Register / Get Started Button */}
+            {/* Direct App Launch Button — Instant use without account (hidden on mobile to prevent clipping) */}
             <button
-              onClick={handleOpenRegister}
-              className="px-3 sm:px-5 py-1.5 sm:py-2.5 text-[11px] sm:text-xs md:text-sm font-black text-white bg-blue-600 hover:bg-blue-700 rounded-2xl shadow-md shadow-blue-600/25 transition active:scale-95 whitespace-nowrap cursor-pointer"
+              onClick={handleGetStarted}
+              className="hidden sm:inline-flex items-center px-4 sm:px-5 py-2 sm:py-2.5 text-xs sm:text-sm font-black text-white bg-blue-600 hover:bg-blue-700 rounded-2xl shadow-md shadow-blue-600/25 transition active:scale-95 whitespace-nowrap cursor-pointer"
             >
               {t("landing.get_started")}
             </button>
@@ -107,140 +119,135 @@ export default function LandingPage() {
       </header>
 
       {/* Main Content */}
-      <main className="flex-1 max-w-7xl mx-auto w-full p-4 sm:p-6 md:p-12 space-y-8 sm:space-y-12">
+      <main className="flex-1 max-w-7xl mx-auto w-full p-3.5 sm:p-6 md:p-12 space-y-6 sm:space-y-12">
         {/* Hero Banner */}
-        <div className="text-center pt-2 sm:pt-4 max-w-4xl mx-auto space-y-4 sm:space-y-6">
-          <h1 className="text-2xl sm:text-5xl md:text-6xl font-black text-slate-950 tracking-tight leading-[1.12]">
+        <div className="text-center pt-2 sm:pt-4 max-w-4xl mx-auto space-y-3 sm:space-y-6">
+          <h1 className="text-2xl sm:text-4xl md:text-5xl lg:text-6xl font-black text-slate-950 tracking-tight leading-[1.15] sm:leading-[1.12]">
             {t("landing.hero_title_1")}{" "}
             <span className="bg-gradient-to-r from-blue-700 via-indigo-700 to-blue-900 bg-clip-text text-transparent">
               {t("landing.hero_title_2")}
             </span>
           </h1>
 
-          <p className="text-sm sm:text-base md:text-lg text-slate-600 leading-relaxed font-semibold max-w-2xl mx-auto">
+          <p className="text-xs sm:text-base md:text-lg text-slate-600 leading-relaxed font-semibold max-w-2xl mx-auto px-1">
             {t("landing.hero_subtitle")}
           </p>
 
-          {/* Quick Actions (Register, Log In, and Demo) */}
-          <div className="pt-2 flex flex-col sm:flex-row items-center justify-center gap-3 max-w-lg mx-auto w-full">
-            <button
-              onClick={handleOpenRegister}
-              className="w-full sm:flex-1 py-3.5 sm:py-4 px-6 bg-gradient-to-r from-blue-600 via-indigo-600 to-blue-700 hover:from-blue-700 hover:to-indigo-700 text-white font-black text-sm sm:text-base rounded-3xl shadow-xl shadow-blue-600/30 hover:shadow-2xl hover:shadow-blue-600/40 transition-all duration-300 hover:scale-[1.02] active:scale-[0.98] flex items-center justify-center text-center cursor-pointer whitespace-nowrap"
-            >
-              <span>{t("landing.get_started_now")}</span>
-            </button>
-            <button
-              onClick={handleOpenLogin}
-              className="w-full sm:w-auto py-3.5 sm:py-4 px-6 bg-white hover:bg-slate-100 text-slate-900 border border-slate-200/90 font-black text-sm sm:text-base rounded-3xl shadow-sm transition-all duration-300 hover:scale-[1.02] active:scale-[0.98] flex items-center justify-center text-center cursor-pointer whitespace-nowrap"
-            >
-              <span>{t("auth.login")}</span>
-            </button>
-          </div>
-          <div className="pt-1">
+          {/* Quick Actions (Get Started Now and View VIP Plans) */}
+          <div className="pt-2 flex flex-col sm:flex-row items-stretch sm:items-center justify-center gap-2.5 sm:gap-3 max-w-xl mx-auto w-full">
             <button
               onClick={handleGetStarted}
-              className="text-xs font-bold text-slate-500 hover:text-blue-600 transition cursor-pointer underline underline-offset-4"
+              className="w-full sm:flex-1 py-3.5 sm:py-4 px-6 bg-gradient-to-r from-blue-600 via-indigo-600 to-blue-700 hover:from-blue-700 hover:to-indigo-700 text-white font-black text-xs sm:text-sm md:text-base rounded-2xl sm:rounded-3xl shadow-xl shadow-blue-600/30 hover:shadow-2xl hover:shadow-blue-600/40 transition-all duration-300 hover:scale-[1.02] active:scale-[0.98] flex items-center justify-center text-center cursor-pointer whitespace-nowrap gap-2"
             >
-              ⚡ Or try instant Demo Sandbox without account
+              <span>{t("landing.get_started_now")}</span>
+              <svg className="w-4 h-4 sm:w-5 sm:h-5 text-white shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2.5" d="M14 5l7 7m0 0l-7 7m7-7H3" />
+              </svg>
+            </button>
+            <button
+              onClick={() => setSubscriptionModalOpen(true)}
+              className="w-full sm:w-auto py-3.5 sm:py-4 px-6 bg-amber-500/10 hover:bg-amber-500/20 text-amber-800 border border-amber-400/40 font-black text-xs sm:text-sm md:text-base rounded-2xl sm:rounded-3xl shadow-xs transition-all duration-300 hover:scale-[1.02] active:scale-[0.98] flex items-center justify-center text-center cursor-pointer whitespace-nowrap gap-1.5"
+            >
+              <svg className="w-3.5 h-3.5 sm:w-4 sm:h-4 text-amber-600 shrink-0" fill="currentColor" viewBox="0 0 24 24">
+                <path d="M5 16L3 5l5.5 5L12 4l3.5 6L21 5l-2 11H5zm14 3c0 .6-.4 1-1 1H6c-.6 0-1-.4-1-1v-1h14v1z" />
+              </svg>
+              <span>{t("landing.view_premium")}</span>
             </button>
           </div>
         </div>
 
         {/* Responsive Widescreen Grid: App Showcase & Store Calculator */}
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 items-stretch">
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 sm:gap-8 items-stretch">
           {/* App Showcase Card */}
           <div className="bg-white rounded-3xl border border-slate-200/90 shadow-2xs overflow-hidden flex flex-col h-full">
-            <div className="bg-slate-950 text-white px-4 sm:px-6 py-3 sm:py-4 flex items-center justify-between text-xs font-black gap-2">
+            <div className="bg-slate-950 text-white px-3.5 sm:px-6 py-2.5 sm:py-4 flex items-center justify-between text-xs font-black gap-2">
               <div className="flex items-center gap-2 shrink-0">
                 <svg className="w-4 h-4 text-blue-400 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2.5" d="M12 18h.01M8 21h8a2 2 0 002-2V5a2 2 0 00-2-2H8a2 2 0 00-2 2v14a2 2 0 002 2z" />
                 </svg>
                 <span className="text-[11px] sm:text-xs">{t("landing.interactive_preview")}</span>
               </div>
-              <Link to="/demo" className="text-[11px] sm:text-xs bg-emerald-600 hover:bg-emerald-700 text-white px-3 py-1 sm:px-3.5 sm:py-1.5 rounded-xl font-black transition whitespace-nowrap shrink-0">
-                LAUNCH DEMO →
-              </Link>
             </div>
 
             {/* Tabs */}
-            <div className="bg-slate-100/80 p-2 flex gap-1.5 border-b border-slate-200/80">
+            <div className="bg-slate-100/80 p-1.5 sm:p-2 flex gap-1 sm:gap-1.5 border-b border-slate-200/80">
               <button
                 onClick={() => setActiveTab("borrowers")}
-                className={`flex-1 py-2.5 text-xs font-black rounded-xl flex items-center justify-center gap-1.5 transition cursor-pointer ${
+                className={`flex-1 py-2 sm:py-2.5 px-1.5 sm:px-3 text-[11px] sm:text-xs font-black rounded-xl flex items-center justify-center gap-1 sm:gap-1.5 transition cursor-pointer ${
                   activeTab === "borrowers" ? "bg-white text-slate-950 shadow-xs" : "text-slate-500 hover:text-slate-800"
                 }`}
               >
-                <svg className="w-4 h-4 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                <svg className="w-3.5 h-3.5 sm:w-4 sm:h-4 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z" />
                 </svg>
-                <span>{t("borrowers.title")}</span>
+                <span className="truncate">{t("borrowers.title")}</span>
               </button>
 
               <button
                 onClick={() => setActiveTab("analytics")}
-                className={`flex-1 py-2.5 text-xs font-black rounded-xl flex items-center justify-center gap-1.5 transition cursor-pointer ${
+                className={`flex-1 py-2 sm:py-2.5 px-1.5 sm:px-3 text-[11px] sm:text-xs font-black rounded-xl flex items-center justify-center gap-1 sm:gap-1.5 transition cursor-pointer ${
                   activeTab === "analytics" ? "bg-white text-slate-950 shadow-xs" : "text-slate-500 hover:text-slate-800"
                 }`}
               >
-                <svg className="w-4 h-4 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                <svg className="w-3.5 h-3.5 sm:w-4 sm:h-4 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z" />
                 </svg>
-                <span>{t("dashboard.analytics")}</span>
+                <span className="truncate">{t("dashboard.analytics")}</span>
               </button>
 
               <button
                 onClick={() => setActiveTab("receipt")}
-                className={`flex-1 py-2.5 text-xs font-black rounded-xl flex items-center justify-center gap-1.5 transition cursor-pointer ${
+                className={`flex-1 py-2 sm:py-2.5 px-1.5 sm:px-3 text-[11px] sm:text-xs font-black rounded-xl flex items-center justify-center gap-1 sm:gap-1.5 transition cursor-pointer ${
                   activeTab === "receipt" ? "bg-white text-slate-950 shadow-xs" : "text-slate-500 hover:text-slate-800"
                 }`}
               >
-                <svg className="w-4 h-4 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                <svg className="w-3.5 h-3.5 sm:w-4 sm:h-4 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
                 </svg>
-                <span>Receipt</span>
+                <span className="truncate">Receipt</span>
               </button>
             </div>
 
             {/* Tab Body */}
-            <div className="p-6 text-xs min-h-[250px] flex-1 flex flex-col justify-center">
+            <div className="p-4 sm:p-6 text-xs min-h-[240px] flex-1 flex flex-col justify-center">
               {activeTab === "borrowers" && (
-                <div className="space-y-3">
-                  <div className="flex justify-between items-center text-xs mb-2">
+                <div className="space-y-2.5 sm:space-y-3">
+                  <div className="flex justify-between items-center text-xs mb-1 sm:mb-2">
                     <span className="font-black text-slate-900">{t("landing.active_borrowers")}</span>
                     <span className="text-rose-600 font-black">{t("dashboard.total_utang")}: ₱1,170</span>
                   </div>
 
-                  <div className="bg-slate-50 p-4 rounded-2xl border border-slate-200/80 flex justify-between items-center">
-                    <div className="flex items-center gap-3">
-                      <div className="h-9 w-9 rounded-xl bg-blue-100 text-blue-900 font-black flex items-center justify-center text-xs">
+                  <div className="bg-slate-50 p-3 sm:p-4 rounded-2xl border border-slate-200/80 flex justify-between items-center gap-2">
+                    <div className="flex items-center gap-2.5 sm:gap-3 min-w-0">
+                      <div className="h-8 w-8 sm:h-9 sm:w-9 rounded-xl bg-blue-100 text-blue-900 font-black flex items-center justify-center text-xs shrink-0">
                         JC
                       </div>
-                      <div>
-                        <div className="font-black text-slate-900 text-xs">Juan Cruz</div>
-                        <div className="text-[10px] font-medium text-slate-400">0917-123-4567</div>
+                      <div className="min-w-0">
+                        <div className="font-black text-slate-900 text-xs truncate">Juan Cruz</div>
+                        <div className="text-[10px] font-medium text-slate-400 truncate">0917-123-4567</div>
                       </div>
                     </div>
-                    <div className="text-right">
+                    <div className="text-right shrink-0">
                       <div className="font-black text-rose-600 text-xs">₱ 350.00</div>
-                      <span className="text-[9px] bg-rose-50 text-rose-700 border border-rose-200 px-2 py-0.5 rounded-md font-black">
+                      <span className="text-[9px] bg-rose-50 text-rose-700 border border-rose-200 px-1.5 sm:px-2 py-0.5 rounded-md font-black">
                         {t("dashboard.unpaid")}
                       </span>
                     </div>
                   </div>
 
-                  <div className="bg-slate-50 p-4 rounded-2xl border border-slate-200/80 flex justify-between items-center">
-                    <div className="flex items-center gap-3">
-                      <div className="h-9 w-9 rounded-xl bg-emerald-100 text-emerald-800 font-black flex items-center justify-center text-xs">
+                  <div className="bg-slate-50 p-3 sm:p-4 rounded-2xl border border-slate-200/80 flex justify-between items-center gap-2">
+                    <div className="flex items-center gap-2.5 sm:gap-3 min-w-0">
+                      <div className="h-8 w-8 sm:h-9 sm:w-9 rounded-xl bg-emerald-100 text-emerald-800 font-black flex items-center justify-center text-xs shrink-0">
                         MS
                       </div>
-                      <div>
-                        <div className="font-black text-slate-900 text-xs">Maria Santos</div>
-                        <div className="text-[10px] font-medium text-slate-400">{t("borrowers.fully_paid")}</div>
+                      <div className="min-w-0">
+                        <div className="font-black text-slate-900 text-xs truncate">Maria Santos</div>
+                        <div className="text-[10px] font-medium text-slate-400 truncate">{t("borrowers.fully_paid")}</div>
                       </div>
                     </div>
-                    <div className="text-right">
+                    <div className="text-right shrink-0">
                       <div className="font-black text-emerald-600 text-xs">₱ 0.00</div>
-                      <span className="text-[9px] bg-emerald-50 text-emerald-700 border border-emerald-200 px-2 py-0.5 rounded-md font-black">
+                      <span className="text-[9px] bg-emerald-50 text-emerald-700 border border-emerald-200 px-1.5 sm:px-2 py-0.5 rounded-md font-black">
                         {t("dashboard.paid")}
                       </span>
                     </div>
@@ -287,15 +294,15 @@ export default function LandingPage() {
           </div>
 
           {/* Store Calculator Card */}
-          <div className="bg-white p-6 md:p-8 rounded-3xl border border-slate-200/90 shadow-2xs space-y-6 flex flex-col justify-between h-full">
-            <div className="flex items-center justify-center gap-2 text-slate-950 font-black text-base border-b border-slate-100 pb-4">
+          <div className="bg-white p-5 sm:p-6 md:p-8 rounded-3xl border border-slate-200/90 shadow-2xs space-y-5 sm:space-y-6 flex flex-col justify-between h-full">
+            <div className="flex items-center justify-center gap-2 text-slate-950 font-black text-sm sm:text-base border-b border-slate-100 pb-3 sm:pb-4">
               <svg className="w-5 h-5 text-blue-900 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2.5" d="M9 7h6m0 10v-3m-3 3h.01M9 17h.01M9 14h.01M12 14h.01M15 11h.01M12 11h.01M9 11h.01M7 21h10a2 2 0 002-2V5a2 2 0 00-2-2H7a2 2 0 00-2 2v14a2 2 0 002 2z" />
               </svg>
               <span>{t("landing.store_calculator")}</span>
             </div>
 
-            <div className="space-y-6">
+            <div className="space-y-5 sm:space-y-6">
               <div>
                 <div className="flex justify-between items-center text-xs sm:text-sm font-black text-slate-900 mb-2">
                   <span>{t("landing.borrowers_count")}:</span>
@@ -307,7 +314,7 @@ export default function LandingPage() {
                   max="100"
                   value={borrowerCount}
                   onChange={(e) => setBorrowerCount(Number(e.target.value))}
-                  className="w-full h-2 bg-slate-200 rounded-lg appearance-none cursor-pointer accent-slate-950"
+                  className="w-full h-2 bg-slate-200 rounded-lg appearance-none cursor-pointer accent-blue-600"
                 />
               </div>
 
@@ -323,22 +330,22 @@ export default function LandingPage() {
                   step="50"
                   value={avgUtang}
                   onChange={(e) => setAvgUtang(Number(e.target.value))}
-                  className="w-full h-2 bg-slate-200 rounded-lg appearance-none cursor-pointer accent-slate-950"
+                  className="w-full h-2 bg-slate-200 rounded-lg appearance-none cursor-pointer accent-blue-600"
                 />
               </div>
             </div>
 
-            <div className="bg-slate-950 text-white p-6 rounded-3xl text-center space-y-2 border border-slate-800 shadow-xl">
-              <div className="text-xs uppercase tracking-wider text-blue-400 font-black">{t("landing.estimated_uncollected")}</div>
-              <div className="text-3xl font-black text-amber-400">₱ {totalUncollected.toLocaleString()}</div>
-              <div className="text-xs text-slate-400 font-semibold">{t("landing.time_saved")}: {estimatedSavedTime * 4} {t("landing.hours_month")}</div>
+            <div className="bg-slate-950 text-white p-4 sm:p-6 rounded-2xl sm:rounded-3xl text-center space-y-1.5 sm:space-y-2 border border-slate-800 shadow-xl">
+              <div className="text-[11px] sm:text-xs uppercase tracking-wider text-blue-400 font-black">{t("landing.estimated_uncollected")}</div>
+              <div className="text-2xl sm:text-3xl font-black text-amber-400">₱ {totalUncollected.toLocaleString()}</div>
+              <div className="text-[11px] sm:text-xs text-slate-400 font-semibold">{t("landing.time_saved")}: {estimatedSavedTime * 4} {t("landing.hours_month")}</div>
             </div>
           </div>
         </div>
 
         {/* Feature Cards Grid (3 Columns on Widescreen) */}
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-6 pt-4">
-          <div className="bg-white p-6 sm:p-7 rounded-3xl border border-slate-200/90 shadow-2xs hover:shadow-md transition flex items-start gap-4">
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-4 sm:gap-6 pt-2 sm:pt-4">
+          <div className="bg-white p-5 sm:p-7 rounded-3xl border border-slate-200/90 shadow-2xs hover:shadow-md transition flex items-start gap-3.5 sm:gap-4">
             <div className="h-12 w-12 rounded-2xl bg-blue-50 text-blue-900 flex items-center justify-center shrink-0 shadow-2xs">
               <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2.5" d="M8 10h.01M12 10h.01M16 10h.01M9 16H5a2 2 0 01-2-2V6a2 2 0 012-2h14a2 2 0 012 2v8a2 2 0 01-2 2h-5l-5 5v-5z" />

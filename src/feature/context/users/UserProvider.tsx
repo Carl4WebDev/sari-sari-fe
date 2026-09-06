@@ -50,10 +50,18 @@ export const UserProvider = ({ children }: UserProviderProps) => {
 
     // Clear demo mode flag and save real user credentials
     localStorage.removeItem("is_demo_mode");
-    if (res.data?.token) {
+    sessionStorage.removeItem('listahub_admin_session');
+    localStorage.removeItem('user_token');
+    localStorage.removeItem('user');
+    localStorage.removeItem('user_subscription_data');
+    localStorage.removeItem('user_subscription_plan');
+    if (res.data?.user?.is_admin) {
+      sessionStorage.setItem('listahub_admin_session', res.data.token);
+      setProfile(null);
+    } else if (res.data?.token) {
       localStorage.setItem("user_token", res.data.token);
     }
-    if (res.data?.user) {
+    if (res.data?.user && !res.data.user.is_admin) {
       localStorage.setItem("user", JSON.stringify(res.data.user));
       setProfile(res.data.user);
     }

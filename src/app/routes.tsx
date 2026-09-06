@@ -1,4 +1,4 @@
-import { Routes, Route } from "react-router-dom";
+import { Routes, Route, Navigate } from "react-router-dom";
 import { lazy, Suspense } from "react";
 
 import { UserProvider } from "../feature/context/users/UserProvider";
@@ -24,6 +24,7 @@ const BorrowerDetailsPage = lazy(() => import("../feature/borrowers/pages/Borrow
 const ManageProductsPage = lazy(() => import("../feature/products/ManageProductsPage"));
 const UserManagementPage = lazy(() => import("../feature/users/pages/UserManagementPage"));
 const PublicStatusPage = lazy(() => import("../feature/public/pages/PublicStatusPage"));
+const AdminPage = lazy(() => import("../feature/admin/AdminPage"));
 
 function PageLoader() {
   return (
@@ -37,11 +38,20 @@ function SuspenseWrap({ children }: { children: React.ReactNode }) {
   return <Suspense fallback={<PageLoader />}>{children}</Suspense>;
 }
 
+function AdminDemoRedirect() {
+  sessionStorage.setItem('listahub_admin_session', 'admin_demo_session');
+  return <Navigate to="/admin" replace />;
+}
+
 export default function AppRoutes() {
   return (
     <UserProvider>
       <SubscriptionProvider>
         <Routes>
+          <Route path="/admin" element={<SuspenseWrap><AdminPage /></SuspenseWrap>} />
+          <Route path="/admin/login" element={<Navigate to="/login" replace />} />
+          <Route path="/admin/demo" element={<AdminDemoRedirect />} />
+
           {/* Public Landing & Demo Sandbox routes */}
           <Route path="/" element={<SuspenseWrap><LandingPage /></SuspenseWrap>} />
           <Route path="/demo" element={<SuspenseWrap><DemoPage /></SuspenseWrap>} />

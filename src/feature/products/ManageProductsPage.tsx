@@ -207,7 +207,9 @@ export default function ManageProductsPage() {
                 className="h-6 w-6 rounded-full bg-slate-100 hover:bg-slate-200 text-slate-400 hover:text-slate-600 flex items-center justify-center text-xs font-black transition cursor-pointer"
                 title="Clear search"
               >
-                ✕
+                <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2.5" d="M6 18L18 6M6 6l12 12" />
+                </svg>
               </button>
             )}
             <span className="text-[11px] font-black text-slate-400 bg-slate-100 px-2.5 py-1 rounded-xl border border-slate-200/70 hidden sm:inline-block">

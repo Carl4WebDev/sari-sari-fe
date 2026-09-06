@@ -1,4 +1,6 @@
 import { apiRequest } from "../../auth/api/httpClient/httpClient";
+import { subscriptionRequest } from "../api";
+import type { SubscriptionData } from "../context/SubscriptionContext";
 
 export interface SubscribePayload {
   plan: "BASIC" | "STANDARD" | "PREMIUM" | string;
@@ -12,10 +14,10 @@ export const getPlansApi = () =>
     method: "GET",
   });
 
-export const getCurrentSubscriptionApi = () =>
-  apiRequest("/api/subscriptions/current", {
-    method: "GET",
-  });
+export const getCurrentSubscriptionApi = async () => {
+  try { return { ok: true, data: await subscriptionRequest<SubscriptionData>('/current') }; }
+  catch (error) { return { ok: false, message: error instanceof Error ? error.message : 'Unable to load subscription.' }; }
+};
 
 export const subscribePlanApi = (payload: SubscribePayload) =>
   apiRequest("/api/subscriptions/subscribe", {

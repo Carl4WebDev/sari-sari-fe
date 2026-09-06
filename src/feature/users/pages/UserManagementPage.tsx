@@ -4,6 +4,7 @@ import { useSubscription } from "../../subscription/context/useSubscription";
 import { useTranslation } from "../../../shared/i18n/useTranslation";
 import GlobalModal from "../../../shared/components/GlobalModal";
 import SubscriptionModal from "../../subscription/components/SubscriptionModal";
+import SubscriptionStatus from "../../subscription/components/SubscriptionStatus";
 
 export default function UserManagementPage() {
   const { t } = useTranslation();
@@ -444,26 +445,59 @@ export default function UserManagementPage() {
             </div>
             <div className="bg-slate-950/50 border border-slate-800 rounded-2xl p-3.5">
               <p className="text-[10px] font-extrabold text-slate-400 uppercase tracking-wider">SMS Reminders</p>
-              <p className="text-base font-black text-slate-200 mt-0.5">
-                {subscription?.limits?.allowSms ? "✅ Automated" : "❌ Not Included"}
-              </p>
+              <div className="flex items-center gap-1.5 mt-0.5">
+                {subscription?.limits?.allowSms ? (
+                  <>
+                    <svg className="w-4 h-4 text-emerald-400 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2.5" d="M5 13l4 4L19 7" />
+                    </svg>
+                    <span className="text-base font-black text-slate-200">Automated</span>
+                  </>
+                ) : (
+                  <>
+                    <svg className="w-4 h-4 text-slate-500 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2.5" d="M6 18L18 6M6 6l12 12" />
+                    </svg>
+                    <span className="text-base font-black text-slate-400">Not Included</span>
+                  </>
+                )}
+              </div>
             </div>
             <div className="bg-slate-950/50 border border-slate-800 rounded-2xl p-3.5">
               <p className="text-[10px] font-extrabold text-slate-400 uppercase tracking-wider">Export PDF/CSV</p>
-              <p className="text-base font-black text-slate-200 mt-0.5">
-                {subscription?.limits?.allowCsvExport ? "✅ Custom" : "Basic PDF"}
-              </p>
+              <div className="flex items-center gap-1.5 mt-0.5">
+                {subscription?.limits?.allowCsvExport ? (
+                  <>
+                    <svg className="w-4 h-4 text-emerald-400 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2.5" d="M5 13l4 4L19 7" />
+                    </svg>
+                    <span className="text-base font-black text-slate-200">Custom</span>
+                  </>
+                ) : (
+                  <span className="text-base font-black text-slate-400">Basic PDF</span>
+                )}
+              </div>
             </div>
             <div className="bg-slate-950/50 border border-slate-800 rounded-2xl p-3.5">
               <p className="text-[10px] font-extrabold text-slate-400 uppercase tracking-wider">Cloud Sync</p>
-              <p className="text-base font-black text-emerald-400 mt-0.5">
-                {subscription?.limits?.allowCloudSync ? "✅ Real-time" : "Local"}
-              </p>
+              <div className="flex items-center gap-1.5 mt-0.5">
+                {subscription?.limits?.allowCloudSync ? (
+                  <>
+                    <svg className="w-4 h-4 text-emerald-400 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2.5" d="M5 13l4 4L19 7" />
+                    </svg>
+                    <span className="text-base font-black text-emerald-400">Real-time</span>
+                  </>
+                ) : (
+                  <span className="text-base font-black text-slate-400">Local</span>
+                )}
+              </div>
             </div>
           </div>
         </div>
       </div>
 
+      <SubscriptionStatus />
       <SubscriptionModal
         isOpen={isSubscriptionModalOpen}
         onClose={() => setIsSubscriptionModalOpen(false)}

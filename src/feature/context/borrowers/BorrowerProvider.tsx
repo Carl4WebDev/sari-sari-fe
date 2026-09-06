@@ -160,7 +160,7 @@ const fetchArchivedBorrowers = useCallback(async () => {
     return res;
   }
 
-  setArchivedBorrowers(res.data); // ✅ THIS IS THE IMPORTANT LINE
+  setArchivedBorrowers(res.data); // THIS IS THE IMPORTANT LINE
 
   setLoading(false);
   return res;
