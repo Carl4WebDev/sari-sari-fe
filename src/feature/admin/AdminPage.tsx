@@ -7,7 +7,11 @@ import type { AdminProfileData } from './api';
 import AdminSidebar from './components/AdminSidebar';
 import AdminOverviewTab from './components/AdminOverviewTab';
 import AdminPaymentsTab from './components/AdminPaymentsTab';
+import AdminCustomersTab from './components/AdminCustomersTab';
 import RecordPaymentModal from './modals/RecordPaymentModal';
+import AccountFormModal from './modals/AccountFormModal';
+import ResetPasswordModal from './modals/ResetPasswordModal';
+import type { ManagedCustomer } from './api';
 
 export interface ActivityCustomer {
   user_id: number;
@@ -55,6 +59,14 @@ export default function AdminPage() {
   const [tab, setTab] = useState('Overview');
   const [recordFor, setRecordFor] = useState<number | null>(null);
   const [notice, setNotice] = useState('');
+
+  // Customer management state
+  const [customerStatus, setCustomerStatus] = useState('All');
+  const [customerSearch, setCustomerSearch] = useState('');
+  const [selectedCustomer, setSelectedCustomer] = useState<Customer | null>(null);
+  const [showAccountForm, setShowAccountForm] = useState(false);
+  const [editCustomer, setEditCustomer] = useState<ManagedCustomer | null>(null);
+  const [resetPasswordCustomer, setResetPasswordCustomer] = useState<ManagedCustomer | null>(null);
 
   const [isSidebarOpen, setIsSidebarOpen] = useState(() => {
     if (typeof window !== 'undefined') {
@@ -174,13 +186,24 @@ export default function AdminPage() {
                 <span className="text-xs font-bold text-slate-400 hidden sm:inline">Admin</span>
                 <span className="text-xs text-slate-300 hidden sm:inline">/</span>
                 <h1 className="text-xs sm:text-base font-black text-slate-900 leading-tight truncate">
-                  {tab === 'Overview' ? 'Pilot Dashboard' : 'Payment Records'}
+                  {tab === 'Overview' ? 'Pilot Dashboard' : tab === 'Customers' ? 'Customer Management' : 'Payment Records'}
                 </h1>
               </div>
             </div>
           </div>
 
           <div className="flex items-center gap-1.5 sm:gap-2.5 shrink-0">
+            <button
+              disabled={!data || loading}
+              onClick={() => { setEditCustomer(null); setShowAccountForm(true); }}
+              className="rounded-xl sm:rounded-2xl bg-emerald-600 hover:bg-emerald-700 text-white px-2.5 sm:px-3.5 py-2 sm:py-2.5 text-xs sm:text-sm font-black shadow-md shadow-emerald-600/20 transition active:scale-95 disabled:opacity-50 cursor-pointer flex items-center gap-1.5"
+            >
+              <svg className="w-4 h-4 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2.5" d="M18 9v3m0 0v3m0-3h3m-3 0h-3m-2-5a4 4 0 11-8 0 4 4 0 018 0zM3 20a6 6 0 0112 0v1H3v-1z" />
+              </svg>
+              <span className="hidden sm:inline">New Customer</span>
+              <span className="sm:hidden text-xs">Customer</span>
+            </button>
             <button
               disabled={!data || loading}
               onClick={() => setRecordFor(0)}
@@ -211,10 +234,11 @@ export default function AdminPage() {
           <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pb-4 border-b border-slate-200/80">
             <div>
               <h1 className="text-2xl sm:text-3xl font-black text-slate-950 tracking-tight">
-                {tab === 'Overview' ? 'Pilot Dashboard' : 'Payment Records'}
+                {tab === 'Overview' ? 'Pilot Dashboard' : tab === 'Customers' ? 'Customer Management' : 'Payment Records'}
               </h1>
               <p className="text-xs sm:text-sm font-semibold text-slate-500 mt-1">
                 {tab === 'Overview' && 'Monitor pilot users, activity, subscriptions, and system health.'}
+                {tab === 'Customers' && 'Manage customer accounts, subscriptions, and access.'}
                 {tab === 'Payments' && 'Complete payment history and transaction verification records.'}
               </p>
             </div>
@@ -259,6 +283,20 @@ export default function AdminPage() {
                 />
               )}
 
+              {tab === 'Customers' && (
+                <AdminCustomersTab
+                  customers={customers}
+                  status={customerStatus}
+                  onSetStatus={setCustomerStatus}
+                  search={customerSearch}
+                  onSetSearch={setCustomerSearch}
+                  selected={selectedCustomer}
+                  onSelectCustomer={setSelectedCustomer}
+                  onRecordFor={setRecordFor}
+                  payments={payments}
+                />
+              )}
+
               {tab === 'Payments' && (
                 <AdminPaymentsTab
                   payments={payments}
@@ -284,6 +322,33 @@ export default function AdminPage() {
         />
       )}
 
+      {/* Account Form Modal (Create/Edit Customer) */}
+      {showAccountForm && (
+        <AccountFormModal
+          customer={editCustomer}
+          onClose={() => { setShowAccountForm(false); setEditCustomer(null); }}
+          onSaved={() => {
+            setShowAccountForm(false);
+            setEditCustomer(null);
+            setNotice(editCustomer ? 'Account updated successfully.' : 'Customer account created successfully. They can now log in with the provided credentials.');
+            void refresh();
+          }}
+        />
+      )}
+
+      {/* Reset Password Modal */}
+      {resetPasswordCustomer && (
+        <ResetPasswordModal
+          customer={resetPasswordCustomer}
+          onClose={() => setResetPasswordCustomer(null)}
+          onSaved={() => {
+            setResetPasswordCustomer(null);
+            setNotice('Password updated. Share the new password securely with the customer.');
+            void refresh();
+          }}
+        />
+      )}
+
       {/* Mobile Bottom Navigation Bar */}
       <nav
         aria-label="Mobile admin navigation"
@@ -300,6 +365,19 @@ export default function AdminPage() {
             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2.2" d="M4 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2V6zM14 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2V6zM4 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2v-2zM14 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2v-2z" />
           </svg>
           <span className="text-[10px] tracking-tight">Overview</span>
+        </button>
+
+        <button
+          type="button"
+          onClick={() => handleNavTab('Customers')}
+          className={`flex flex-col items-center justify-center gap-1 py-1 px-4 rounded-xl transition cursor-pointer ${
+            tab === 'Customers' ? 'text-blue-600 font-black' : 'text-slate-400 hover:text-slate-700 font-bold'
+          }`}
+        >
+          <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2.2" d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0z" />
+          </svg>
+          <span className="text-[10px] tracking-tight">Customers</span>
         </button>
 
         <button

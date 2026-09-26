@@ -16,6 +16,9 @@ export default function LandingPage() {
   // Subscription Modal State
   const [subscriptionModalOpen, setSubscriptionModalOpen] = useState(false);
 
+  // Local Mode Warning Modal
+  const [showLocalWarning, setShowLocalWarning] = useState(false);
+
   // Interactive Demo Calculator State
   const [borrowerCount, setBorrowerCount] = useState(15);
   const [avgUtang, setAvgUtang] = useState(350);
@@ -41,6 +44,10 @@ export default function LandingPage() {
   };
 
   const handleGetStarted = () => {
+    setShowLocalWarning(true);
+  };
+
+  const handleConfirmLocalMode = () => {
     localStorage.setItem("user_token", "active_store_token");
     localStorage.setItem("is_free_local", "true");
     localStorage.removeItem("is_demo_mode");
@@ -50,6 +57,7 @@ export default function LandingPage() {
       store_name: "ListaHub",
       name: "Store Owner",
     }));
+    setShowLocalWarning(false);
     navigate("/dashboard");
   };
 
@@ -388,6 +396,82 @@ export default function LandingPage() {
       <footer className="py-6 px-6 bg-slate-950 text-slate-400 text-center text-xs font-semibold mt-auto border-t border-slate-800">
         <p>© {new Date().getFullYear()} Listahub. Professional Sari-Sari Store Management System.</p>
       </footer>
+
+      {/* Local Storage Warning Modal */}
+      {showLocalWarning && (
+        <div className="fixed inset-0 z-[110] bg-slate-950/70 backdrop-blur-md flex items-center justify-center p-3 sm:p-4 animate-backdrop-fade">
+          <div className="w-full max-w-md bg-white rounded-[2rem] shadow-2xl shadow-slate-950/30 border border-slate-200/90 overflow-hidden animate-modal-pop">
+            {/* Header */}
+            <div className="p-5 sm:p-6 border-b border-slate-100/90 bg-gradient-to-r from-blue-50/80 via-white to-indigo-50/30">
+              <div className="flex items-center gap-3">
+                <div className="h-11 w-11 rounded-2xl bg-gradient-to-tr from-blue-600 to-indigo-600 text-white flex items-center justify-center shadow-md shadow-blue-600/20 shrink-0">
+                  <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 18h.01M8 21h8a2 2 0 002-2V5a2 2 0 00-2-2H8a2 2 0 00-2 2v14a2 2 0 002 2z" />
+                  </svg>
+                </div>
+                <div>
+                  <h3 className="font-black text-slate-950 text-base leading-tight tracking-tight">
+                    Local Mode
+                  </h3>
+                  <p className="text-xs font-semibold text-slate-400 mt-0.5">
+                    ListaHub Free / Local Storage
+                  </p>
+                </div>
+              </div>
+            </div>
+
+            {/* Body */}
+            <div className="p-5 sm:p-6 space-y-4">
+              <div className="space-y-3 text-sm text-slate-700 leading-relaxed">
+                <p className="font-semibold text-slate-900">
+                  You're using ListaHub in Local Mode.
+                </p>
+                <div className="space-y-2.5">
+                  <div className="flex items-start gap-2.5">
+                    <svg className="w-4 h-4 text-blue-500 shrink-0 mt-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2.5" d="M12 18h.01M8 21h8a2 2 0 002-2V5a2 2 0 00-2-2H8a2 2 0 00-2 2v14a2 2 0 002 2z" />
+                    </svg>
+                    <span>Your records are stored <strong>on this device</strong> and are not automatically backed up to the cloud.</span>
+                  </div>
+                  <div className="flex items-start gap-2.5">
+                    <svg className="w-4 h-4 text-amber-500 shrink-0 mt-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2.5" d="M12 9v2m0 4h.01M10.29 3.86l-8.6 14.86A1 1 0 002.54 20h17.92a1 1 0 00.86-1.28l-8.6-14.86a1 1 0 00-1.72 0z" />
+                    </svg>
+                    <span>If your browser or device data is lost, your records <strong>may also be lost</strong>.</span>
+                  </div>
+                  <div className="flex items-start gap-2.5">
+                    <svg className="w-4 h-4 text-emerald-500 shrink-0 mt-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2.5" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
+                    </svg>
+                    <span>We recommend <strong>exporting your records regularly</strong> for backup. PDF and CSV export are available.</span>
+                  </div>
+                </div>
+              </div>
+
+              {/* Action Buttons */}
+              <div className="flex flex-col-reverse sm:flex-row sm:justify-end gap-2.5 pt-2">
+                <button
+                  type="button"
+                  onClick={() => setShowLocalWarning(false)}
+                  className="px-4 py-2.5 rounded-xl font-bold text-xs sm:text-sm text-slate-600 hover:text-slate-900 cursor-pointer transition text-center"
+                >
+                  Cancel
+                </button>
+                <button
+                  type="button"
+                  onClick={handleConfirmLocalMode}
+                  className="px-6 py-3 bg-gradient-to-r from-blue-600 via-indigo-600 to-blue-700 hover:from-blue-700 hover:to-indigo-700 text-white font-black text-xs sm:text-sm rounded-2xl shadow-md shadow-blue-600/25 transition-all active:scale-[0.98] cursor-pointer flex items-center justify-center gap-2"
+                >
+                  <span>Continue to ListaHub</span>
+                  <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2.5" d="M14 5l7 7m0 0l-7 7m7-7H3" />
+                  </svg>
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
 
       {/* Subscription Modal (Pricing Tiers) */}
       <SubscriptionModal

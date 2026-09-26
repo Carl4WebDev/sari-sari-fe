@@ -25,27 +25,14 @@ export default function SubscriptionModal({ isOpen, onClose, onOpenAuth }: Subsc
   if (!isOpen && !isAuthModalOpen) return null;
 
   const handleSelectPlan = (planId: string) => {
-    const token = localStorage.getItem("user_token");
-    const isDemoMode = localStorage.getItem("is_demo_mode") === "true";
-    const isFreeLocal = localStorage.getItem("is_free_local") === "true";
-
-    if (!token || isDemoMode || isFreeLocal) {
-      if (onOpenAuth) {
-        onOpenAuth("register");
-      } else {
-        setIsAuthModalOpen(true);
-      }
-      return;
-    }
-
     if (planId === "free") {
       onClose();
       return;
     }
 
-    // Premium: show contact message
+    // Premium: show beta contact info
     if (planId === "premium") {
-      onClose();
+      setShowPremiumBeta(true);
       return;
     }
   };

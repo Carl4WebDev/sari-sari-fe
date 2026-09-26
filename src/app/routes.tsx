@@ -59,7 +59,10 @@ export default function AppRoutes() {
           {/* Auth routes */}
           <Route element={<PublicRoute />}>
             <Route path="/login" element={<SuspenseWrap><LoginPage /></SuspenseWrap>} />
-            <Route path="/register" element={<SuspenseWrap><RegisterPage /></SuspenseWrap>} />
+            {/* Self-service signup is temporarily disabled during beta testing.
+                Customer accounts are currently created manually by an administrator after subscription payment is verified.
+                The RegisterPage component and registration API remain available for future reactivation. */}
+            {/* <Route path="/register" element={<SuspenseWrap><RegisterPage /></SuspenseWrap>} /> */}
           </Route>
 
           {/* Public borrower status — own provider */}

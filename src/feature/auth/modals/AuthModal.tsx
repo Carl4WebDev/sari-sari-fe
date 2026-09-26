@@ -36,7 +36,10 @@ export default function AuthModal({
 
   useEffect(() => {
     if (isOpen) {
-      setMode(initialMode);
+      // Self-service signup is temporarily disabled during beta testing.
+      // Customer accounts are currently created manually by an administrator after subscription payment is verified.
+      // Force login mode if someone tries to open in register mode.
+      setMode(initialMode === "register" ? "login" : "login");
       setLocalError("");
       clearError();
       setIsClosing(false);
@@ -225,16 +228,16 @@ export default function AuthModal({
             >
               <span>{t("auth.login")}</span>
             </button>
+            {/* Self-service signup is temporarily disabled during beta testing.
+                Customer accounts are currently created manually by an administrator after subscription payment is verified. */}
             <button
               type="button"
-              onClick={() => switchMode("register")}
-              className={`py-2.5 text-xs sm:text-sm font-black rounded-xl transition-all duration-200 cursor-pointer flex items-center justify-center gap-1.5 ${
-                mode === "register"
-                  ? "bg-white text-slate-950 shadow-xs scale-100 font-black"
-                  : "text-slate-500 hover:text-slate-900 hover:bg-white/50 font-bold"
-              }`}
+              disabled
+              className="py-2.5 text-xs sm:text-sm font-black rounded-xl transition-all duration-200 cursor-not-allowed flex items-center justify-center gap-1.5 text-slate-400 opacity-50"
+              title="Account creation is handled by ListaHub admin during beta"
             >
               <span>{t("landing.create_account")}</span>
+              <span className="text-[9px] font-bold bg-amber-100 text-amber-700 px-1.5 py-0.5 rounded-md">Beta</span>
             </button>
           </div>
         </div>
@@ -337,16 +340,15 @@ export default function AuthModal({
                 </button>
               </div>
 
+              {/* Self-service signup is temporarily disabled during beta testing.
+                  Customer accounts are currently created manually by an administrator after subscription payment is verified. */}
               <div className="pt-2 text-center">
                 <p className="text-[11px] text-slate-500 font-semibold">
-                  Don&apos;t have an account yet?{" "}
-                  <button
-                    type="button"
-                    onClick={() => switchMode("register")}
-                    className="text-blue-600 font-bold hover:underline cursor-pointer"
-                  >
-                    Create store account
-                  </button>
+                  Don&apos;t have an account?{" "}
+                  <span className="text-slate-600 font-bold">Contact ListaHub admin to create your account.</span>
+                </p>
+                <p className="text-[10px] text-slate-400 font-medium mt-1">
+                  📞 0927 616 8478
                 </p>
               </div>
             </form>
