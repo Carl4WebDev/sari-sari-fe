@@ -48,8 +48,10 @@ export const UserProvider = ({ children }: UserProviderProps) => {
       return res;
     }
 
-    // Clear demo mode flag and save real user credentials
+    // Clear demo/local mode flags and save real user credentials
     localStorage.removeItem("is_demo_mode");
+    localStorage.removeItem("is_free_local");
+    localStorage.removeItem("local_warning_dismissed");
     sessionStorage.removeItem('listahub_admin_session');
     localStorage.removeItem('user_token');
     localStorage.removeItem('user');
@@ -94,6 +96,8 @@ export const UserProvider = ({ children }: UserProviderProps) => {
     const loginRes = await loginUser(payload.email, payload.password);
     if (loginRes?.ok) {
       localStorage.removeItem("is_demo_mode");
+      localStorage.removeItem("is_free_local");
+      localStorage.removeItem("local_warning_dismissed");
       if (loginRes.data?.token) {
         localStorage.setItem("user_token", loginRes.data.token);
       }

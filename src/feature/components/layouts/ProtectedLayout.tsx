@@ -43,8 +43,9 @@ function ProtectedLayoutInner() {
 
   const isDemo = localStorage.getItem("is_demo_mode") === "true";
   const isFreeLocal = localStorage.getItem("is_free_local") === "true";
+  const hasRealToken = !!localStorage.getItem("user_token");
   const [showLocalWarning, setShowLocalWarning] = useState(() => {
-    return isFreeLocal && localStorage.getItem("local_warning_dismissed") !== "true";
+    return isFreeLocal && !hasRealToken && localStorage.getItem("local_warning_dismissed") !== "true";
   });
 
   const dismissLocalWarning = () => {
