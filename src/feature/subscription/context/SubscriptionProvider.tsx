@@ -50,8 +50,9 @@ export const SubscriptionProvider = ({ children }: Props) => {
   const fetchSubscription = useCallback(async () => {
     const token = localStorage.getItem("user_token");
     const isDemo = localStorage.getItem("is_demo_mode") === "true";
+    const isFreeLocal = localStorage.getItem("is_free_local") === "true";
 
-    if (!token || isDemo) {
+    if (!token || isDemo || isFreeLocal) {
       const demoSub: SubscriptionData = {
         plan: "FREE",
         status: "active",

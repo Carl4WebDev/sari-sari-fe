@@ -49,6 +49,8 @@ export default function Sidebar({ isOpenExternal, onCloseExternal, onOpenSubscri
     clearUser();
     localStorage.removeItem("user_token");
     localStorage.removeItem("is_demo_mode");
+    localStorage.removeItem("is_free_local");
+    localStorage.removeItem("demo_store_data");
     localStorage.removeItem("user");
     handleClose();
     navigate("/");

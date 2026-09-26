@@ -116,6 +116,11 @@ export const UserProvider = ({ children }: UserProviderProps) => {
     localStorage.removeItem("user_token");
     localStorage.removeItem("user");
     localStorage.removeItem("is_demo_mode");
+    localStorage.removeItem("is_free_local");
+    localStorage.removeItem("demo_store_data");
+    localStorage.removeItem("local_warning_dismissed");
+    localStorage.removeItem("user_subscription_data");
+    localStorage.removeItem("user_subscription_plan");
     clearAllCache();
     clearQueue();
     setProfile(null);

@@ -23,23 +23,9 @@ export default function ProtectedLayout() {
     return <Navigate to="/admin" replace />;
   }
 
-  // Ensure active store session is initialized for instant use
-  if (!token || token === "active_store_token" || token === "demo_sandbox_token" || localStorage.getItem("is_demo_mode") === "true") {
-    if (!token) {
-      localStorage.setItem("user_token", "active_store_token");
-    }
-    localStorage.setItem("is_demo_mode", "true");
-    if (!localStorage.getItem("user")) {
-      localStorage.setItem(
-        "user",
-        JSON.stringify({
-          id: 1,
-          email: "owner@listahub.ph",
-          store_name: "Ang Akong Tindahan",
-          name: "Store Owner",
-        })
-      );
-    }
+  // No auth at all — send to landing page
+  if (!token && localStorage.getItem("is_demo_mode") !== "true" && localStorage.getItem("is_free_local") !== "true") {
+    return <Navigate to="/" replace />;
   }
 
   return <ProtectedLayoutInner />;
@@ -56,6 +42,15 @@ function ProtectedLayoutInner() {
     (dashboardReminders?.overdue?.length || 0);
 
   const isDemo = localStorage.getItem("is_demo_mode") === "true";
+  const isFreeLocal = localStorage.getItem("is_free_local") === "true";
+  const [showLocalWarning, setShowLocalWarning] = useState(() => {
+    return isFreeLocal && localStorage.getItem("local_warning_dismissed") !== "true";
+  });
+
+  const dismissLocalWarning = () => {
+    setShowLocalWarning(false);
+    localStorage.setItem("local_warning_dismissed", "true");
+  };
 
   const [isSidebarOpen, setIsSidebarOpen] = useState(() => {
     if (typeof window !== "undefined") {
@@ -87,8 +82,10 @@ function ProtectedLayoutInner() {
   const handleExitDemo = () => {
     localStorage.removeItem("user_token");
     localStorage.removeItem("is_demo_mode");
+    localStorage.removeItem("is_free_local");
     localStorage.removeItem("user");
     localStorage.removeItem("demo_store_data");
+    localStorage.removeItem("local_warning_dismissed");
     navigate("/");
   };
 
@@ -193,6 +190,29 @@ function ProtectedLayoutInner() {
         {/* Main Responsive Content Container */}
         <main className="flex-1 p-4 sm:p-6 lg:p-8 pb-24 max-w-7xl mx-auto w-full space-y-4">
           <ConnectionStatus />
+
+          {/* Free Local Storage Warning Banner */}
+          {showLocalWarning && (
+            <div className="rounded-2xl border border-amber-300 bg-amber-50 px-4 py-3 flex items-start gap-3 shadow-sm">
+              <svg className="w-5 h-5 text-amber-500 shrink-0 mt-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 9v2m0 4h.01M10.29 3.86l-8.6 14.86A1 1 0 002.54 20h17.92a1 1 0 00.86-1.28l-8.6-14.86a1 1 0 00-1.72 0z" />
+              </svg>
+              <div className="flex-1 min-w-0">
+                <p className="text-sm font-bold text-amber-800">Your data is saved in local storage only</p>
+                <p className="text-xs text-amber-700 mt-0.5">Clearing your browser data or switching devices will permanently delete your records. <strong>Export your data as PDF regularly</strong> to avoid data loss.</p>
+              </div>
+              <button
+                onClick={dismissLocalWarning}
+                className="p-1 rounded-lg hover:bg-amber-100 text-amber-500 hover:text-amber-700 transition cursor-pointer shrink-0"
+                title="Dismiss"
+              >
+                <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M6 18L18 6M6 6l12 12" />
+                </svg>
+              </button>
+            </div>
+          )}
+
           <Outlet />
         </main>
       </div>

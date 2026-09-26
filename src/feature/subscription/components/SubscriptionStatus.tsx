@@ -7,7 +7,7 @@ export default function SubscriptionStatus() {
   const [error, setError] = useState('');
 
   useEffect(() => {
-    if (localStorage.getItem('is_demo_mode') === 'true') return;
+    if (localStorage.getItem('is_demo_mode') === 'true' || localStorage.getItem('is_free_local') === 'true') return;
     subscriptionRequest<{ customer: Customer; payments: Payment[] }>('/mine')
       .then(setData)
       .catch(() => setError('Subscription information is unavailable. Please refresh to try again.'));

@@ -16,7 +16,7 @@ export default function SubscriptionModal({ isOpen, onClose, onOpenAuth }: Subsc
   const [isAuthModalOpen, setIsAuthModalOpen] = useState(false);
 
   useEffect(() => {
-    if (!isOpen || !localStorage.getItem('user_token') || localStorage.getItem('is_demo_mode') === 'true') return;
+    if (!isOpen || !localStorage.getItem('user_token') || localStorage.getItem('is_demo_mode') === 'true' || localStorage.getItem('is_free_local') === 'true') return;
     subscriptionRequest<{ customer: Customer }>('/mine').then(({ customer }) => {
       setActivePlan(['Active', 'Expiring soon'].includes(customer.status) ? customer.plan || '' : '');
     }).catch(() => setActivePlan(''));
@@ -27,8 +27,9 @@ export default function SubscriptionModal({ isOpen, onClose, onOpenAuth }: Subsc
   const handleSelectPlan = (planId: string) => {
     const token = localStorage.getItem("user_token");
     const isDemoMode = localStorage.getItem("is_demo_mode") === "true";
+    const isFreeLocal = localStorage.getItem("is_free_local") === "true";
 
-    if (!token || isDemoMode) {
+    if (!token || isDemoMode || isFreeLocal) {
       if (onOpenAuth) {
         onOpenAuth("register");
       } else {

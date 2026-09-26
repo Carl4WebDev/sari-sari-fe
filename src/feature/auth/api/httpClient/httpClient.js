@@ -1,4 +1,4 @@
-import { setCachedData, getCachedData } from "../../../../shared/utils/offlineCache";
+import { setCachedData, getCachedData, clearAllCache } from "../../../../shared/utils/offlineCache";
 import { enqueue } from "../../../../shared/utils/offlineQueue";
 import { handleDemoRequest } from "./demoStoreDatabase";
 
@@ -8,10 +8,7 @@ const API_BASE = import.meta.env.VITE_API_BASE;
 const inflightRequests = new Map();
 
 const getAuthToken = () => localStorage.getItem("user_token");
-const isDemoMode = () => {
-  const token = getAuthToken();
-  return !token || token === "active_store_token" || token === "demo_sandbox_token" || localStorage.getItem("is_demo_mode") === "true";
-};
+const isDemoMode = () => localStorage.getItem("is_demo_mode") === "true" || localStorage.getItem("is_free_local") === "true";
 
 function buildDescription(method, url, body) {
   try {
@@ -37,9 +34,14 @@ function buildDescription(method, url, body) {
 export async function customFetch(url, options = {}) {
   const method = (options.method || "GET").toUpperCase();
 
-  // If in Demo Mode, delegate to demo store mock database
+  // If in Demo Mode, delegate to demo store mock database (skip caching — data is local)
   if (isDemoMode()) {
-    return handleDemoRequest(url, options);
+    const result = handleDemoRequest(url, options);
+    // Clear cache after writes so subsequent reads see fresh state
+    if (method !== "GET") {
+      clearAllCache();
+    }
+    return result;
   }
 
   const token = getAuthToken();
@@ -101,7 +103,10 @@ export async function customFetch(url, options = {}) {
           return handleDemoRequest(url, options);
         }
         localStorage.removeItem("user_token");
-        window.location.href = "/login";
+        localStorage.removeItem("user");
+        localStorage.removeItem("is_demo_mode");
+        localStorage.removeItem("is_free_local");
+        window.location.href = "/";
         return { ok: false, message: "Unauthorized. Please log in again." };
       }
 
@@ -142,8 +147,11 @@ export async function customFetch(url, options = {}) {
         };
       }
 
-      // Fallback to mock store data if backend server is unreachable
-      return handleDemoRequest(url, options);
+      // Fallback to mock store only in explicit demo mode
+      if (isDemoMode()) {
+        return handleDemoRequest(url, options);
+      }
+      return { ok: false, message: "Unable to connect to server. Please check your internet connection." };
     } finally {
       if (method === "GET") {
         inflightRequests.delete(cacheKey);

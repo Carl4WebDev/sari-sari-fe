@@ -42,11 +42,12 @@ export default function LandingPage() {
 
   const handleGetStarted = () => {
     localStorage.setItem("user_token", "active_store_token");
-    localStorage.setItem("is_demo_mode", "true");
+    localStorage.setItem("is_free_local", "true");
+    localStorage.removeItem("is_demo_mode");
     localStorage.setItem("user", JSON.stringify({
       id: 1,
       email: "owner@listahub.ph",
-      store_name: "Ang Akong Tindahan",
+      store_name: "ListaHub",
       name: "Store Owner",
     }));
     navigate("/dashboard");

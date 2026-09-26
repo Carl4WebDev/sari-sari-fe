@@ -107,18 +107,6 @@ export default function BorrowerDetailsPage() {
   }, [borrowerError, reminderError, t]);
 
   useEffect(() => {
-    if (!id) return;
-    const isTempBorrower = Number(id) > 2147483647;
-    if (isTempBorrower) return;
-
-    clearBorrowerError();
-    clearReminderError();
-    fetchBorrowerTransactions(id);
-    fetchBorrowerNotes(id);
-    fetchBorrowerReminders(id);
-  }, [id]);
-
-  useEffect(() => {
     fetchBorrowers();
   }, []);
 
@@ -126,6 +114,17 @@ export default function BorrowerDetailsPage() {
     if (!borrowers) return null;
     return borrowers.find((b: any) => String(b.borrower_id) === String(id));
   }, [borrowers, id]);
+
+  useEffect(() => {
+    if (!id) return;
+    if (borrower?._pending) return;
+
+    clearBorrowerError();
+    clearReminderError();
+    fetchBorrowerTransactions(id);
+    fetchBorrowerNotes(id);
+    fetchBorrowerReminders(id);
+  }, [id, borrower?._pending]);
 
   const totalBalance = useMemo(() => {
     return transactions
@@ -137,10 +136,6 @@ export default function BorrowerDetailsPage() {
 
   const refreshBorrowerDetails = async () => {
     if (!id) return;
-    if (Number(id) > 2147483647) {
-      await fetchBorrowers();
-      return;
-    }
 
     try {
       await fetchBorrowerTransactions(id);
