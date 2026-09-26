@@ -58,6 +58,7 @@ export async function customFetch(url, options = {}) {
     ...options,
     headers,
     body: isPlainObject ? JSON.stringify(options.body) : options.body,
+    cache: "no-store",
   };
 
   const cacheKey = `${method}:${url}`;

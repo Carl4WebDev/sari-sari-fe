@@ -22,8 +22,6 @@ export default function RecordPaymentModal({
 }: Props) {
   const dialog = useRef<HTMLDialogElement>(null);
   const [id, setId] = useState(String(customerId || ''));
-  const initial = data.customers.find((c) => c.user_id === customerId);
-  const [plan, setPlan] = useState(initial?.plan || 'basic');
   const [duration, setDuration] = useState(1);
   const [date, setDate] = useState(data.today);
   const [method, setMethod] = useState('GCash');
@@ -37,196 +35,125 @@ export default function RecordPaymentModal({
     dialog.current?.showModal();
   }, []);
 
-  const customer = data.customers.find((c) => String(c.user_id) === id);
-  const active = customer && ['Active', 'Expiring soon'].includes(customer.status);
-  const currentPlan = active ? customer.plan! : plan;
-  const rate = data.plans.find((p) => p.id === currentPlan)!;
-  const amount = (duration === 12 ? rate.annualMonthly : rate.monthly) * duration;
-  const base = active ? customer.end_date! : date;
-  const preview = new Date(`${base}T00:00:00Z`);
-  const day = preview.getUTCDate();
-  preview.setUTCDate(1);
-  preview.setUTCMonth(preview.getUTCMonth() + duration);
-  preview.setUTCDate(Math.min(day, new Date(Date.UTC(preview.getUTCFullYear(), preview.getUTCMonth() + 1, 0)).getUTCDate()));
-  const expiry = Number.isFinite(preview.getTime()) ? preview.toISOString().slice(0, 10) : '—';
+  const rate = 299;
+  const amount = duration === 12
+    ? Math.round(rate * 12 * 0.9 * 100) / 100
+    : rate * duration;
+
+  const handleSubmit = async () => {
+    if (!id) return setError('Select a customer.');
+    if (!verified) return setError('Verify the payment before proceeding.');
+    setSaving(true);
+    setError('');
+    try {
+      const result = await subscriptionRequest<{ end_date: string }>('/admin/payments', {
+        user_id: Number(id),
+        plan: 'premium',
+        duration,
+        amount,
+        payment_method: method,
+        payment_date: date,
+        reference_number: reference,
+        notes,
+      });
+      onSaved(result.end_date);
+      dialog.current?.close();
+      onClose();
+    } catch (err: any) {
+      setError(err.message || 'Failed to record payment.');
+    } finally {
+      setSaving(false);
+    }
+  };
 
   return (
-    <dialog
-      ref={dialog}
-      onCancel={(e) => {
-        e.preventDefault();
-        if (!saving) onClose();
-      }}
-      className="m-auto w-[calc(100%-2rem)] max-w-xl max-h-[90vh] overflow-y-auto rounded-3xl border-0 bg-white p-0 text-slate-900 shadow-2xl backdrop:bg-slate-950/70"
-    >
-      <form
-        className="p-5 sm:p-7 space-y-5"
-        onSubmit={async (e) => {
-          e.preventDefault();
-          if (saving || !verified) return;
-          setSaving(true);
-          setError('');
-          try {
-            const payload = {
-              user_id: Number(id),
-              plan: currentPlan,
-              duration,
-              payment_date: date,
-              payment_method: method,
-              reference_number: reference,
-              amount,
-              notes,
-            };
-            const result = await subscriptionRequest<{ end_date: string }>('/admin/payments', payload);
-            onSaved(result.end_date);
-          } catch (err) {
-            setError(err instanceof Error ? err.message : 'Unable to save payment.');
-          } finally {
-            setSaving(false);
-          }
-        }}
-      >
-        <div className="flex items-center justify-between pb-3 border-b border-slate-100">
-          <div>
-            <h2 className="text-xl font-black text-slate-950 tracking-tight">Record Manual Payment</h2>
-            <p className="text-xs sm:text-sm font-semibold text-slate-400 mt-0.5">Verify the receipt before activating or renewing a plan.</p>
+    <dialog ref={dialog} className="modal" onClose={onClose}>
+      <div className="fixed inset-0 z-50 flex items-end sm:items-center justify-center bg-black/50 sm:p-4 backdrop-blur-sm">
+        <div className="w-full max-w-lg bg-white sm:rounded-3xl shadow-2xl max-h-[95vh] sm:max-h-[90vh] flex flex-col">
+          {/* Header */}
+          <div className="p-4 sm:p-6 pb-0 sm:pb-0 flex-shrink-0">
+            <h2 className="text-lg font-black text-slate-900">Record Payment & Activate Premium</h2>
           </div>
-          <button
-            type="button"
-            disabled={saving}
-            onClick={onClose}
-            className="h-8 w-8 rounded-xl bg-slate-100 hover:bg-slate-200 text-slate-500 hover:text-slate-900 flex items-center justify-center font-black transition cursor-pointer"
-            aria-label="Close"
-          >
-            <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2.5" d="M6 18L18 6M6 6l12 12" />
-            </svg>
-          </button>
-        </div>
 
-        {error && <p role="alert" className="text-sm font-bold text-rose-700 bg-rose-50 p-3 rounded-2xl border border-rose-200/90">{error}</p>}
+          {/* Scrollable Content */}
+          <div className="flex-1 overflow-y-auto p-4 sm:p-6 pt-3 sm:pt-4 space-y-4">
+            {error && <p role="alert" className="rounded-xl bg-rose-50 px-4 py-2 text-sm text-rose-600">{error}</p>}
 
-        <fieldset disabled={saving} className="space-y-4">
-          <div>
-            <label className="block text-xs font-black text-slate-700 uppercase tracking-wider mb-1.5">
-              Customer
+            <label className="block space-y-1.5">
+              <span className="text-xs font-bold text-slate-500 uppercase tracking-wide">Customer</span>
+              <select value={id} onChange={(e) => setId(e.target.value)} className={field}>
+                <option value="">Select a customer</option>
+                {data.customers.map((c) => (
+                  <option key={c.user_id} value={c.user_id}>{c.store_name}</option>
+                ))}
+              </select>
             </label>
-            <select
-              required
-              className={field}
-              value={id}
-              onChange={(e) => {
-                setId(e.target.value);
-                setPlan(data.customers.find((c) => String(c.user_id) === e.target.value)?.plan || 'basic');
-              }}
-            >
-              <option value="">Select a customer</option>
-              {data.customers.map((c) => (
-                <option key={c.user_id} value={c.user_id}>
-                  {c.store_name} — {c.email}
-                </option>
-              ))}
-            </select>
-          </div>
 
-          <div className="grid sm:grid-cols-2 gap-4">
-            <div>
-              <label className="block text-xs font-black text-slate-700 uppercase tracking-wider mb-1.5">
-                Plan
-              </label>
-              <select className={field} disabled={!!active} value={currentPlan} onChange={(e) => setPlan(e.target.value)}>
-                {data.plans.map((p) => (
-                  <option key={p.id} value={p.id}>
-                    {p.name} — {money(p.monthly)}/month
-                  </option>
-                ))}
-              </select>
-            </div>
-            <div>
-              <label className="block text-xs font-black text-slate-700 uppercase tracking-wider mb-1.5">
-                Duration
-              </label>
-              <select className={field} value={duration} onChange={(e) => setDuration(Number(e.target.value))}>
-                {[1, 3, 6, 12].map((d) => (
-                  <option key={d} value={d}>
-                    {d} month{d > 1 ? 's' : ''}
-                  </option>
-                ))}
-              </select>
-            </div>
-          </div>
+            <label className="block space-y-1.5">
+              <span className="text-xs font-bold text-slate-500 uppercase tracking-wide">Plan</span>
+              <div className={field + ' bg-slate-100 cursor-default'}>Premium — ₱299/month</div>
+            </label>
 
-          <div className="grid sm:grid-cols-2 gap-4">
-            <div>
-              <label className="block text-xs font-black text-slate-700 uppercase tracking-wider mb-1.5">
-                Payment Method
-              </label>
-              <select className={field} value={method} onChange={(e) => setMethod(e.target.value)}>
+            <label className="block space-y-1.5">
+              <span className="text-xs font-bold text-slate-500 uppercase tracking-wide">Duration</span>
+              <select value={duration} onChange={(e) => setDuration(Number(e.target.value))} className={field}>
+                <option value={1}>1 month — {money(299)}</option>
+                <option value={3}>3 months — {money(299 * 3)}</option>
+                <option value={6}>6 months — {money(299 * 6)}</option>
+                <option value={12}>12 months — {money(3229.20)} (Save 10%)</option>
+              </select>
+            </label>
+
+            <div className="rounded-2xl bg-blue-50 px-4 py-3 flex items-center justify-between">
+              <span className="text-sm font-bold text-blue-800">Total Amount</span>
+              <span className="text-lg font-black text-blue-900">{money(amount)}</span>
+            </div>
+
+            <label className="block space-y-1.5">
+              <span className="text-xs font-bold text-slate-500 uppercase tracking-wide">Payment Method</span>
+              <select value={method} onChange={(e) => setMethod(e.target.value)} className={field}>
                 <option>GCash</option>
-                <option value="Maya">Maya</option>
-                <option value="Bank Transfer">Bank Transfer</option>
-                <option value="Cash">Cash</option>
-                <option value="Other">Other manual payment</option>
+                <option>Maya</option>
+                <option>Bank Transfer</option>
+                <option>Cash</option>
+                <option>Other</option>
               </select>
-            </div>
-            <div>
-              <label className="block text-xs font-black text-slate-700 uppercase tracking-wider mb-1.5">
-                Payment Date
-              </label>
-              <input required type="date" max={data.today} className={field} value={date} onChange={(e) => setDate(e.target.value)} />
-            </div>
-          </div>
-
-          <div>
-            <label className="block text-xs font-black text-slate-700 uppercase tracking-wider mb-1.5">
-              Reference Number
             </label>
-            <input required maxLength={120} placeholder="e.g. 10029384819" className={field} value={reference} onChange={(e) => setReference(e.target.value)} />
-          </div>
 
-          <div>
-            <label className="block text-xs font-black text-slate-700 uppercase tracking-wider mb-1.5">
-              Notes <span className="font-normal text-slate-400 lowercase">(optional)</span>
+            <label className="block space-y-1.5">
+              <span className="text-xs font-bold text-slate-500 uppercase tracking-wide">Payment Date</span>
+              <input type="date" value={date} onChange={(e) => setDate(e.target.value)} max={data.today} className={field} />
             </label>
-            <textarea maxLength={1000} placeholder="Additional details or reference notes…" className={field} value={notes} onChange={(e) => setNotes(e.target.value)} />
+
+            <label className="block space-y-1.5">
+              <span className="text-xs font-bold text-slate-500 uppercase tracking-wide">Reference Number</span>
+              <input type="text" value={reference} onChange={(e) => setReference(e.target.value)} placeholder="e.g. 10029384819" className={field} />
+            </label>
+
+            <label className="block space-y-1.5">
+              <span className="text-xs font-bold text-slate-500 uppercase tracking-wide">Notes (Optional)</span>
+              <textarea value={notes} onChange={(e) => setNotes(e.target.value)} rows={2} className={field + ' resize-none'} />
+            </label>
+
+            <label className="flex items-start gap-3 rounded-2xl border border-slate-200 p-4 cursor-pointer hover:bg-slate-50 transition">
+              <input type="checkbox" checked={verified} onChange={(e) => setVerified(e.target.checked)} className="mt-1 h-4 w-4 rounded border-slate-300 text-blue-600 focus:ring-blue-500" />
+              <span className="text-sm text-slate-700">I have verified this payment and confirmed it with the customer.</span>
+            </label>
           </div>
 
-          <div className="rounded-2xl bg-blue-50/70 border border-blue-100 p-4 text-sm space-y-2">
-            <div className="flex justify-between font-semibold text-slate-700">
-              <span>Amount paid</span>
-              <strong className="font-black text-slate-900">{money(amount)}</strong>
+          {/* Sticky Actions Footer */}
+          <div className="p-4 sm:p-6 pt-0 sm:pt-0 flex-shrink-0 border-t border-slate-100 bg-white sm:bg-transparent sm:border-t-0 sm:rounded-b-3xl">
+            <div className="flex gap-3 pt-3">
+              <button onClick={onClose} className="flex-1 rounded-2xl bg-slate-100 px-4 py-2.5 text-sm font-bold text-slate-600 transition hover:bg-slate-200 cursor-pointer">
+                Cancel
+              </button>
+              <button onClick={handleSubmit} disabled={saving || !verified} className={button + ' flex-1'}>
+                {saving ? 'Processing…' : 'Confirm Payment'}
+              </button>
             </div>
-            {duration === 12 && <p className="text-xs font-bold text-blue-700">Existing annual rate: {money(rate.annualMonthly)} × 12 months</p>}
-            <div className="flex justify-between font-semibold text-slate-700">
-              <span>New expiration</span>
-              <strong className="font-black text-slate-900">{expiry}</strong>
-            </div>
-            <p className="text-xs font-semibold text-slate-400">
-              {active ? 'Renews the current plan from its existing expiration.' : 'Subscription starts on the payment date.'}
-            </p>
           </div>
-
-          <label className="flex gap-3 text-xs sm:text-sm font-bold text-slate-700 cursor-pointer items-center p-3.5 rounded-2xl bg-slate-50 border border-slate-200/80 hover:bg-slate-100/70 transition">
-            <input
-              type="checkbox"
-              required
-              checked={verified}
-              onChange={(e) => setVerified(e.target.checked)}
-              className="rounded-lg h-4 w-4 text-blue-600 cursor-pointer"
-            />
-            <span>I verified receipt of {money(amount)} and the reference number.</span>
-          </label>
-        </fieldset>
-
-        <div className="flex flex-col-reverse sm:flex-row sm:justify-end gap-2.5 sm:gap-3 pt-3 border-t border-slate-100">
-          <button type="button" disabled={saving} className="px-4 py-2.5 rounded-2xl text-xs sm:text-sm font-black text-slate-600 hover:text-slate-900 hover:bg-slate-100 transition cursor-pointer text-center" onClick={onClose}>
-            Cancel
-          </button>
-          <button className={`${button} w-full sm:w-auto justify-center`} disabled={saving || !verified || !id}>
-            {saving ? 'Saving…' : 'Confirm payment'}
-          </button>
         </div>
-      </form>
+      </div>
     </dialog>
   );
 }

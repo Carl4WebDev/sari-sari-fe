@@ -16,6 +16,12 @@ import AuthModal from "../../auth/modals/AuthModal";
 
 export default function ProtectedLayout() {
   const token = localStorage.getItem("user_token");
+  const adminSession = sessionStorage.getItem("listahub_admin_session");
+
+  // Admin users should be on the admin portal, not the user dashboard
+  if (adminSession && !token) {
+    return <Navigate to="/admin" replace />;
+  }
 
   // Ensure active store session is initialized for instant use
   if (!token || token === "active_store_token" || token === "demo_sandbox_token" || localStorage.getItem("is_demo_mode") === "true") {

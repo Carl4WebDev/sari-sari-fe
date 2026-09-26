@@ -115,7 +115,12 @@ export default function EditBorrowerModal({
 
     // Upload image if selected
     if (selectedImage) {
-      await uploadBorrowerProfileImage(borrower.borrower_id, selectedImage);
+      const uploadRes = await uploadBorrowerProfileImage(borrower.borrower_id, selectedImage);
+      console.log("[EditBorrower] upload result:", uploadRes);
+      if (!uploadRes?.ok) {
+        // Upload failed — don't close, user can see the error in the modal
+        return;
+      }
     }
 
     onBorrowerUpdated();

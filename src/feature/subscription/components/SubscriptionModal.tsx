@@ -1,6 +1,5 @@
-import { useState, useEffect } from "react";
+import { useEffect, useState } from "react";
 import { useTranslation } from "../../../shared/i18n/useTranslation";
-import GlobalModal from "../../../shared/components/GlobalModal";
 import AuthModal from "../../auth/modals/AuthModal";
 import { subscriptionRequest } from "../api";
 import type { Customer } from "../api";
@@ -12,271 +11,252 @@ interface SubscriptionModalProps {
 }
 
 export default function SubscriptionModal({ isOpen, onClose, onOpenAuth }: SubscriptionModalProps) {
-  const { language, t } = useTranslation();
-  const [billingCycle, setBillingCycle] = useState<"monthly" | "annual">("annual");
+  const { t } = useTranslation();
   const [activePlan, setActivePlan] = useState<string>("");
   const [isAuthModalOpen, setIsAuthModalOpen] = useState(false);
 
   useEffect(() => {
     if (!isOpen || !localStorage.getItem('user_token') || localStorage.getItem('is_demo_mode') === 'true') return;
-    subscriptionRequest<{customer: Customer}>('/mine').then(({customer}) => {
-      setActivePlan(['Active','Expiring soon'].includes(customer.status) ? customer.plan || '' : '');
+    subscriptionRequest<{ customer: Customer }>('/mine').then(({ customer }) => {
+      setActivePlan(['Active', 'Expiring soon'].includes(customer.status) ? customer.plan || '' : '');
     }).catch(() => setActivePlan(''));
   }, [isOpen]);
 
-  const [globalModal, setGlobalModal] = useState({
-    isOpen: false,
-    title: "",
-    message: "",
-    type: "info" as "info" | "success" | "warning" | "error",
-  });
-
   if (!isOpen && !isAuthModalOpen) return null;
 
-  const handleSelectPlan = (_planId: string, planName: string) => {
+  const handleSelectPlan = (planId: string) => {
     const token = localStorage.getItem("user_token");
     const isDemoMode = localStorage.getItem("is_demo_mode") === "true";
-    
-    // If user has NO real account / is unauthenticated or in demo mode
+
     if (!token || isDemoMode) {
       if (onOpenAuth) {
         onOpenAuth("register");
       } else {
-        setIsAuthModalOpen(true); // Open Auth modal directly on top of SubscriptionModal
+        setIsAuthModalOpen(true);
       }
       return;
     }
 
-    const isFil = language === "fil";
-    setGlobalModal({
-      isOpen: true,
-      title: isFil ? "Manwal na pagbabayad" : "Manual payment",
-      message: isFil
-        ? `Makipag-ugnayan sa ListaHub para sa ${planName} plan. Magiging aktibo ang subscription kapag na-verify na ang bayad.`
-        : `Contact ListaHub for manual payment for the ${planName} plan (${billingCycle}). Your subscription activates after the admin verifies your payment.`,
-      type: "info",
-    });
-  };
+    if (planId === "free") {
+      onClose();
+      return;
+    }
 
-  const plans = [
-    {
-      id: "basic",
-      name: "BASIC",
-      monthlyPrice: "₱149",
-      annualPrice: "₱119",
-      period: billingCycle === "annual" ? "/mo (billed annually)" : "/mo",
-      features: [
-        { text: "Up to 50 Borrowers", included: true },
-        { text: "Manual Loan & Payment Records", included: true },
-        { text: "Basic PDF Statement Export", included: true },
-        { text: "SMS Collection Reminders", included: false },
-        { text: "Cloud Sync & Multi-Device", included: false },
-        { text: "Priority 24/7 VIP Support", included: false },
-      ],
-      popular: false,
-    },
-    {
-      id: "standard",
-      name: "STANDARD",
-      monthlyPrice: "₱299",
-      annualPrice: "₱239",
-      period: billingCycle === "annual" ? "/mo (billed annually)" : "/mo",
-      features: [
-        { text: "Up to 250 Borrowers", included: true },
-        { text: "Unlimited Loan & Payment Records", included: true },
-        { text: "Custom PDF & CSV Exporting", included: true },
-        { text: "SMS Collection Reminders", included: true },
-        { text: "Cloud Sync & Multi-Device", included: true },
-        { text: "Priority 24/7 VIP Support", included: false },
-      ],
-      popular: true,
-    },
-    {
-      id: "premium",
-      name: "PREMIUM",
-      monthlyPrice: "₱499",
-      annualPrice: "₱399",
-      period: billingCycle === "annual" ? "/mo (billed annually)" : "/mo",
-      features: [
-        { text: "UNLIMITED Borrowers & Records", included: true },
-        { text: "Unlimited Loan & Payment Logs", included: true },
-        { text: "Custom PDF & CSV Exporting", included: true },
-        { text: "Automatic SMS & Email Reminders", included: true },
-        { text: "Real-time Cloud Sync & Backup", included: true },
-        { text: "Priority 24/7 VIP Support", included: true },
-      ],
-      popular: false,
-    },
-  ];
+    // Premium: show contact message
+    if (planId === "premium") {
+      onClose();
+      return;
+    }
+  };
 
   return (
     <>
-      {isOpen && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-3 sm:p-6 bg-slate-950/85 backdrop-blur-md overflow-y-auto animate-backdrop-fade">
-          <div className="relative w-full max-w-5xl bg-slate-950 border border-slate-800 rounded-3xl p-5 sm:p-7 shadow-2xl space-y-4 max-h-[95vh] flex flex-col justify-between overflow-y-auto text-white animate-modal-pop">
-            {/* Close Button */}
+      <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4 backdrop-blur-sm">
+        <div className="relative max-h-[90vh] w-full max-w-4xl overflow-y-auto rounded-3xl bg-white shadow-2xl">
+          {/* Header */}
+          <div className="sticky top-0 z-10 flex items-center justify-between border-b border-slate-100 bg-white px-6 py-4">
+            <div>
+              <h2 className="text-xl font-black text-slate-900">Choose Your Plan</h2>
+              <p className="text-sm text-slate-500">Start free or go Premium for cloud features</p>
+            </div>
             <button
               onClick={onClose}
-              className="absolute top-4 right-4 sm:top-5 sm:right-5 p-2 rounded-2xl bg-slate-900 hover:bg-slate-800 text-slate-400 hover:text-white transition cursor-pointer border border-slate-800 z-10 active:scale-95"
+              className="flex h-10 w-10 items-center justify-center rounded-full text-slate-400 transition hover:bg-slate-100 hover:text-slate-600 cursor-pointer"
             >
-              <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2.5" d="M6 18L18 6M6 6l12 12" />
+              <svg className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                <path strokeLinecap="round" strokeLinejoin="round" d="M6 18L18 6M6 6l12 12" />
               </svg>
             </button>
+          </div>
 
-            {/* Header Section */}
-            <div className="text-center space-y-1.5 pt-1">
-              <div className="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-amber-500/10 border border-amber-500/30 text-amber-400 text-xs font-black tracking-wider uppercase">
-                <svg className="w-4 h-4 text-amber-400" fill="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
-                  <path d="M5 16L3 5l5.5 5L12 4l3.5 6L21 5l-2 11H5zm14 3c0 .6-.4 1-1 1H6c-.6 0-1-.4-1-1v-1h14v1z" />
-                </svg>
-                LISTAHUB VIP PLANS
+          {/* Plan Cards */}
+          <div className="grid gap-6 p-6 md:grid-cols-2">
+            {/* FREE Card */}
+            <div className={`relative rounded-2xl border-2 p-6 transition ${activePlan === "" || activePlan === "free"
+              ? "border-emerald-400 bg-emerald-50/50"
+              : "border-slate-200 bg-white hover:border-slate-300"
+              }`}>
+              {(activePlan === "" || activePlan === "free") && (
+                <div className="absolute -top-3 left-1/2 -translate-x-1/2">
+                  <span className="rounded-full bg-emerald-500 px-4 py-1 text-xs font-bold text-white shadow-md">
+                    Current Plan
+                  </span>
+                </div>
+              )}
+
+              <div className="mb-4">
+                <h3 className="text-lg font-black text-slate-900">FREE</h3>
+                <div className="mt-1 flex items-baseline gap-1">
+                  <span className="text-3xl font-black text-slate-900">₱0</span>
+                  <span className="text-sm text-slate-500">/month</span>
+                </div>
+                <p className="mt-2 text-sm text-slate-600">Complete local and offline loan management.</p>
               </div>
-              <h2 className="text-2xl sm:text-4xl font-black tracking-tight text-white">
-                Pumili ng Plan Para sa Iyong Tindahan
-              </h2>
-              <p className="text-xs sm:text-sm text-slate-400 max-w-lg mx-auto leading-normal font-medium">
-                Palakihin ang iyong sari-sari store negosyo gamit ang premium tracking, automated SMS reminders, ug cloud sync.
-              </p>
-            </div>
 
-            {/* Monthly / Annual Billing Toggle Switch */}
-            <div className="flex items-center justify-center gap-4 py-1">
-              <span className={`text-xs sm:text-sm font-extrabold ${billingCycle === "monthly" ? "text-white" : "text-slate-400"}`}>
-                Monthly
-              </span>
+              <ul className="mb-6 space-y-2.5">
+                {[
+                  "Unlimited Borrowers",
+                  "Unlimited Loan & Payment Records",
+                  "All Core Functionalities",
+                  "Basic PDF & Excel Export",
+                  "Email",
+                  "Offline Access",
+                  "Local Storage",
+                  "Automatic Backup / Data Export",
+                ].map((feature) => (
+                  <li key={feature} className="flex items-start gap-2 text-sm text-slate-700">
+                    <svg className="mt-0.5 h-4 w-4 shrink-0 text-emerald-500" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.5}>
+                      <path strokeLinecap="round" strokeLinejoin="round" d="M5 13l4 4L19 7" />
+                    </svg>
+                    {feature}
+                  </li>
+                ))}
+              </ul>
 
               <button
-                onClick={() => setBillingCycle(billingCycle === "monthly" ? "annual" : "monthly")}
-                className="relative w-14 h-7 rounded-full bg-slate-800 border border-slate-700 p-1 cursor-pointer transition-colors duration-300 focus:outline-none"
-              >
-                <div
-                  className={`w-5 h-5 rounded-full bg-gradient-to-r from-blue-500 to-indigo-500 shadow-md transform transition-transform duration-300 ${
-                    billingCycle === "annual" ? "translate-x-7" : "translate-x-0"
+                onClick={() => handleSelectPlan("free")}
+                className={`w-full rounded-2xl px-4 py-3 text-sm font-bold transition cursor-pointer active:scale-95 ${activePlan === "" || activePlan === "free"
+                  ? "bg-emerald-100 text-emerald-700"
+                  : "bg-slate-100 text-slate-700 hover:bg-slate-200"
                   }`}
-                />
+              >
+                {activePlan === "" || activePlan === "free" ? "Your Current Plan" : "Start for Free"}
               </button>
-
-              <span className={`text-xs sm:text-sm font-extrabold flex items-center gap-2 ${billingCycle === "annual" ? "text-white" : "text-slate-400"}`}>
-                Annual
-                <span className="bg-emerald-500/20 text-emerald-400 border border-emerald-500/30 text-[10px] font-black px-2 py-0.5 rounded-full">
-                  Save 20%
-                </span>
-              </span>
             </div>
 
-            {/* 3 Pricing Cards Grid */}
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-5 sm:gap-6 pt-1">
-              {plans.map((plan) => {
-                const displayPrice = billingCycle === "annual" ? plan.annualPrice : plan.monthlyPrice;
-                const isCurrentPlan = activePlan === plan.id;
+            {/* PREMIUM Card */}
+            <div className={`relative rounded-2xl border-2 p-6 transition ${activePlan === "premium"
+              ? "border-amber-400 bg-amber-50/50"
+              : "border-amber-200 bg-gradient-to-br from-amber-50/50 to-white hover:border-amber-300"
+              }`}>
+              <div className="absolute -top-3 left-1/2 -translate-x-1/2">
+                <span className="rounded-full bg-gradient-to-r from-amber-500 to-yellow-500 px-4 py-1 text-xs font-bold text-white shadow-md">
+                  {activePlan === "premium" ? "Current Plan" : "Premium"}
+                </span>
+              </div>
 
-                return (
-                  <div
-                    key={plan.id}
-                    className={`relative bg-slate-900 border ${
-                      isCurrentPlan
-                        ? "border-2 border-emerald-400 ring-2 ring-emerald-500/30 shadow-emerald-950/40"
-                        : plan.popular
-                        ? "border-2 border-blue-500 shadow-blue-900/20"
-                        : "border border-slate-800 hover:border-slate-700"
-                    } rounded-3xl overflow-hidden flex flex-col justify-between shadow-2xl transition-all duration-300 transform hover:-translate-y-0.5`}
+              <div className="mb-4">
+                <h3 className="text-lg font-black text-slate-900">PREMIUM</h3>
+                <div className="mt-1 flex items-baseline gap-1">
+                  <span className="text-3xl font-black text-slate-900">₱299</span>
+                  <span className="text-sm text-slate-500">/month</span>
+                </div>
+                <p className="mt-1 text-xs text-amber-600 font-semibold">₱3,229.20/year — Save 10%</p>
+                <p className="mt-2 text-sm text-slate-600">Take your store management to the cloud.</p>
+              </div>
+
+              <ul className="mb-6 space-y-2.5">
+                {[
+                  "Everything in Free",
+                  "Cloud Storage",
+                  "Automatic Cloud Backup",
+                  "Real-Time Synchronization",
+                  "Multi-Device Access",
+                  "SMS Collection Reminders",
+                  "Custom PDF & Excel/CSV Exporting",
+                  "Priority VIP Support",
+                ].map((feature) => (
+                  <li key={feature} className="flex items-start gap-2 text-sm text-slate-700">
+                    <svg className="mt-0.5 h-4 w-4 shrink-0 text-amber-500" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.5}>
+                      <path strokeLinecap="round" strokeLinejoin="round" d="M5 13l4 4L19 7" />
+                    </svg>
+                    {feature}
+                  </li>
+                ))}
+              </ul>
+
+              {activePlan === "premium" ? (
+                <button
+                  disabled
+                  className="w-full rounded-2xl bg-amber-100 px-4 py-3 text-sm font-bold text-amber-700 cursor-default"
+                >
+                  Your Current Plan
+                </button>
+              ) : (
+                <div>
+                  <button
+                    onClick={() => handleSelectPlan("premium")}
+                    className="w-full rounded-2xl bg-gradient-to-r from-amber-500 to-yellow-500 px-4 py-3 text-sm font-bold text-white shadow-lg shadow-amber-500/20 transition hover:from-amber-600 hover:to-yellow-600 cursor-pointer active:scale-95"
                   >
-                    {/* Top Pill Header */}
-                    <div className={`py-3 px-5 text-center font-black tracking-widest text-xs sm:text-sm text-white relative ${
-                      isCurrentPlan
-                        ? "bg-gradient-to-r from-emerald-600 via-teal-600 to-emerald-600"
-                        : plan.name === "PREMIUM"
-                        ? "bg-gradient-to-r from-amber-500 via-amber-600 to-yellow-500"
-                        : plan.name === "STANDARD"
-                        ? "bg-gradient-to-r from-blue-600 to-indigo-600"
-                        : "bg-gradient-to-r from-slate-700 to-slate-800"
-                    } shadow-xs`}>
-                      <span>{plan.name}</span>
-                      {isCurrentPlan && (
-                        <span className="ml-2 text-[10px] bg-white/20 px-2 py-0.5 rounded-full uppercase tracking-wider font-extrabold">
-                          {language === "fil" ? "Kasalukuyan" : "Active"}
-                        </span>
-                      )}
-                    </div>
-
-                    <div className="p-5 sm:p-6 space-y-5 flex-1 flex flex-col justify-between">
-                      {/* Price Display */}
-                      <div className="text-center space-y-0.5">
-                        <div className="text-3xl sm:text-4xl font-black text-white tracking-tight">
-                          {displayPrice}
-                        </div>
-                        <div className="text-xs font-bold text-slate-400">
-                          {plan.period}
-                        </div>
-                      </div>
-
-                      {/* Features List */}
-                      <ul className="space-y-3 py-1 text-xs sm:text-sm">
-                        {plan.features.map((feat, idx) => (
-                          <li key={idx} className="flex items-start gap-2.5">
-                            {feat.included ? (
-                              <svg className="w-4 h-4 text-emerald-400 shrink-0 mt-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
-                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="3" d="M5 13l4 4L19 7" />
-                              </svg>
-                            ) : (
-                              <svg className="w-4 h-4 text-rose-500/70 shrink-0 mt-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
-                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="3" d="M6 18L18 6M6 6l12 12" />
-                              </svg>
-                            )}
-                            <span className={feat.included ? "text-slate-200 font-semibold" : "text-slate-500 font-normal line-through opacity-70"}>
-                              {feat.text}
-                            </span>
-                          </li>
-                        ))}
-                      </ul>
-
-                      {/* Select / Current Plan Button */}
-                      <button
-                        onClick={() => handleSelectPlan(plan.id, plan.name)}
-                        className={`w-full py-3 px-4 rounded-2xl font-black text-xs sm:text-sm uppercase tracking-wider cursor-pointer transition active:scale-95 border flex items-center justify-center gap-2 ${
-                          isCurrentPlan
-                            ? "bg-gradient-to-r from-emerald-600 to-teal-600 text-white border-emerald-400 shadow-lg shadow-emerald-600/30"
-                            : plan.popular
-                            ? "bg-blue-600 hover:bg-blue-700 text-white border-blue-500 shadow-lg shadow-blue-600/30"
-                            : "bg-slate-800 hover:bg-slate-700 text-slate-200 border-slate-700"
-                        }`}
-                      >
-                        {isCurrentPlan ? (
-                          <>
-                            <svg className="w-4 h-4 text-emerald-200" fill="currentColor" viewBox="0 0 24 24">
-                              <path d="M9 16.17L4.83 12l-1.42 1.41L9 19 21 7l-1.41-1.41z" />
-                            </svg>
-                            <span>{language === "fil" ? "Kasalukuyang Plan" : "Current Plan"}</span>
-                          </>
-                        ) : (
-                          <span>{language === "fil" ? "Pumili ng Plan" : "Pumili Plan"}</span>
-                        )}
-                      </button>
-                    </div>
+                    Contact to Subscribe
+                  </button>
+                  <div className="mt-2 text-center text-xs text-slate-500 space-y-1">
+                    <p>Want Premium? Contact the Listahub administrator to arrange your subscription and payment.</p>
+                    <p className="font-bold text-slate-700">📞 0927 616 8478</p>
+                    <p>Mostly available on Saturdays & Sundays, but feel free to call anytime — I&apos;ll call back if I miss your call.</p>
                   </div>
-                );
-              })}
+                </div>
+              )}
+            </div>
+          </div>
+
+          {/* Comparison Table */}
+          <div className="border-t border-slate-100 px-6 py-6">
+            <h3 className="mb-4 text-center text-lg font-black text-slate-900">Compare Plans</h3>
+            <div className="overflow-x-auto">
+              <table className="w-full text-sm">
+                <thead>
+                  <tr className="border-b border-slate-200">
+                    <th className="py-3 text-left font-bold text-slate-700">Feature</th>
+                    <th className="py-3 text-center font-bold text-slate-700">Free</th>
+                    <th className="py-3 text-center font-bold text-amber-600">Premium</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {[
+                    { feature: "Price", free: "₱0/month", premium: "₱299/month" },
+                    { feature: "Borrowers", free: "Unlimited", premium: "Unlimited" },
+                    { feature: "Loan & Payment Records", free: "Unlimited", premium: "Unlimited" },
+                    { feature: "PDF Statement Export", free: "Basic", premium: "Custom" },
+                    { feature: "Excel/CSV Export", free: "Basic", premium: "Custom" },
+                    { feature: "Email", free: "✓", premium: "✓" },
+                    { feature: "Local Storage", free: "✓", premium: "✓" },
+                    { feature: "Offline Access", free: "✓", premium: "✓" },
+                    { feature: "Automatic Backup / Data Export", free: "✓", premium: "✓" },
+                    { feature: "Cloud Storage", free: "—", premium: "✓" },
+                    { feature: "Cloud Sync", free: "—", premium: "✓" },
+                    { feature: "Multi-Device Access", free: "—", premium: "✓" },
+                    { feature: "Automatic Cloud Backup", free: "—", premium: "✓" },
+                    { feature: "Real-Time Synchronization", free: "—", premium: "✓" },
+                    { feature: "SMS Collection Reminders", free: "—", premium: "✓" },
+                    { feature: "Priority VIP Support", free: "—", premium: "✓" },
+                  ].map((row) => (
+                    <tr key={row.feature} className="border-b border-slate-100">
+                      <td className="py-2.5 text-slate-700">{row.feature}</td>
+                      <td className="py-2.5 text-center">
+                        {row.free === "✓" ? (
+                          <span className="text-emerald-500">✓</span>
+                        ) : row.free === "—" ? (
+                          <span className="text-slate-300">—</span>
+                        ) : (
+                          <span className="text-slate-600">{row.free}</span>
+                        )}
+                      </td>
+                      <td className="py-2.5 text-center">
+                        {row.premium === "✓" ? (
+                          <span className="text-amber-500">✓</span>
+                        ) : row.premium === "—" ? (
+                          <span className="text-slate-300">—</span>
+                        ) : (
+                          <span className="text-slate-600">{row.premium}</span>
+                        )}
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
             </div>
           </div>
         </div>
+      </div>
+
+      {isAuthModalOpen && (
+        <AuthModal
+          isOpen={isAuthModalOpen}
+          onClose={() => setIsAuthModalOpen(false)}
+          initialMode="register"
+        />
       )}
-
-      {/* Trigger AuthModal if user is not logged in */}
-      <AuthModal
-        isOpen={isAuthModalOpen}
-        initialMode="register"
-        authReason="premium"
-        onClose={() => setIsAuthModalOpen(false)}
-      />
-
-      <GlobalModal
-        isOpen={globalModal.isOpen}
-        title={globalModal.title}
-        message={globalModal.message}
-        type={globalModal.type}
-        onClose={() => setGlobalModal({ ...globalModal, isOpen: false })}
-      />
     </>
   );
 }

@@ -131,6 +131,7 @@ self.addEventListener("fetch", (event) => {
 
   if (request.method !== "GET") return;
   if (request.url.includes("/api/")) return;
+  if (request.url.includes("/uploads/")) return;
   if (!request.url.startsWith("http")) return;
 
   event.respondWith(

@@ -18,7 +18,7 @@ export default function BorrowersPage() {
   const [search, setSearch] = useState("");
   const navigate = useNavigate();
   const isOnline = useOnlineStatus();
-  const { subscription, canAddBorrower } = useSubscription();
+  const { subscription } = useSubscription();
   const [isAddBorrowerOpen, setIsAddBorrowerOpen] = useState(false);
   const [isSubscriptionOpen, setIsSubscriptionOpen] = useState(false);
 
@@ -57,17 +57,6 @@ export default function BorrowersPage() {
   }, [borrowerError]);
 
   const handleAddBorrowerClick = () => {
-    if (!canAddBorrower(borrowers.length)) {
-      const max = subscription?.limits?.maxBorrowers || 15;
-      setGlobalModal({
-        isOpen: true,
-        title: "Borrower Limit Reached",
-        message: `You have reached the limit of ${max} borrowers on your ${subscription?.plan || "FREE"} plan. Upgrade your plan to add more borrowers.`,
-        type: "warning",
-      });
-      setIsSubscriptionOpen(true);
-      return;
-    }
     setIsAddBorrowerOpen(true);
   };
 

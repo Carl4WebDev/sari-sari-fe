@@ -4,7 +4,6 @@ export interface SubscriptionLimits {
   id: string;
   name: string;
   monthlyPrice: number;
-  annualPriceMonthly: number;
   maxBorrowers: number;
   allowSms: boolean;
   allowCustomPdf: boolean;
@@ -16,9 +15,9 @@ export interface SubscriptionLimits {
 export interface SubscriptionData {
   subscription_id?: number;
   user_id?: number;
-  plan: "FREE" | "BASIC" | "STANDARD" | "PREMIUM" | string;
-  billing_cycle: "monthly" | "annual" | string;
-  status: "active" | "cancelled" | "expired" | string;
+  plan: "FREE" | "PREMIUM" | string;
+  status: "active" | "cancelled" | "expired" | "no subscription" | string;
+  billing_cycle?: "monthly" | "annual" | string;
   amount?: number;
   payment_method?: string;
   payment_reference?: string;
@@ -34,13 +33,6 @@ export interface SubscriptionContextType {
   actionLoading: boolean;
   error: string | null;
   fetchSubscription: () => Promise<any>;
-  subscribe: (payload: {
-    plan: string;
-    billing_cycle: "monthly" | "annual";
-    payment_method?: string;
-    payment_reference?: string;
-  }) => Promise<any>;
-  cancelSubscription: () => Promise<any>;
   isFeatureAllowed: (feature: keyof SubscriptionLimits) => boolean;
   canAddBorrower: (currentBorrowerCount: number) => boolean;
   clearError: () => void;

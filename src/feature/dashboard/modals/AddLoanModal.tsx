@@ -155,6 +155,29 @@ export default function AddLoanModal({
     }
   }, [isOpen, autoOpenProducts]);
 
+  const [pendingProductName, setPendingProductName] = useState<string | null>(null);
+
+  // Auto-select newly created product when it appears in the list
+  useEffect(() => {
+    if (!pendingProductName) return;
+    const found = products.find((p: Product) => p.product_name === pendingProductName);
+    if (found) {
+      setItems((prev) => {
+        const idx = prev.findIndex((i) => !i.product);
+        const target = idx >= 0 ? idx : prev.length - 1;
+        const updated = [...prev];
+        updated[target] = {
+          ...updated[target],
+          product: found.product_name,
+          product_id: found.product_id,
+          price: String(found.product_price),
+        };
+        return updated;
+      });
+      setPendingProductName(null);
+    }
+  }, [products, pendingProductName]);
+
   if (!isOpen) return null;
 
   const filteredBorrowers = borrowers.filter((b: any) =>
@@ -184,6 +207,8 @@ export default function AddLoanModal({
   const handleProductSubmit = async (payload: { product_name: string; product_price: number }) => {
     const res = await createProduct(payload);
     if (res?.ok) {
+      setPendingProductName(payload.product_name);
+      await fetchProducts();
       onProductSaved?.();
     }
     return res;
@@ -317,9 +342,9 @@ export default function AddLoanModal({
         {showReminderPrompt ? (
           <>
             {/* Header */}
-            <div className="px-6 py-5 border-b border-slate-100 flex items-center justify-between bg-gradient-to-r from-slate-50/80 via-white to-slate-50/50">
-              <div className="flex items-center gap-3">
-                <div className="h-10 w-10 rounded-2xl bg-emerald-50 text-emerald-600 flex items-center justify-center border border-emerald-100/80 shrink-0 shadow-2xs">
+            <div className="px-4 sm:px-6 py-4 sm:py-5 border-b border-slate-100 flex items-center justify-between bg-gradient-to-r from-slate-50/80 via-white to-slate-50/50">
+              <div className="flex items-center gap-2.5 sm:gap-3">
+                <div className="h-9 w-9 sm:h-10 sm:w-10 rounded-2xl bg-emerald-50 text-emerald-600 flex items-center justify-center border border-emerald-100/80 shrink-0 shadow-2xs">
                   <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2.5" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
                   </svg>
@@ -331,15 +356,15 @@ export default function AddLoanModal({
               </div>
             </div>
 
-            <div className="p-6 overflow-y-auto space-y-5 flex-1">
-              <div className="rounded-3xl bg-emerald-50/80 border border-emerald-200/80 p-5 text-center shadow-2xs">
-                <p className="text-xs font-black text-emerald-700 uppercase tracking-wide">Loan recorded!</p>
-                <p className="text-3xl font-black text-emerald-950 mt-1">
+            <div className="p-4 sm:p-6 overflow-y-auto space-y-4 sm:space-y-5 flex-1">
+              <div className="rounded-3xl bg-emerald-50/80 border border-emerald-200/80 p-4 sm:p-5 text-center shadow-2xs">
+                <p className="text-[11px] sm:text-xs font-black text-emerald-700 uppercase tracking-wide">Loan recorded!</p>
+                <p className="text-2xl sm:text-3xl font-black text-emerald-950 mt-1">
                   ₱{reminderLoanTotal.toLocaleString()}
                 </p>
               </div>
 
-              <p className="text-xs font-semibold text-slate-600 text-center">
+              <p className="text-[11px] sm:text-xs font-semibold text-slate-600 text-center">
                 When do you want to collect from <span className="font-black text-slate-950">{selectedBorrower?.first_name}</span>?
               </p>
 
@@ -354,16 +379,16 @@ export default function AddLoanModal({
               </div>
             </div>
 
-            <div className="px-6 py-4 border-t border-slate-100 flex gap-3 bg-white">
+            <div className="px-4 sm:px-6 py-3 sm:py-4 border-t border-slate-100 flex gap-2.5 sm:gap-3 bg-white">
               <button
                 onClick={handleSkipReminder}
-                className="flex-1 rounded-2xl border border-slate-200/90 py-3 text-xs font-black text-slate-700 hover:bg-slate-50 transition active:scale-[0.98] cursor-pointer"
+                className="flex-1 rounded-2xl border border-slate-200/90 py-2.5 sm:py-3 text-[11px] sm:text-xs font-black text-slate-700 hover:bg-slate-50 transition active:scale-[0.98] cursor-pointer"
               >
                 Skip
               </button>
               <button
                 onClick={handleSetReminder}
-                className="flex-1 rounded-2xl bg-emerald-600 hover:bg-emerald-700 py-3 text-xs font-black text-white shadow-md transition active:scale-[0.98] cursor-pointer"
+                className="flex-1 rounded-2xl bg-emerald-600 hover:bg-emerald-700 py-2.5 sm:py-3 text-[11px] sm:text-xs font-black text-white shadow-md transition active:scale-[0.98] cursor-pointer"
               >
                 Set Reminder
               </button>
@@ -372,33 +397,33 @@ export default function AddLoanModal({
         ) : (
           <>
             {/* Header */}
-            <div className="px-6 py-5 border-b border-slate-100 flex items-center justify-between bg-gradient-to-r from-slate-50/80 via-white to-slate-50/50">
-              <div className="flex items-center gap-3">
-                <div className="h-10 w-10 rounded-2xl bg-blue-50 text-blue-600 flex items-center justify-center border border-blue-100/80 shrink-0 shadow-2xs">
-                  <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+            <div className="px-4 sm:px-6 py-4 sm:py-5 border-b border-slate-100 flex items-center justify-between bg-gradient-to-r from-slate-50/80 via-white to-slate-50/50">
+              <div className="flex items-center gap-2.5 sm:gap-3">
+                <div className="h-9 w-9 sm:h-10 sm:w-10 rounded-2xl bg-blue-50 text-blue-600 flex items-center justify-center border border-blue-100/80 shrink-0 shadow-2xs">
+                  <svg className="w-4 h-4 sm:w-5 sm:h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2.5" d="M12 6v6m0 0v6m0-6h6m-6 0H6" />
                   </svg>
                 </div>
                 <div>
-                  <h2 className="text-base font-black text-slate-950 tracking-tight">
+                  <h2 className="text-sm sm:text-base font-black text-slate-950 tracking-tight">
                     {mode === "quick" ? t("loan.quick_title") : "Add Loan"}
                   </h2>
-                  <p className="text-xs font-semibold text-slate-400 mt-0.5">Record a cash or product loan</p>
+                  <p className="text-[11px] sm:text-xs font-semibold text-slate-400 mt-0.5">Record a cash or product loan</p>
                 </div>
               </div>
 
               <button
                 onClick={isClose}
-                className="h-9 w-9 rounded-2xl bg-slate-100/80 hover:bg-slate-200/80 text-slate-500 hover:text-slate-900 transition flex items-center justify-center cursor-pointer"
+                className="h-8 w-8 sm:h-9 sm:w-9 rounded-2xl bg-slate-100/80 hover:bg-slate-200/80 text-slate-500 hover:text-slate-900 transition flex items-center justify-center cursor-pointer"
               >
-                <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                <svg className="w-4 h-4 sm:w-5 sm:h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2.5" d="M6 18L18 6M6 6l12 12" />
                 </svg>
               </button>
             </div>
 
             {/* Scrollable Content */}
-            <div className="p-6 overflow-y-auto space-y-4 flex-1">
+            <div className="p-4 sm:p-6 overflow-y-auto space-y-3 sm:space-y-4 flex-1">
               {/* Borrower Selection or Fixed Borrower Card */}
               {borrowerId ? (
                 <div className="flex items-center gap-3.5 p-3.5 rounded-2xl bg-blue-50/70 border border-blue-200/80 shadow-2xs">
@@ -518,7 +543,7 @@ export default function AddLoanModal({
                                 };
                                 setItems(updated);
                               }}
-                              className="flex-1 rounded-2xl border border-slate-200/90 bg-white px-3.5 py-2.5 text-xs font-bold text-slate-900 outline-none focus:border-blue-600 transition"
+                              className="flex-1 min-w-0 rounded-2xl border border-slate-200/90 bg-white px-3.5 py-2.5 text-xs font-bold text-slate-900 outline-none focus:border-blue-600 transition"
                             >
                               <option value="">{t("loan.select_product")}</option>
                               {products.map((product: Product) => (
@@ -529,8 +554,17 @@ export default function AddLoanModal({
                             </select>
                             <button
                               type="button"
+                              onClick={() => setIsProductModalOpen(true)}
+                              title="Add Product"
+                              className="rounded-2xl bg-blue-600 hover:bg-blue-700 text-white px-2.5 py-2.5 text-[11px] font-black transition cursor-pointer shrink-0"
+                            >
+                              + Product
+                            </button>
+                            <button
+                              type="button"
                               onClick={addNewItem}
-                              className="rounded-2xl bg-slate-950 hover:bg-slate-900 text-white px-4 py-2.5 text-xs font-black transition cursor-pointer"
+                              title="Add another item"
+                              className="rounded-2xl bg-slate-950 hover:bg-slate-900 text-white px-3 py-2.5 text-xs font-black transition cursor-pointer shrink-0"
                             >
                               +
                             </button>
@@ -577,7 +611,7 @@ export default function AddLoanModal({
                             };
                             setItems(updated);
                           }}
-                          className="flex-1 rounded-2xl border border-slate-200/90 bg-white px-3.5 py-2.5 text-xs font-bold text-slate-900 outline-none focus:border-blue-600 transition"
+                          className="flex-1 min-w-0 rounded-2xl border border-slate-200/90 bg-white px-3.5 py-2.5 text-xs font-bold text-slate-900 outline-none focus:border-blue-600 transition"
                         >
                           <option value="">{t("loan.select_product")}</option>
                           {products.map((product: Product) => (
@@ -588,8 +622,17 @@ export default function AddLoanModal({
                         </select>
                         <button
                           type="button"
+                          onClick={() => setIsProductModalOpen(true)}
+                          title="Add Product"
+                          className="rounded-2xl bg-blue-600 hover:bg-blue-700 text-white px-3 py-2.5 text-xs font-black transition cursor-pointer shrink-0"
+                        >
+                          + Product
+                        </button>
+                        <button
+                          type="button"
                           onClick={addNewItem}
-                          className="rounded-2xl bg-slate-950 hover:bg-slate-900 text-white px-4 py-2.5 text-xs font-black transition cursor-pointer"
+                          title="Add another item"
+                          className="rounded-2xl bg-slate-950 hover:bg-slate-900 text-white px-3 py-2.5 text-xs font-black transition cursor-pointer shrink-0"
                         >
                           +
                         </button>
@@ -618,10 +661,10 @@ export default function AddLoanModal({
             </div>
 
             {/* Footer */}
-            <div className="px-6 py-4 border-t border-slate-100 space-y-3 bg-white">
-              <div className="flex items-center justify-between rounded-2xl bg-slate-50/80 border border-slate-200/90 px-4 py-2.5">
-                <span className="text-xs font-black text-slate-500 uppercase tracking-wide">Total</span>
-                <span className="text-base font-black text-slate-950">
+            <div className="px-4 sm:px-6 py-3 sm:py-4 border-t border-slate-100 space-y-2.5 sm:space-y-3 bg-white">
+              <div className="flex items-center justify-between rounded-2xl bg-slate-50/80 border border-slate-200/90 px-3 sm:px-4 py-2.5">
+                <span className="text-[11px] sm:text-xs font-black text-slate-500 uppercase tracking-wide">Total</span>
+                <span className="text-sm sm:text-base font-black text-slate-950">
                   ₱{(mode === "quick" && quickCashMode
                     ? Number(quickAmount) || 0
                     : items.reduce((sum, i) => sum + (Number(i.quantity) || 0) * (Number(i.price) || 0), 0)
@@ -629,19 +672,19 @@ export default function AddLoanModal({
                 </span>
               </div>
 
-              <div className="flex gap-3">
+              <div className="flex gap-2.5 sm:gap-3">
                 <button
                   onClick={() => {
                     resetLoanForm();
                     isClose();
                   }}
-                  className="flex-1 rounded-2xl border border-slate-200/90 py-3 text-xs font-black text-slate-700 hover:bg-slate-50 transition active:scale-[0.98] cursor-pointer"
+                  className="flex-1 rounded-2xl border border-slate-200/90 py-2.5 sm:py-3 text-[11px] sm:text-xs font-black text-slate-700 hover:bg-slate-50 transition active:scale-[0.98] cursor-pointer"
                 >
                   {t("loan.cancel")}
                 </button>
                 <button
                   onClick={handleSubmit}
-                  className="flex-1 rounded-2xl bg-emerald-600 hover:bg-emerald-700 py-3 text-xs font-black text-white shadow-md transition active:scale-[0.98] cursor-pointer"
+                  className="flex-1 rounded-2xl bg-emerald-600 hover:bg-emerald-700 py-2.5 sm:py-3 text-[11px] sm:text-xs font-black text-white shadow-md transition active:scale-[0.98] cursor-pointer"
                 >
                   {mode === "quick" ? t("loan.save") : t("loan.save_loan")}
                 </button>

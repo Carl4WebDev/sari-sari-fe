@@ -6,8 +6,6 @@ interface Props {
   tab: string;
   onSelectTab: (tab: string) => void;
   profile: AdminProfileData | null;
-  customerCount: number;
-  paymentCount: number;
   signingOut: boolean;
   onSignOut: () => void;
 }
@@ -18,8 +16,6 @@ export default function AdminSidebar({
   tab,
   onSelectTab,
   profile,
-  customerCount,
-  paymentCount,
   signingOut,
   onSignOut,
 }: Props) {
@@ -34,40 +30,11 @@ export default function AdminSidebar({
       ),
     },
     {
-      id: 'Customers',
-      label: 'Customers',
-      count: customerCount,
-      icon: (
-        <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2.2" d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z" />
-        </svg>
-      ),
-    },
-    {
-      id: 'User management',
-      label: 'User management',
-      icon: (
-        <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2.2" d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197M13 7a4 4 0 11-8 0 4 4 0 018 0z" />
-        </svg>
-      ),
-    },
-    {
       id: 'Payments',
       label: 'Payments',
-      count: paymentCount,
       icon: (
         <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
           <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2.2" d="M3 10h18M7 15h1m4 0h1m-7 4h12a3 3 0 003-3V8a3 3 0 00-3-3H6a3 3 0 00-3 3v8a3 3 0 003 3z" />
-        </svg>
-      ),
-    },
-    {
-      id: 'My profile',
-      label: 'My profile',
-      icon: (
-        <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2.2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
         </svg>
       ),
     },
@@ -133,25 +100,14 @@ export default function AdminSidebar({
                 key={item.id}
                 type="button"
                 onClick={() => onSelectTab(item.id)}
-                className={`w-full flex items-center justify-between px-4 py-3 text-xs sm:text-sm font-black transition-all duration-200 cursor-pointer text-left rounded-2xl ${
+                className={`w-full flex items-center gap-3 px-4 py-3 text-xs sm:text-sm font-black transition-all duration-200 cursor-pointer text-left rounded-2xl ${
                   active
                     ? 'bg-gradient-to-r from-blue-600 to-indigo-600 text-white shadow-md shadow-blue-600/25 border border-blue-400/30 scale-[1.01]'
                     : 'text-slate-400 hover:text-white hover:bg-slate-800/80 font-bold'
                 }`}
               >
-                <div className="flex items-center gap-3 min-w-0 truncate">
-                  <span className={`${active ? 'text-white' : 'text-slate-400 group-hover:text-white'} shrink-0`}>{item.icon}</span>
-                  <span className="truncate">{item.label}</span>
-                </div>
-                {item.count !== undefined && item.count > 0 && (
-                  <span
-                    className={`ml-2 px-2 py-0.5 rounded-full text-[10px] font-black shrink-0 ${
-                      active ? 'bg-white/20 text-white' : 'bg-blue-500/20 text-blue-300'
-                    }`}
-                  >
-                    {item.count}
-                  </span>
-                )}
+                <span className={`${active ? 'text-white' : 'text-slate-400'} shrink-0`}>{item.icon}</span>
+                <span className="truncate">{item.label}</span>
               </button>
             );
           })}

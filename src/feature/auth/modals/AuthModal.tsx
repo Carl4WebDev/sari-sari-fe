@@ -68,7 +68,11 @@ export default function AuthModal({
     const res = await login(email.trim(), password);
     if (res?.ok) {
       handleClose();
-      navigate("/dashboard");
+      if (res.data?.user?.is_admin) {
+        navigate("/admin");
+      } else {
+        navigate("/dashboard");
+      }
     }
   };
 
@@ -330,46 +334,6 @@ export default function AuthModal({
                       </svg>
                     </>
                   )}
-                </button>
-              </div>
-
-              {/* Admin Demo Login */}
-              <div className="pt-2">
-                <div className="relative flex py-2 items-center">
-                  <div className="flex-grow border-t border-slate-200"></div>
-                  <span className="flex-shrink mx-3 text-[10px] font-black text-slate-400 uppercase tracking-wider">
-                    Or Admin Portal
-                  </span>
-                  <div className="flex-grow border-t border-slate-200"></div>
-                </div>
-
-                <button
-                  type="button"
-                  onClick={handleAdminDemoLogin}
-                  className="w-full py-3 px-4 rounded-2xl border border-slate-800 bg-slate-900 hover:bg-slate-800 active:bg-slate-950 text-white font-bold text-xs sm:text-sm shadow-md shadow-slate-950/15 transition-all duration-150 cursor-pointer active:scale-[0.98] flex items-center justify-between group"
-                >
-                  <div className="flex items-center gap-2.5">
-                    <div className="h-7 w-7 rounded-xl bg-blue-600/30 text-blue-400 flex items-center justify-center group-hover:bg-blue-600 group-hover:text-white transition-colors">
-                      <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2.5" d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z" />
-                      </svg>
-                    </div>
-                    <div className="text-left">
-                      <div className="flex items-center gap-2">
-                        <span className="block leading-tight font-black text-slate-100">Admin Demo Login</span>
-                        <span className="px-1.5 py-0.5 rounded text-[9px] font-black bg-blue-500/20 text-blue-300 border border-blue-500/30">
-                          Admin POV
-                        </span>
-                      </div>
-                      <span className="block text-[10px] text-slate-400 font-medium">Explore admin dashboard & subscriptions</span>
-                    </div>
-                  </div>
-                  <div className="text-blue-400 group-hover:text-blue-300 flex items-center gap-1 font-bold text-xs">
-                    <span>Enter</span>
-                    <svg className="w-3.5 h-3.5 transition-transform group-hover:translate-x-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2.5" d="M9 5l7 7-7 7" />
-                    </svg>
-                  </div>
                 </button>
               </div>
 

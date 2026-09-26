@@ -2,7 +2,7 @@ import { getAdminDemoData, recordAdminDemoPayment } from '../admin/demoData';
 
 export type Customer = { user_id: number; store_name: string; email: string; created_at: string; plan: string | null; status: string; start_date: string | null; end_date: string | null; days_remaining: number | null };
 export type Payment = { payment_id: number; user_id: number; store_name: string; plan: string; amount: string; payment_method: string; reference_number: string; payment_date: string; duration: number; verifier: string; notes: string };
-export type Plan = { id: string; name: string; monthly: number; annualMonthly: number };
+export type Plan = { id: string; name: string; monthly: number; annualDiscount: number };
 export type AdminData = { customers: Customer[]; payments: Payment[]; plans: Plan[]; today: string };
 export async function subscriptionRequest<T>(path: string, body?: unknown): Promise<T> {
   if (path.startsWith('/admin') && sessionStorage.getItem('listahub_admin_session') === 'admin_demo_session') {

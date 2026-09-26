@@ -413,7 +413,7 @@ export default function UserManagementPage() {
                   </span>
                 </div>
                 <p className="text-xs text-slate-400 mt-0.5">
-                  Plan: <span className="font-extrabold text-amber-400">{activePlan}</span> • Cycle: <span className="font-semibold text-slate-300 uppercase">{subscription?.billing_cycle || "monthly"}</span>
+                  Plan: <span className="font-extrabold text-amber-400">{activePlan}</span>
                   {subscription?.end_date && (
                     <span className="text-slate-400"> • Valid until {new Date(subscription.end_date).toLocaleDateString()}</span>
                   )}
@@ -426,7 +426,7 @@ export default function UserManagementPage() {
               onClick={() => setIsSubscriptionModalOpen(true)}
               className="bg-gradient-to-r from-amber-500 via-amber-500 to-yellow-500 hover:from-amber-400 hover:to-yellow-400 text-slate-950 font-black px-5 py-3 rounded-2xl text-xs sm:text-sm shadow-lg shadow-amber-500/20 transition active:scale-95 cursor-pointer flex items-center gap-2 shrink-0"
             >
-              <span>{activePlan === "FREE" ? "Upgrade to VIP" : "Manage / Switch Plan"}</span>
+              <span>{activePlan === "FREE" ? "Upgrade to Premium" : "Manage Subscription"}</span>
               <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2.5" d="M14 5l7 7m0 0l-7 7m7-7H3" />
               </svg>
@@ -438,9 +438,7 @@ export default function UserManagementPage() {
             <div className="bg-slate-950/50 border border-slate-800 rounded-2xl p-3.5">
               <p className="text-[10px] font-extrabold text-slate-400 uppercase tracking-wider">Max Borrowers</p>
               <p className="text-base font-black text-amber-300 mt-0.5">
-                {subscription?.limits?.maxBorrowers && subscription.limits.maxBorrowers >= 99999
-                  ? "Unlimited"
-                  : `${subscription?.limits?.maxBorrowers ?? 15} Borrowers`}
+                Unlimited
               </p>
             </div>
             <div className="bg-slate-950/50 border border-slate-800 rounded-2xl p-3.5">

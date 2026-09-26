@@ -7,6 +7,7 @@ import {
   deleteAdminDemoCustomer,
   restoreAdminDemoCustomer,
   resetAdminDemoCustomerPassword,
+  getPilotActivityDemo,
 } from './demoData';
 
 export type AdminProfileData = {user_id:number;store_name:string;email:string;created_at?:string};
@@ -54,6 +55,9 @@ export async function adminRequest<T>(path:string, method='GET', body?:unknown):
       if (method === 'PATCH' && body) {
         return updateAdminDemoCustomer(id, body as { store_name: string; email: string }) as unknown as T;
       }
+    }
+    if (path === '/activity') {
+      return getPilotActivityDemo() as unknown as T;
     }
     if (path === '/logout') {
       endAdminSession();
