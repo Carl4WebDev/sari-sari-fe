@@ -35,10 +35,10 @@ export function handleDemoRequest(url, options = {}) {
         phone_number: "",
       },
       borrowers: isFreeLocal ? [] : [
-        { borrower_id: 1, first_name: "Juan", middle_name: "", last_name: "Cruz", contact_number: "0917-123-4567", dob: "1992-05-15", total_utang: 350, balance: 350, status: "WITH_BALANCE", public_access_enabled: true, created_at: "2026-08-01T10:00:00Z" },
-        { borrower_id: 2, first_name: "Maria", middle_name: "", last_name: "Santos", contact_number: "0918-987-6543", dob: "1995-11-20", total_utang: 0, balance: 0, status: "FULLY_PAID", public_access_enabled: true, created_at: "2026-08-05T14:30:00Z" },
-        { borrower_id: 3, first_name: "Pedro", middle_name: "", last_name: "Reyes", contact_number: "0920-555-1234", dob: "1988-03-08", total_utang: 850, balance: 850, status: "WITH_BALANCE", public_access_enabled: false, created_at: "2026-08-10T09:15:00Z" },
-        { borrower_id: 4, first_name: "Ana", middle_name: "", last_name: "Lim", contact_number: "0919-444-8888", dob: "1998-07-25", total_utang: 120, balance: 120, status: "WITH_BALANCE", public_access_enabled: true, created_at: "2026-08-15T11:45:00Z" },
+        { borrower_id: 1, first_name: "JUAN", middle_name: "", last_name: "CRUZ", contact_number: "0917-123-4567", dob: "1992-05-15", total_utang: 350, balance: 350, status: "WITH_BALANCE", public_access_enabled: true, created_at: "2026-08-01T10:00:00Z" },
+        { borrower_id: 2, first_name: "MARIA", middle_name: "", last_name: "SANTOS", contact_number: "0918-987-6543", dob: "1995-11-20", total_utang: 0, balance: 0, status: "FULLY_PAID", public_access_enabled: true, created_at: "2026-08-05T14:30:00Z" },
+        { borrower_id: 3, first_name: "PEDRO", middle_name: "", last_name: "REYES", contact_number: "0920-555-1234", dob: "1988-03-08", total_utang: 850, balance: 850, status: "WITH_BALANCE", public_access_enabled: false, created_at: "2026-08-10T09:15:00Z" },
+        { borrower_id: 4, first_name: "ANA", middle_name: "", last_name: "LIM", contact_number: "0919-444-8888", dob: "1998-07-25", total_utang: 120, balance: 120, status: "WITH_BALANCE", public_access_enabled: true, created_at: "2026-08-15T11:45:00Z" },
       ],
       products: isFreeLocal ? [] : [
         { product_id: 1, product_name: "Nescafé Original 3in1", product_price: 14.00, stock: 48, category: "Beverages" },
@@ -282,9 +282,9 @@ export function handleDemoRequest(url, options = {}) {
       const maxId = smallIds.reduce((max, b) => Math.max(max, b.borrower_id || 0), 0);
       const newB = {
         borrower_id: maxId + 1,
-        first_name: payload.first_name || "New",
-        middle_name: payload.middle_name || "",
-        last_name: payload.last_name || "Borrower",
+        first_name: (payload.first_name || "New").toUpperCase(),
+        middle_name: (payload.middle_name || "").toUpperCase(),
+        last_name: (payload.last_name || "Borrower").toUpperCase(),
         contact_number: payload.contact_number || "0917-000-0000",
         dob: payload.dob || "1995-01-01",
         total_utang: 0,
@@ -446,9 +446,9 @@ export function handleDemoRequest(url, options = {}) {
         // Update borrower details
         const targetB = demoStore.borrowers.find((b) => b.borrower_id === bId);
         if (targetB) {
-          if (payload.first_name !== undefined) targetB.first_name = payload.first_name;
-          if (payload.last_name !== undefined) targetB.last_name = payload.last_name;
-          if (payload.middle_name !== undefined) targetB.middle_name = payload.middle_name;
+          if (payload.first_name !== undefined) targetB.first_name = payload.first_name.toUpperCase();
+          if (payload.last_name !== undefined) targetB.last_name = payload.last_name.toUpperCase();
+          if (payload.middle_name !== undefined) targetB.middle_name = payload.middle_name.toUpperCase();
           if (payload.contact_number !== undefined) targetB.contact_number = payload.contact_number;
           if (payload.dob !== undefined) targetB.dob = payload.dob;
           localStorage.setItem("demo_store_data", JSON.stringify(demoStore));

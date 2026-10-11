@@ -42,7 +42,7 @@ export default function BorrowerProfileHeader({
             className="h-28 w-28 sm:h-32 sm:w-32 rounded-3xl border-2 border-white object-cover shadow-md"
           />
         ) : (
-          <div className="flex h-28 w-28 sm:h-32 sm:w-32 items-center justify-center rounded-3xl bg-gradient-to-br from-slate-900 to-slate-950 text-2xl sm:text-3xl font-black text-white shadow-md border-2 border-slate-800">
+          <div className="flex h-28 w-28 sm:h-32 sm:w-32 items-center justify-center rounded-3xl bg-gradient-to-br from-slate-900 to-slate-950 text-2xl sm:text-3xl font-black text-white shadow-md border-2 border-slate-800 uppercase">
             {borrower.first_name?.[0]}
             {borrower.last_name?.[0]}
           </div>
@@ -50,7 +50,7 @@ export default function BorrowerProfileHeader({
       </div>
 
       <div className="text-center space-y-1">
-        <h1 className="text-xl sm:text-2xl font-black text-slate-950 tracking-tight">
+        <h1 className="text-xl sm:text-2xl font-black text-slate-950 tracking-tight uppercase">
           {borrower.first_name} {borrower.middle_name ? `${borrower.middle_name} ` : ""}{borrower.last_name}
         </h1>
 

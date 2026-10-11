@@ -332,7 +332,7 @@ export default function BorrowersPage() {
                         className="h-12 w-12 shrink-0 rounded-2xl border-2 border-white object-cover shadow-2xs"
                       />
                     ) : (
-                      <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-2xl bg-gradient-to-br from-slate-900 to-slate-950 text-xs font-black text-white shadow-2xs border border-slate-800">
+                      <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-2xl bg-gradient-to-br from-slate-900 to-slate-950 text-xs font-black text-white shadow-2xs border border-slate-800 uppercase">
                         {b.first_name?.[0]}
                         {b.last_name?.[0]}
                       </div>
@@ -340,7 +340,7 @@ export default function BorrowersPage() {
 
                     {/* Borrower Info */}
                     <div className="min-w-0 flex-1 space-y-0.5">
-                      <h2 className="truncate text-sm font-black text-slate-950 group-hover:text-blue-600 transition">
+                      <h2 className="truncate text-sm font-black text-slate-950 group-hover:text-blue-600 transition uppercase">
                         {b.first_name} {b.middle_name ? `${b.middle_name} ` : ""}{b.last_name}
                       </h2>
 

@@ -37,7 +37,7 @@ export default function SuccessToast({
             ₱{amount.toLocaleString()} payment recorded
           </p>
           <p className="text-[11px] text-emerald-100 font-medium truncate">
-            {borrowerName} — Bal: ₱{Math.max(0, newBalance).toLocaleString()}
+            <span className="uppercase">{borrowerName}</span> — Bal: ₱{Math.max(0, newBalance).toLocaleString()}
           </p>
         </div>
         <button

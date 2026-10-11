@@ -13,6 +13,7 @@ import { useTranslation } from "../../../shared/i18n/useTranslation";
 import { useCollectionReminder } from "../../context/collection-reminders/useCollectionReminder";
 
 import AuthModal from "../../auth/modals/AuthModal";
+import FreeTierReminder from "../../../shared/components/FreeTierReminder";
 
 export default function ProtectedLayout() {
   const token = localStorage.getItem("user_token");
@@ -272,6 +273,8 @@ function ProtectedLayoutInner() {
         newBalance={toastData.newBalance}
         onClose={() => setToastData((prev) => ({ ...prev, isOpen: false }))}
       />
+
+      <FreeTierReminder />
     </div>
   );
 }
